@@ -3,12 +3,94 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseAdminController;
+use App\Models\SponsorPartnershipModel;
+/*
 use App\Models\SponsorModel;
 use App\Models\SponsorTierModel;
+*/
 
 class SponsorController extends BaseAdminController
 {
     public function index()
+    {
+        $eventId = $this->activeEvent['id'] ?? null;
+        if (!$eventId) {
+            return redirect()->to(base_url('admin/events'))->with('error', 'Select an event first.');
+        }
+
+        $model = new SponsorPartnershipModel();
+        $sponsorPartnership = $model->getByEvent($eventId);
+
+        $this->data['sponsorPartnership'] = $sponsorPartnership;
+        $this->data['pageTitle']          = 'Sponsors & Partnerships';
+        $this->data['activeMenu']         = 'sponsors';
+
+        return $this->render('admin/sponsors/index', $this->data);
+    }
+
+    public function save()
+    {
+        $eventId = $this->activeEvent['id'] ?? null;
+        if (!$eventId) {
+            return redirect()->back()->with('error', 'No active event.');
+        }
+
+        $model = new SponsorPartnershipModel();
+        $existing = $model->getByEvent($eventId);
+        $userId = $this->currentAdmin['id'] ?? session()->get('admin_id') ?? session()->get('admin_user')['id'] ?? 1;
+
+        $name = $this->request->getPost('name');
+        $logoUrl = $existing['logo_url'] ?? '';
+
+        // Handle image file upload
+        $logoFile = $this->request->getFile('logo_file');
+        if ($logoFile && $logoFile->isValid() && !$logoFile->hasMoved()) {
+            $newName = $logoFile->getRandomName();
+            $uploadDir = FCPATH . 'uploads/events/' . $eventId . '/sponsors';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+            $logoFile->move($uploadDir, $newName);
+            $logoUrl = 'uploads/events/' . $eventId . '/sponsors/' . $newName;
+        }
+
+        if (empty($logoUrl)) {
+            return redirect()->back()->with('error', 'Please upload a sponsors & partnerships image.');
+        }
+
+        $data = [
+            'event_id'   => $eventId,
+            'name'       => $name,
+            'logo_url'   => $logoUrl,
+            'updated_by' => $userId,
+        ];
+
+        if ($existing) {
+            $model->update($existing['id'], $data);
+            $message = 'Sponsors & Partnerships image updated.';
+        } else {
+            $model->insert($data);
+            $message = 'Sponsors & Partnerships image saved.';
+        }
+
+        return redirect()->back()->with('success', $message);
+    }
+
+    public function delete($id = null)
+    {
+        $model = new SponsorPartnershipModel();
+        if ($id) {
+            $record = $model->find($id);
+            if ($record && !empty($record['logo_url']) && file_exists(FCPATH . $record['logo_url'])) {
+                @unlink(FCPATH . $record['logo_url']);
+            }
+            $model->delete($id);
+        }
+        return redirect()->back()->with('success', 'Sponsors & Partnerships image removed.');
+    }
+
+    /* === LEGACY TIER-BASED SPONSORS (COMMENTED OUT) ===
+    public function legacyIndex()
     {
         $eventId = $this->activeEvent['id'] ?? null;
         if (!$eventId) {
@@ -106,4 +188,6 @@ class SponsorController extends BaseAdminController
         $sponsorModel->delete($id);
         return redirect()->back()->with('success', 'Sponsor removed.');
     }
+    === END LEGACY TIER-BASED SPONSORS === */
 }
+

@@ -91,12 +91,20 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     $routes->post('gallery/delete/(:num)', 'Admin\GalleryController::delete/$1');
     $routes->post('gallery/toggle-featured/(:num)', 'Admin\GalleryController::toggleFeatured/$1');
 
-    // Sponsors & Tiers
+    // Sponsors & Partnerships (Single Image Upload)
     $routes->get('sponsors', 'Admin\SponsorController::index');
+    $routes->post('sponsors/save', 'Admin\SponsorController::save');
+    $routes->post('sponsors/delete/(:num)', 'Admin\SponsorController::delete/$1');
+    /* === LEGACY TIER-BASED SPONSORS ROUTES (COMMENTED OUT) ===
     $routes->post('sponsors/tier/save', 'Admin\SponsorController::saveTier');
     $routes->post('sponsors/tier/delete/(:num)', 'Admin\SponsorController::deleteTier/$1');
-    $routes->post('sponsors/save', 'Admin\SponsorController::saveSponsor');
-    $routes->post('sponsors/delete/(:num)', 'Admin\SponsorController::deleteSponsor/$1');
+    === END LEGACY ROUTES === */
+
+    // Section Decorations (Cakram / Disc)
+    $routes->get('decorations', 'Admin\DecorationController::index');
+    $routes->post('decorations/save', 'Admin\DecorationController::save');
+    $routes->post('decorations/delete/(:num)', 'Admin\DecorationController::delete/$1');
+    $routes->post('decorations/toggle-active/(:num)', 'Admin\DecorationController::toggleActive/$1');
 
     // Events Manager
     $routes->get('events', 'Admin\EventController::index');

@@ -13,8 +13,10 @@ use App\Models\ModeratorModel;
 use App\Models\ScheduleDayModel;
 use App\Models\ScheduleRoomModel;
 use App\Models\ScheduleSessionModel;
+use App\Models\SectionDecorationModel;
 use App\Models\SpeakerModel;
 use App\Models\SponsorModel;
+use App\Models\SponsorPartnershipModel;
 use App\Models\SponsorTierModel;
 use App\Models\TicketClickLogModel;
 use CodeIgniter\RESTful\ResourceController;
@@ -361,12 +363,45 @@ class EventApiController extends ResourceController
             ];
         }
 
-        // 8. Sponsors grouped by group_key (sponsored_by vs partnerships)
+        // 8. Sponsors & Partnerships (Single Image Banner)
+        $sponsorPartnershipModel = new SponsorPartnershipModel();
+        $spRow = $sponsorPartnershipModel->getByEvent($event['id']);
+        $sponsorPartnership = null;
+        if ($spRow) {
+            $sponsorPartnership = [
+                'id'         => (int)$spRow['id'],
+                'name'       => $spRow['name'] ?? '',
+                'logo_url'   => $makeUrl($spRow['logo_url']),
+                'updated_at' => $spRow['updated_at'] ?? '',
+            ];
+        }
+
+        // 9. Section Decorations (Cakram / Disc)
+        $decorationModel = new SectionDecorationModel();
+        $decRows = $decorationModel->getActiveByEvent($event['id']);
+        $decorations = [];
+        foreach ($decRows as $dec) {
+            $decorations[] = [
+                'id'                 => (int)$dec['id'],
+                'section_key'        => $dec['section_key'],
+                'layout_mode'        => $dec['layout_mode'],
+                'position'           => $dec['position'],
+                'auto_count'         => (int)$dec['auto_count'],
+                'auto_gap_px'        => (int)$dec['auto_gap_px'],
+                'image_url'          => $makeUrl($dec['image_url']),
+                'size_px'            => (int)$dec['size_px'],
+                'opacity'            => (float)$dec['opacity'],
+                'is_rotated'         => (bool)$dec['is_rotated'],
+                'rotation_direction' => $dec['rotation_direction'] ?? 'clockwise',
+                'show_on_mobile'     => (bool)$dec['show_on_mobile'],
+            ];
+        }
+
+        /* === LEGACY TIER-BASED SPONSORS (COMMENTED OUT) ===
         $sponsors = [
             'sponsored_by' => [],
             'partnerships' => [],
         ];
-
         $tiers = $tierModel->getByEvent($event['id']);
         foreach ($tiers as $tier) {
             $tierSponsors = $sponsorModel->getByTier((int)$tier['id']);
@@ -379,7 +414,6 @@ class EventApiController extends ResourceController
                     'website_url' => $ts['website_url'] ?? '',
                 ];
             }
-
             $targetGroup = ($tier['group_key'] === 'partnerships') ? 'partnerships' : 'sponsored_by';
             $sponsors[$targetGroup][] = [
                 'tier_id'     => (int)$tier['id'],
@@ -389,19 +423,26 @@ class EventApiController extends ResourceController
                 'items'       => $sponsorItems,
             ];
         }
+        === END LEGACY TIER-BASED SPONSORS === */
+        $sponsors = [
+            'sponsored_by' => [],
+            'partnerships' => [],
+        ];
 
         return $this->respond([
             'status' => 'success',
             'data'   => [
-                'site'          => $site,
-                'hero_carousel' => $heroCarousel,
-                'economicModel' => $economicModel,
-                'speakers'      => $speakers,
-                'moderators'    => $moderators,
-                'schedule'         => $schedule,
-                'gallery'          => $gallery,
-                'sponsors'         => $sponsors,
-                'theme_properties' => $themeProperties,
+                'site'                => $site,
+                'hero_carousel'       => $heroCarousel,
+                'economicModel'       => $economicModel,
+                'speakers'            => $speakers,
+                'moderators'          => $moderators,
+                'schedule'            => $schedule,
+                'gallery'             => $gallery,
+                'sponsors'            => $sponsors,
+                'sponsor_partnership' => $sponsorPartnership,
+                'section_decorations' => $decorations,
+                'theme_properties'    => $themeProperties,
             ],
         ]);
     }

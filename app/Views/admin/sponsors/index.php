@@ -1,6 +1,110 @@
 <div class="page-header">
     <div>
         <h1 class="page-title">Sponsors & Partnerships</h1>
+        <p class="page-subtitle">Manage single-image banner for Sponsors & Partnerships for <?= esc($activeEvent['title'] ?? $activeEvent['name'] ?? '') ?></p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="cms-card">
+            <div class="card-title-bar">
+                <span class="card-title-text">Sponsors & Partnerships Banner</span>
+            </div>
+            <div class="cms-card-body">
+                <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">
+                    Upload a single standardized image (transparent PNG or SVG recommended) containing all sponsor and partner logos. Frontend will render this consolidated banner directly.
+                </p>
+
+                <form action="<?= base_url('admin/sponsors/save') ?>" method="POST" enctype="multipart/form-data">
+                    <?= csrf_field() ?>
+
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label class="form-label" style="font-weight: 600; color: var(--text-strong); margin-bottom: 8px; display: block;">Image Description / Title (Optional)</label>
+                        <input type="text" name="name" class="form-control" 
+                               value="<?= esc($sponsorPartnership['name'] ?? '') ?>" 
+                               placeholder="e.g. Official Event Sponsors & Strategic Partners 2026">
+                        <small style="color: var(--text-muted); display: block; margin-top: 5px;">Used as alt text and internal reference.</small>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 24px;">
+                        <label class="form-label" style="font-weight: 600; color: var(--text-strong); margin-bottom: 8px; display: block;">
+                            Sponsor Banner Image (PNG / SVG / JPG) <?= empty($sponsorPartnership) ? '*' : '(Leave empty to keep current)' ?>
+                        </label>
+                        <input type="file" name="logo_file" class="form-control" accept="image/*" <?= empty($sponsorPartnership) ? 'required' : '' ?> onchange="previewSponsorImage(this)">
+                    </div>
+
+                    <div id="imagePreviewContainer" style="margin-bottom: 24px; padding: 20px; background: rgba(0,0,0,0.3); border: 1px dashed rgba(255,255,255,0.15); border-radius: var(--radius-md); text-align: center;">
+                        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Live Image Preview</div>
+                        <?php if (!empty($sponsorPartnership['logo_url'])): ?>
+                            <img id="sponsorPreviewImg" src="<?= base_url(esc($sponsorPartnership['logo_url'])) ?>" alt="<?= esc($sponsorPartnership['name'] ?? 'Sponsors') ?>" style="max-width: 100%; max-height: 280px; object-fit: contain; border-radius: 4px;">
+                        <?php else: ?>
+                            <img id="sponsorPreviewImg" src="" alt="Preview" style="max-width: 100%; max-height: 280px; object-fit: contain; display: none; border-radius: 4px;">
+                            <div id="noImageText" style="color: var(--text-muted); font-size: 13px;">No banner uploaded yet.</div>
+                        <?php endif; ?>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <button type="submit" class="btn btn-gold">
+                            <svg class="icon" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                            <?= empty($sponsorPartnership) ? 'Upload Banner' : 'Update Banner' ?>
+                        </button>
+
+                        <?php if (!empty($sponsorPartnership)): ?>
+                            <a href="<?= base_url('admin/sponsors/delete/' . $sponsorPartnership['id']) ?>" 
+                               class="btn btn-danger-outline" 
+                               onclick="return confirm('Are you sure you want to remove this sponsor banner image?');">
+                                Remove Image
+                            </a>
+                        <?php endif; ?>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="cms-card">
+            <div class="card-title-bar">
+                <span class="card-title-text">Specifications & Guidelines</span>
+            </div>
+            <div class="cms-card-body" style="font-size: 13px; color: var(--text-muted); line-height: 1.6;">
+                <h4 style="color: var(--text-strong); font-size: 14px; margin-bottom: 10px;">Consolidated Banner Concept</h4>
+                <p>Instead of managing individual logo badges, all sponsor logos (Platinum, Gold, Silver, Media Partners) are designed onto a single high-resolution image file.</p>
+                
+                <h4 style="color: var(--text-strong); font-size: 14px; margin-top: 16px; margin-bottom: 8px;">Recommendations:</h4>
+                <ul style="padding-left: 18px; margin: 0;">
+                    <li>Format: <strong>PNG</strong> with transparent background</li>
+                    <li>Width: <strong>1200px - 2400px</strong> (Retina-ready)</li>
+                    <li>Ensure adequate contrast against both dark and gold backgrounds</li>
+                    <li>Equal margins and centered alignment</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function previewSponsorImage(input) {
+    const preview = document.getElementById('sponsorPreviewImg');
+    const noText = document.getElementById('noImageText');
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            preview.style.display = 'inline-block';
+            if (noText) noText.style.display = 'none';
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
+
+<?php /*
+=== LEGACY TIER-BASED SPONSORS UI (COMMENTED OUT) ===
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Sponsors & Partnerships</h1>
         <p class="page-subtitle">Configure sponsor tiers, badge groupings (SPONSORED BY vs PARTNERSHIP), and corporate logos for <?= esc($activeEvent['title'] ?? $activeEvent['name'] ?? '') ?></p>
     </div>
     <div style="display:flex; gap:10px;">
@@ -116,7 +220,7 @@
 
                 <div class="form-group">
                     <label class="form-label">Sort Order</label>
-                    <input type="number" name="sort_order" class="form-control" value="<?= count($tiers) + 1 ?>">
+                    <input type="number" name="sort_order" class="form-control" value="1">
                 </div>
             </div>
 
@@ -137,9 +241,7 @@
             <div class="form-group">
                 <label class="form-label">Target Tier *</label>
                 <select name="tier_id" class="form-control" required>
-                    <?php foreach ($tiers as $t): ?>
-                        <option value="<?= $t['id'] ?>"><?= esc($t['name']) ?> (<?= esc($t['group_label']) ?>)</option>
-                    <?php endforeach; ?>
+                    <option value="">Select Tier</option>
                 </select>
             </div>
 
@@ -165,4 +267,5 @@
         </form>
     </div>
 </div>
-
+=== END LEGACY TIER-BASED SPONSORS UI ===
+*/ ?>
