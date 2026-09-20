@@ -1,0 +1,149 @@
+<?php
+
+namespace App\Controllers\Admin;
+
+use App\Controllers\BaseAdminController;
+use App\Models\CustomPlacementModel;
+
+class CustomPlacementController extends BaseAdminController
+{
+    protected array $sections = [
+        'home'     => 'Hero / Home',
+        'about-us' => 'About Us / Overview',
+        'schedule' => 'Schedule',
+        'gallery'  => 'Gallery',
+        'news'     => 'Related News',
+        'sponsor'  => 'Sponsors & Partnerships',
+    ];
+
+    public function index()
+    {
+        $eventId = $this->activeEvent['id'] ?? null;
+        if (!$eventId) {
+            return redirect()->to(base_url('admin/events'))->with('error', 'Select an event first.');
+        }
+
+        $placementModel = new CustomPlacementModel();
+        $placements = $placementModel->getByEvent($eventId);
+
+        $this->data['placements']    = $placements;
+        $this->data['sections']      = $this->sections;
+        $this->data['defaultImage']  = 'assets/img/disc.png';
+        $this->data['frontendUrl']   = 'http://localhost:8080';
+        $this->data['pageTitle']     = 'Custom Placement (Freeform Coordinates)';
+        $this->data['activeMenu']    = 'custom-placements';
+
+        return $this->render('admin/custom_placements/index', $this->data);
+    }
+
+    public function save()
+    {
+        $eventId = $this->activeEvent['id'] ?? null;
+        if (!$eventId) {
+            return redirect()->back()->with('error', 'No active event.');
+        }
+
+        $placementModel = new CustomPlacementModel();
+        $id = (int)$this->request->getPost('id');
+        $existing = $id ? $placementModel->find($id) : null;
+
+        $name               = trim($this->request->getPost('name') ?? '');
+        $sectionKey         = $this->request->getPost('section_key');
+        $posXPercent        = (float)$this->request->getPost('pos_x_percent');
+        $posYPercent        = (float)$this->request->getPost('pos_y_percent');
+        $sizePx             = (int)$this->request->getPost('size_px') ?: 220;
+        $opacity            = (float)$this->request->getPost('opacity') ?: 1.00;
+        $isRotated          = $this->request->getPost('is_rotated') ? 1 : 0;
+        $rotationDirection  = $this->request->getPost('rotation_direction') ?: 'clockwise';
+        $showOnMobile       = $this->request->getPost('show_on_mobile') ? 1 : 0;
+        $isActive           = $this->request->getPost('is_active') !== null ? (int)$this->request->getPost('is_active') : 1;
+        $zIndex             = (int)$this->request->getPost('z_index') ?: 1;
+        $userId             = $this->currentAdmin['id'] ?? session()->get('admin_id') ?? session()->get('admin_user')['id'] ?? 1;
+
+        if (!array_key_exists($sectionKey, $this->sections)) {
+            return redirect()->back()->with('error', 'Invalid section selected.');
+        }
+
+        // Image handling
+        $imageUrl = $existing['image_url'] ?? 'assets/img/disc.png';
+        $imageFile = $this->request->getFile('image_file');
+        if ($imageFile && $imageFile->isValid() && !$imageFile->hasMoved()) {
+            $newName = $imageFile->getRandomName();
+            $uploadDir = FCPATH . 'uploads/events/' . $eventId . '/custom_placements';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+            $imageFile->move($uploadDir, $newName);
+            $imageUrl = 'uploads/events/' . $eventId . '/custom_placements/' . $newName;
+        }
+
+        $data = [
+            'event_id'           => $eventId,
+            'name'               => $name ?: ($this->sections[$sectionKey] . ' Disc ' . round($posXPercent) . '%, ' . round($posYPercent) . '%'),
+            'section_key'        => $sectionKey,
+            'image_url'          => $imageUrl,
+            'pos_x_percent'      => max(0.0, min(100.0, $posXPercent)),
+            'pos_y_percent'      => max(0.0, min(100.0, $posYPercent)),
+            'size_px'            => $sizePx,
+            'opacity'            => $opacity,
+            'is_rotated'         => $isRotated,
+            'rotation_direction' => $rotationDirection,
+            'show_on_mobile'     => $showOnMobile,
+            'is_active'          => $isActive,
+            'z_index'            => $zIndex,
+            'updated_by'         => $userId,
+        ];
+
+        if ($existing) {
+            $placementModel->update($id, $data);
+            $message = 'Custom placement updated successfully.';
+        } else {
+            $data['created_by'] = $userId;
+            $placementModel->insert($data);
+            $message = 'Custom placement created successfully.';
+        }
+
+        return redirect()->to(base_url('admin/custom-placements'))->with('success', $message);
+    }
+
+    public function toggle(int $id)
+    {
+        $eventId = $this->activeEvent['id'] ?? null;
+        if (!$eventId) {
+            return redirect()->back()->with('error', 'No active event.');
+        }
+
+        $placementModel = new CustomPlacementModel();
+        $item = $placementModel->where('event_id', $eventId)->find($id);
+
+        if (!$item) {
+            return redirect()->back()->with('error', 'Decoration not found.');
+        }
+
+        $newStatus = $item['is_active'] ? 0 : 1;
+        $placementModel->update($id, [
+            'is_active'  => $newStatus,
+            'updated_by' => $this->currentAdmin['id'] ?? session()->get('admin_id') ?? 1,
+        ]);
+
+        return redirect()->to(base_url('admin/custom-placements'))->with('success', 'Status updated.');
+    }
+
+    public function delete(int $id)
+    {
+        $eventId = $this->activeEvent['id'] ?? null;
+        if (!$eventId) {
+            return redirect()->back()->with('error', 'No active event.');
+        }
+
+        $placementModel = new CustomPlacementModel();
+        $item = $placementModel->where('event_id', $eventId)->find($id);
+
+        if ($item) {
+            $placementModel->delete($id);
+            return redirect()->to(base_url('admin/custom-placements'))->with('success', 'Custom placement deleted.');
+        }
+
+        return redirect()->back()->with('error', 'Item not found.');
+    }
+}

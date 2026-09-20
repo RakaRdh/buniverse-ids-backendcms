@@ -9,7 +9,7 @@ class DecorationController extends BaseAdminController
 {
     protected array $sections = [
         'home'     => 'Hero / Home',
-        'about-us' => 'About Us / Economic Model',
+        'about-us' => 'About Us / Overview',
         'schedule' => 'Schedule',
         'gallery'  => 'Gallery',
         'news'     => 'Related News',
@@ -51,6 +51,10 @@ class DecorationController extends BaseAdminController
         $position           = $this->request->getPost('position') ?: null;
         $autoCount          = (int)$this->request->getPost('auto_count') ?: 1;
         $autoGapPx          = (int)$this->request->getPost('auto_gap_px') ?: 100;
+        $autoStartSide      = $this->request->getPost('auto_start_side') ?: 'left';
+        $autoGapUnit        = $this->request->getPost('auto_gap_unit') ?: 'px';
+        $edgeOffsetMode     = $this->request->getPost('edge_offset_mode') ?: 'fixed';
+        $edgeOffsetPercent  = $this->request->getPost('edge_offset_percent') !== null ? (int)$this->request->getPost('edge_offset_percent') : 50;
         $sizePx             = (int)$this->request->getPost('size_px') ?: 200;
         $opacity            = (float)$this->request->getPost('opacity') ?: 1.00;
         $isRotated          = $this->request->getPost('is_rotated') ? 1 : 0;
@@ -91,9 +95,13 @@ class DecorationController extends BaseAdminController
             'section_key'        => $sectionKey,
             'layout_mode'        => $layoutMode,
             'position'           => $layoutMode === 'manual' ? $position : null,
-            'auto_count'         => $autoCount,
-            'auto_gap_px'        => $autoGapPx,
-            'image_url'          => $imageUrl,
+            'auto_count'          => $autoCount,
+            'auto_gap_px'         => $autoGapPx,
+            'auto_start_side'     => $autoStartSide,
+            'auto_gap_unit'       => $autoGapUnit,
+            'edge_offset_mode'    => $edgeOffsetMode,
+            'edge_offset_percent' => $edgeOffsetPercent,
+            'image_url'           => $imageUrl,
             'size_px'            => $sizePx,
             'opacity'            => $opacity,
             'is_rotated'         => $isRotated,

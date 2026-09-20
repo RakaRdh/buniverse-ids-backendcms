@@ -48,10 +48,16 @@
                                         <span class="status-pill" style="background:rgba(59,130,246,0.15); color:#60a5fa; border:1px solid rgba(59,130,246,0.3);">
                                             Manual: <?= esc(ucwords(str_replace('-', ' ', $d['position']))) ?>
                                         </span>
+                                        <?php if (($d['edge_offset_mode'] ?? 'fixed') === 'custom'): ?>
+                                            <span style="font-size:11px; color:var(--gold); display:block; margin-top:3px;">Offset: <?= esc($d['edge_offset_percent'] ?? 50) ?>%</span>
+                                        <?php endif; ?>
                                     <?php else: ?>
                                         <span class="status-pill" style="background:rgba(168,85,247,0.15); color:#c084fc; border:1px solid rgba(168,85,247,0.3);">
-                                            Auto (<?= esc($d['auto_count']) ?>x zigzag, <?= esc($d['auto_gap_px']) ?>px gap)
+                                            Auto (<?= esc($d['auto_count']) ?>x zigzag, <?= esc($d['auto_gap_px']) ?><?= esc($d['auto_gap_unit'] ?? 'px') ?>, <?= ucfirst($d['auto_start_side'] ?? 'left') ?>)
                                         </span>
+                                        <?php if (($d['edge_offset_mode'] ?? 'fixed') === 'custom'): ?>
+                                            <span style="font-size:11px; color:var(--gold); display:block; margin-top:3px;">Offset: <?= esc($d['edge_offset_percent'] ?? 50) ?>%</span>
+                                        <?php endif; ?>
                                     <?php endif; ?>
                                 </td>
                                 <td style="padding:12px 16px; color:var(--text-muted);">
@@ -154,7 +160,6 @@
                     <option value="bottom-left">Bottom - Left</option>
                     <option value="bottom-right">Bottom - Right</option>
                 </select>
-                <small style="color:var(--text-muted); display:block; margin-top:4px;">Elements naturally tuck half-way into section edges (-50% transform).</small>
             </div>
 
             <!-- Auto Layout Config -->
@@ -166,10 +171,50 @@
                         <small style="color:var(--text-muted);">Number of discs along section</small>
                     </div>
                     <div class="col-md-6 form-group">
-                        <label class="form-label" style="font-weight:600; color:var(--text-strong);">Vertical Gap (px)</label>
-                        <input type="number" name="auto_gap_px" id="decAutoGap" class="form-control" value="120" min="20" max="600">
+                        <label class="form-label" style="font-weight:600; color:var(--text-strong);">Vertical Gap</label>
+                        <div style="display:flex; gap:6px;">
+                            <input type="number" name="auto_gap_px" id="decAutoGap" class="form-control" value="120" min="1" max="1000" style="flex:1;">
+                            <select name="auto_gap_unit" id="decAutoGapUnit" class="form-control" style="width:90px;">
+                                <option value="px">px</option>
+                                <option value="vh">vh</option>
+                                <option value="rem">rem</option>
+                                <option value="percent">%</option>
+                            </select>
+                        </div>
                         <small style="color:var(--text-muted);">Spacing between discs</small>
                     </div>
+                </div>
+                <div class="row" style="margin-top:10px;">
+                    <div class="col-md-6 form-group">
+                        <label class="form-label" style="font-weight:600; color:var(--text-strong);">Zigzag Start Side</label>
+                        <select name="auto_start_side" id="decAutoStartSide" class="form-control">
+                            <option value="left">Left (Top-Left first)</option>
+                            <option value="right">Right (Top-Right first)</option>
+                        </select>
+                        <small style="color:var(--text-muted);">Side for the first disc</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edge Offset / Tuck Settings -->
+            <div class="form-group" style="margin-bottom:14px; padding:12px; background:rgba(0,0,0,0.25); border-radius:var(--radius-md); border:1px solid rgba(255,255,255,0.06);">
+                <label class="form-label" style="font-weight:600; color:var(--text-strong); display:block; margin-bottom:6px;">Edge Tuck / Offset</label>
+                <div style="display:flex; gap:16px;">
+                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:13px; color:var(--text-strong);">
+                        <input type="radio" name="edge_offset_mode" value="fixed" id="edgeFixed" checked onchange="toggleEdgeOffset('fixed')">
+                        Fixed (-50% standard tuck)
+                    </label>
+                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:13px; color:var(--text-strong);">
+                        <input type="radio" name="edge_offset_mode" value="custom" id="edgeCustom" onchange="toggleEdgeOffset('custom')">
+                        Custom Offset %
+                    </label>
+                </div>
+                <div id="customOffsetWrap" style="display:none; margin-top:10px;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <input type="range" name="edge_offset_percent" id="decEdgeOffset" min="0" max="100" value="50" oninput="document.getElementById('edgeOffsetVal').innerText = this.value + '%'" style="flex:1;">
+                        <span id="edgeOffsetVal" style="font-weight:700; color:var(--gold); font-size:13px; min-width:40px;">50%</span>
+                    </div>
+                    <small style="color:var(--text-muted); font-size:11px; display:block; margin-top:4px;">0% = inside section, 50% = half-tucked outside, 100% = fully outside.</small>
                 </div>
             </div>
 
@@ -267,6 +312,11 @@ function previewModalImage(input) {
     }
 }
 
+function toggleEdgeOffset(mode) {
+    const customWrap = document.getElementById('customOffsetWrap');
+    customWrap.style.display = mode === 'custom' ? 'block' : 'none';
+}
+
 function openAddModal() {
     document.getElementById('modalTitle').innerText = 'Add Section Decoration';
     document.getElementById('decId').value = '';
@@ -276,6 +326,12 @@ function openAddModal() {
     document.getElementById('decPosition').value = 'middle-left';
     document.getElementById('decAutoCount').value = '2';
     document.getElementById('decAutoGap').value = '120';
+    document.getElementById('decAutoGapUnit').value = 'px';
+    document.getElementById('decAutoStartSide').value = 'left';
+    document.getElementById('edgeFixed').checked = true;
+    toggleEdgeOffset('fixed');
+    document.getElementById('decEdgeOffset').value = '50';
+    document.getElementById('edgeOffsetVal').innerText = '50%';
     document.getElementById('decSizePx').value = '220';
     document.getElementById('decOpacity').value = '1.00';
     document.getElementById('decIsRotated').checked = false;
@@ -306,6 +362,21 @@ function openEditModal(data) {
     }
     document.getElementById('decAutoCount').value = data.auto_count || 1;
     document.getElementById('decAutoGap').value = data.auto_gap_px || 100;
+    document.getElementById('decAutoGapUnit').value = data.auto_gap_unit || 'px';
+    document.getElementById('decAutoStartSide').value = data.auto_start_side || 'left';
+
+    const isCustomOffset = (data.edge_offset_mode === 'custom');
+    if (isCustomOffset) {
+        document.getElementById('edgeCustom').checked = true;
+        toggleEdgeOffset('custom');
+    } else {
+        document.getElementById('edgeFixed').checked = true;
+        toggleEdgeOffset('fixed');
+    }
+    const offsetVal = data.edge_offset_percent !== undefined && data.edge_offset_percent !== null ? data.edge_offset_percent : 50;
+    document.getElementById('decEdgeOffset').value = offsetVal;
+    document.getElementById('edgeOffsetVal').innerText = offsetVal + '%';
+
     document.getElementById('decSizePx').value = data.size_px || 200;
     document.getElementById('decOpacity').value = data.opacity || '1.00';
 

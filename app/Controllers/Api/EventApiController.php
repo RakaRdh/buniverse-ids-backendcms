@@ -152,9 +152,9 @@ class EventApiController extends ResourceController
             ];
         }
 
-        // 3. Economic Model / Overview
+        // 3. Overview (f.k.a Economic Model)
         $overviewRow = $overviewModel->getByEventId($event['id']) ?? [];
-        $economicModel = [
+        $overview = [
             'badge'           => $event['theme'] ?? "INDONESIA'S ECONOMIC MODEL",
             'title'           => $overviewRow['heading'] ?? "INDONESIA'S ECONOMIC MODEL",
             'intro'           => $overviewRow['intro_text'] ?? '',
@@ -176,6 +176,7 @@ class EventApiController extends ResourceController
                 ],
             ],
         ];
+        $economicModel = $overview;
 
         // 4. Speakers
         $speakers = [];
@@ -386,9 +387,13 @@ class EventApiController extends ResourceController
                 'section_key'        => $dec['section_key'],
                 'layout_mode'        => $dec['layout_mode'],
                 'position'           => $dec['position'],
-                'auto_count'         => (int)$dec['auto_count'],
-                'auto_gap_px'        => (int)$dec['auto_gap_px'],
-                'image_url'          => $makeUrl($dec['image_url']),
+                'auto_count'          => (int)$dec['auto_count'],
+                'auto_gap_px'         => (int)$dec['auto_gap_px'],
+                'auto_start_side'     => $dec['auto_start_side'] ?? 'left',
+                'auto_gap_unit'       => $dec['auto_gap_unit'] ?? 'px',
+                'edge_offset_mode'    => $dec['edge_offset_mode'] ?? 'fixed',
+                'edge_offset_percent' => (int)($dec['edge_offset_percent'] ?? 50),
+                'image_url'           => $makeUrl($dec['image_url']),
                 'size_px'            => (int)$dec['size_px'],
                 'opacity'            => (float)$dec['opacity'],
                 'is_rotated'         => (bool)$dec['is_rotated'],
@@ -429,11 +434,33 @@ class EventApiController extends ResourceController
             'partnerships' => [],
         ];
 
+        // 10. Custom Placements (Freeform Coordinates)
+        $placementModel = new \App\Models\CustomPlacementModel();
+        $placementRows = $placementModel->getActiveByEvent($event['id']);
+        $customPlacements = [];
+        foreach ($placementRows as $cp) {
+            $customPlacements[] = [
+                'id'                 => (int)$cp['id'],
+                'name'               => $cp['name'] ?? '',
+                'section_key'        => $cp['section_key'],
+                'image_url'          => $makeUrl($cp['image_url']),
+                'pos_x_percent'      => (float)$cp['pos_x_percent'],
+                'pos_y_percent'      => (float)$cp['pos_y_percent'],
+                'size_px'            => (int)$cp['size_px'],
+                'opacity'            => (float)$cp['opacity'],
+                'is_rotated'         => (bool)$cp['is_rotated'],
+                'rotation_direction' => $cp['rotation_direction'] ?? 'clockwise',
+                'show_on_mobile'     => (bool)$cp['show_on_mobile'],
+                'z_index'            => (int)($cp['z_index'] ?? 1),
+            ];
+        }
+
         return $this->respond([
             'status' => 'success',
             'data'   => [
                 'site'                => $site,
                 'hero_carousel'       => $heroCarousel,
+                'overview'            => $overview,
                 'economicModel'       => $economicModel,
                 'speakers'            => $speakers,
                 'moderators'          => $moderators,
@@ -442,6 +469,7 @@ class EventApiController extends ResourceController
                 'sponsors'            => $sponsors,
                 'sponsor_partnership' => $sponsorPartnership,
                 'section_decorations' => $decorations,
+                'custom_placements'   => $customPlacements,
                 'theme_properties'    => $themeProperties,
             ],
         ]);

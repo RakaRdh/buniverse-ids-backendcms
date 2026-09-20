@@ -106,6 +106,12 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     $routes->post('decorations/delete/(:num)', 'Admin\DecorationController::delete/$1');
     $routes->post('decorations/toggle-active/(:num)', 'Admin\DecorationController::toggleActive/$1');
 
+    // Custom Placement (Freeform Coordinates)
+    $routes->get('custom-placements', 'Admin\CustomPlacementController::index');
+    $routes->post('custom-placements/save', 'Admin\CustomPlacementController::save');
+    $routes->post('custom-placements/delete/(:num)', 'Admin\CustomPlacementController::delete/$1');
+    $routes->post('custom-placements/toggle/(:num)', 'Admin\CustomPlacementController::toggle/$1');
+
     // Events Manager
     $routes->get('events', 'Admin\EventController::index');
     $routes->get('events/manage/(:num)', 'Admin\EventController::manage/$1');

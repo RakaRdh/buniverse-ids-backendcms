@@ -95,6 +95,10 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
                         <span>Section Decorations</span>
                     </a>
+                    <a href="<?= base_url('admin/custom-placements') ?>" class="nav-item <?= ($activeMenu ?? '') === 'custom-placements' ? 'active' : '' ?>">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3m0 14v3M2 12h3m14 0h3"></path></svg>
+                        <span>Custom Placement</span>
+                    </a>
 
                     <div class="nav-section-label">System</div>
                     <a href="<?= base_url('admin/users') ?>" class="nav-item <?= ($activeMenu ?? '') === 'users' ? 'active' : '' ?>">
