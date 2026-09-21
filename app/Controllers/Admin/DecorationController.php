@@ -28,7 +28,7 @@ class DecorationController extends BaseAdminController
 
         $this->data['decorations']   = $decorations;
         $this->data['sections']      = $this->sections;
-        $this->data['defaultImage']  = 'assets/img/disc.png';
+        $this->data['defaultImage']  = 'assets/img/cakram.webp';
         $this->data['pageTitle']     = 'Section Decorations';
         $this->data['activeMenu']    = 'decorations';
 
@@ -59,6 +59,10 @@ class DecorationController extends BaseAdminController
         $opacity            = (float)$this->request->getPost('opacity') ?: 1.00;
         $isRotated          = $this->request->getPost('is_rotated') ? 1 : 0;
         $rotationDirection  = $this->request->getPost('rotation_direction') ?: 'clockwise';
+        $perspectiveEnabled = $this->request->getPost('perspective_enabled') ? 1 : 0;
+        $perspectiveValue   = $this->request->getPost('perspective_value') !== null ? (int)$this->request->getPost('perspective_value') : 800;
+        $rotateX            = $this->request->getPost('rotate_x') !== null ? (float)$this->request->getPost('rotate_x') : 0.0;
+        $rotateY            = $this->request->getPost('rotate_y') !== null ? (float)$this->request->getPost('rotate_y') : 0.0;
         $showOnMobile       = $this->request->getPost('show_on_mobile') ? 1 : 0;
         $isActive           = $this->request->getPost('is_active') !== null ? (int)$this->request->getPost('is_active') : 1;
         $userId             = $this->currentAdmin['id'] ?? session()->get('admin_id') ?? session()->get('admin_user')['id'] ?? 1;
@@ -78,7 +82,7 @@ class DecorationController extends BaseAdminController
         }
 
         // Image handling
-        $imageUrl = $existing['image_url'] ?? 'assets/img/disc.png';
+        $imageUrl = $existing['image_url'] ?? 'assets/img/cakram.webp';
         $imageFile = $this->request->getFile('image_file');
         if ($imageFile && $imageFile->isValid() && !$imageFile->hasMoved()) {
             $newName = $imageFile->getRandomName();
@@ -104,11 +108,15 @@ class DecorationController extends BaseAdminController
             'image_url'           => $imageUrl,
             'size_px'            => $sizePx,
             'opacity'            => $opacity,
-            'is_rotated'         => $isRotated,
-            'rotation_direction' => $rotationDirection,
-            'show_on_mobile'     => $showOnMobile,
-            'is_active'          => $isActive,
-            'updated_by'         => $userId,
+            'is_rotated'          => $isRotated,
+            'rotation_direction'  => $rotationDirection,
+            'perspective_enabled' => $perspectiveEnabled,
+            'perspective_value'   => $perspectiveValue,
+            'rotate_x'            => $rotateX,
+            'rotate_y'            => $rotateY,
+            'show_on_mobile'      => $showOnMobile,
+            'is_active'           => $isActive,
+            'updated_by'          => $userId,
         ];
 
         if ($existing) {

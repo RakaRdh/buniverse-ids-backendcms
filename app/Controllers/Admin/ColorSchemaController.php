@@ -16,8 +16,10 @@ class ColorSchemaController extends BaseAdminController
 
         $themeModel = new EventThemePropertyModel();
         $grouped = $themeModel->getGroupedByEvent($eventId);
+        $palette = $themeModel->getPaletteForPicker($eventId);
 
         $this->data['groupedProperties'] = $grouped;
+        $this->data['palettePicker']     = $palette;
         $this->data['pageTitle']         = 'Color Schema & CSS Variables';
         $this->data['activeMenu']        = 'color_schema';
 

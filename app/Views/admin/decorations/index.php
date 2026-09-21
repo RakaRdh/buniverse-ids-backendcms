@@ -223,11 +223,11 @@
                 <label class="form-label" style="font-weight:600; color:var(--text-strong);">Decoration Image</label>
                 <div style="display:flex; gap:12px; align-items:center;">
                     <div style="width:52px; height:52px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;">
-                        <img id="modalPreviewImg" src="<?= base_url('assets/img/disc.png') ?>" alt="disc" style="max-width:44px; max-height:44px; object-fit:contain;">
+                        <img id="modalPreviewImg" src="<?= base_url('assets/img/cakram.webp') ?>" alt="cakram" style="max-width:44px; max-height:44px; object-fit:contain;">
                     </div>
                     <div style="flex:1;">
                         <input type="file" name="image_file" class="form-control" accept="image/*" onchange="previewModalImage(this)">
-                        <small style="color:var(--text-muted); display:block; margin-top:4px;">Leave empty to use default <code>assets/img/disc.png</code></small>
+                        <small style="color:var(--text-muted); display:block; margin-top:4px;">Leave empty to use default <code>assets/img/cakram.webp</code></small>
                     </div>
                 </div>
             </div>
@@ -258,6 +258,31 @@
                         <option value="clockwise">Clockwise (Searah jarum jam)</option>
                         <option value="counter-clockwise">Counter-Clockwise (Berlawanan arah jarum jam)</option>
                     </select>
+                </div>
+            </div>
+
+            <!-- 3D Perspective Settings -->
+            <div class="form-group" style="margin-bottom:14px; padding:12px; background:rgba(0,0,0,0.25); border-radius:var(--radius-md); border:1px solid rgba(255,255,255,0.06);">
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:600; color:var(--text-strong); font-size:13px;">
+                    <input type="checkbox" name="perspective_enabled" id="decPerspectiveEnabled" value="1" onchange="togglePerspectiveFields(this.checked)">
+                    Enable 3D Perspective & Tilt
+                </label>
+                <div id="perspectiveContainer" style="display:none; margin-top:10px;">
+                    <div class="row">
+                        <div class="col-md-4 form-group">
+                            <label class="form-label" style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">Perspective (px)</label>
+                            <input type="number" name="perspective_value" id="decPerspectiveValue" class="form-control" value="800" min="100" max="3000">
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label class="form-label" style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">Rotate X (°)</label>
+                            <input type="number" name="rotate_x" id="decRotateX" class="form-control" value="0.0" step="0.5" min="-90" max="90">
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label class="form-label" style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">Rotate Y (°)</label>
+                            <input type="number" name="rotate_y" id="decRotateY" class="form-control" value="0.0" step="0.5" min="-90" max="90">
+                        </div>
+                    </div>
+                    <small style="color:var(--text-muted); font-size:11px; display:block; margin-top:2px;">Beri kemiringan sudut 3D pada cakram dekorasi.</small>
                 </div>
             </div>
 
@@ -301,6 +326,11 @@ function toggleRotationFields(enabled) {
     dir.style.display = enabled ? 'block' : 'none';
 }
 
+function togglePerspectiveFields(enabled) {
+    const persp = document.getElementById('perspectiveContainer');
+    persp.style.display = enabled ? 'block' : 'none';
+}
+
 function previewModalImage(input) {
     const preview = document.getElementById('modalPreviewImg');
     if (input.files && input.files[0]) {
@@ -337,6 +367,11 @@ function openAddModal() {
     document.getElementById('decIsRotated').checked = false;
     toggleRotationFields(false);
     document.getElementById('decRotationDirection').value = 'clockwise';
+    document.getElementById('decPerspectiveEnabled').checked = false;
+    togglePerspectiveFields(false);
+    document.getElementById('decPerspectiveValue').value = '800';
+    document.getElementById('decRotateX').value = '0.0';
+    document.getElementById('decRotateY').value = '0.0';
     document.getElementById('decShowOnMobile').checked = false;
     document.getElementById('decIsActive').checked = true;
     document.getElementById('modalPreviewImg').src = defaultDiscUrl;
@@ -384,6 +419,13 @@ function openEditModal(data) {
     document.getElementById('decIsRotated').checked = isRot;
     toggleRotationFields(isRot);
     document.getElementById('decRotationDirection').value = data.rotation_direction || 'clockwise';
+
+    const isPersp = parseInt(data.perspective_enabled) === 1;
+    document.getElementById('decPerspectiveEnabled').checked = isPersp;
+    togglePerspectiveFields(isPersp);
+    document.getElementById('decPerspectiveValue').value = data.perspective_value || 800;
+    document.getElementById('decRotateX').value = data.rotate_x !== undefined ? data.rotate_x : 0;
+    document.getElementById('decRotateY').value = data.rotate_y !== undefined ? data.rotate_y : 0;
 
     document.getElementById('decShowOnMobile').checked = parseInt(data.show_on_mobile) === 1;
     document.getElementById('decIsActive').checked = parseInt(data.is_active) === 1;

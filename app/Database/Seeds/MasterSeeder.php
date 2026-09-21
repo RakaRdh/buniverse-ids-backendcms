@@ -190,7 +190,7 @@ class MasterSeeder extends Seeder
                 'slug'       => $spk['slug'],
                 'name'       => $spk['name'],
                 'role_text'  => $spk['role'],
-                'photo_url'  => null, // placeholder default
+                'photo_url'  => ($spk['slug'] === 'prabowo-subianto') ? 'speakers.png' : null,
                 'sort_order' => $spkSort++,
                 'is_active'  => 1,
                 'created_by' => $adminId,

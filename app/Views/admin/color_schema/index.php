@@ -91,8 +91,46 @@
                                     </code>
                                 </div>
 
-                                <?php if ($valType === 'solid' || $valType === 'gradient'): ?>
-                                    <div style="display: flex; gap: 8px; align-items: center;">
+                                <?php if ($catKey === 'fonts'): ?>
+                                    <!-- Typography & Font Preset Selector -->
+                                    <?php
+                                        $commonFontPresets = [
+                                            "'Manrope', 'Montserrat', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" => "Manrope (Modern Clean UI - Recommended)",
+                                            "'Montserrat', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" => "Montserrat (Geometric Brand Sans)",
+                                            "'Plus Jakarta Sans', 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" => "Plus Jakarta Sans (Indonesian Tech Sans)",
+                                            "'Playfair Display', Georgia, Cambria, 'Times New Roman', Times, serif" => "Playfair Display (Editorial Luxury Serif)",
+                                            "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" => "Inter (System Standard UI)",
+                                            "'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" => "Roboto (Classic Sans)",
+                                        ];
+                                        $matchesPreset = false;
+                                        foreach ($commonFontPresets as $fStack => $fLabel) {
+                                            if (trim($val) === trim($fStack)) {
+                                                $matchesPreset = true;
+                                                break;
+                                            }
+                                        }
+                                    ?>
+                                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                                        <select class="form-control" onchange="const inp = document.getElementById('input_val_<?= $pId ?>'); if (this.value !== 'custom') { inp.value = this.value; inp.style.display = 'none'; } else { inp.style.display = 'block'; }">
+                                            <?php foreach ($commonFontPresets as $fStack => $fLabel): ?>
+                                                <option value="<?= esc($fStack) ?>" <?= trim($val) === trim($fStack) ? 'selected' : '' ?>>
+                                                    <?= esc($fLabel) ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                            <option value="custom" <?= !$matchesPreset ? 'selected' : '' ?>>Custom Stack (Manual Input)...</option>
+                                        </select>
+                                        <input type="text"
+                                               id="input_val_<?= $pId ?>"
+                                               name="properties[<?= $pId ?>][value]"
+                                               class="form-control"
+                                               value="<?= esc($val) ?>"
+                                               style="font-family: monospace; font-size: 12px; <?= $matchesPreset ? 'display: none;' : '' ?>"
+                                               placeholder="Enter custom font-family stack...">
+                                        <input type="hidden" name="properties[<?= $pId ?>][type]" value="text">
+                                    </div>
+
+                                <?php elseif ($valType === 'solid' || $valType === 'gradient'): ?>
+                                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                                         <!-- Color Picker / Swatch Preview -->
                                         <?php if ($isHex): ?>
                                             <input type="color"
@@ -111,16 +149,47 @@
                                                name="properties[<?= $pId ?>][value]"
                                                class="form-control"
                                                value="<?= esc($val) ?>"
-                                               style="font-family: monospace; font-size: 13px;"
+                                               style="font-family: monospace; font-size: 13px; flex: 1; min-width: 130px;"
                                                oninput="const pv = document.getElementById('preview_<?= $pId ?>'); if(pv) pv.style.background = this.value;">
 
-                                        <select name="properties[<?= $pId ?>][type]" class="form-control" style="width: 105px; flex-shrink: 0; font-size: 12px;">
+                                        <select name="properties[<?= $pId ?>][type]" class="form-control" style="width: 95px; flex-shrink: 0; font-size: 12px;">
                                             <option value="solid" <?= $valType === 'solid' ? 'selected' : '' ?>>Solid</option>
                                             <option value="gradient" <?= $valType === 'gradient' ? 'selected' : '' ?>>Gradient</option>
                                         </select>
+
+                                        <?php if ($catKey === 'semantic' && !empty($palettePicker)): ?>
+                                            <!-- Palette Token Quick Select -->
+                                            <div style="width: 100%; margin-top: 4px;">
+                                                <select class="form-control" style="font-size: 11.5px; padding: 4px 8px; color: var(--text-muted);"
+                                                        onchange="if(this.value){ document.getElementById('input_val_<?= $pId ?>').value = this.value; const pv = document.getElementById('preview_<?= $pId ?>'); if(pv) pv.style.background = this.value; }">
+                                                    <option value="">-- Pilih dari Palette Warna (Primary 1 / 2) --</option>
+                                                    <optgroup label="Primary 1 (Brand Deep Palette)">
+                                                        <?php foreach ($palettePicker as $pal): ?>
+                                                            <?php if ($pal['category'] === 'primary-1'): ?>
+                                                                <option value="<?= esc($pal['value']) ?>"><?= esc($pal['label']) ?></option>
+                                                            <?php endif; ?>
+                                                        <?php endforeach; ?>
+                                                    </optgroup>
+                                                    <optgroup label="Primary 2 (Accent Palette)">
+                                                        <?php foreach ($palettePicker as $pal): ?>
+                                                            <?php if ($pal['category'] === 'primary-2'): ?>
+                                                                <option value="<?= esc($pal['value']) ?>"><?= esc($pal['label']) ?></option>
+                                                            <?php endif; ?>
+                                                        <?php endforeach; ?>
+                                                    </optgroup>
+                                                    <optgroup label="Neutrals">
+                                                        <?php foreach ($palettePicker as $pal): ?>
+                                                            <?php if ($pal['category'] === 'neutral'): ?>
+                                                                <option value="<?= esc($pal['value']) ?>"><?= esc($pal['label']) ?></option>
+                                                            <?php endif; ?>
+                                                        <?php endforeach; ?>
+                                                    </optgroup>
+                                                </select>
+                                            </div>
+                                        <?php endif; ?>
                                     </div>
                                 <?php else: ?>
-                                    <!-- Text / Dimension Property (e.g. font-family, container width) -->
+                                    <!-- Text / Dimension Property (e.g. container width, spacing) -->
                                     <div style="display: flex; gap: 8px; align-items: center;">
                                         <input type="text"
                                                name="properties[<?= $pId ?>][value]"

@@ -97,7 +97,7 @@ class FrontendDataSeeder extends Seeder
         $db->table('event_settings')->insert([
             'event_id'      => $eventId,
             'ticket_url'    => '#tickets',
-            'logo_a_url'    => 'assets/img/logo_ids26.png',
+            'logo_a_url'    => 'assets/img/logo_ids26.webp',
             'logo_b_url'    => 'assets/img/logo_id.png',
             'facebook_url'  => 'https://facebook.com/investordaily',
             'instagram_url' => 'https://instagram.com/investordaily',
@@ -471,12 +471,12 @@ class FrontendDataSeeder extends Seeder
             }
         }
 
-        // 13. Gallery Images (7 accordion photos from Frontend gallery.php with gallery4.svg featured)
+        // 13. Gallery Images (7 accordion photos from Frontend gallery.php with gallery4.webp featured)
         $db->table('gallery_images')->where('event_id', $eventId)->delete();
         for ($i = 1; $i <= 7; $i++) {
             $db->table('gallery_images')->insert([
                 'event_id'    => $eventId,
-                'image_url'   => "assets/img/gallery{$i}.svg",
+                'image_url'   => "assets/img/gallery{$i}.webp",
                 'caption'     => "Investor Daily Summit Highlight {$i}",
                 'is_featured' => ($i === 4) ? 1 : 0,
                 'sort_order'  => $i,
@@ -486,6 +486,17 @@ class FrontendDataSeeder extends Seeder
                 'updated_at'  => date('Y-m-d H:i:s'),
             ]);
         }
+
+        // 13b. Single Consolidated Sponsors & Partnerships Banner (sponsors.webp)
+        $db->table('sponsors_partnerships')->where('event_id', $eventId)->delete();
+        $db->table('sponsors_partnerships')->insert([
+            'event_id'   => $eventId,
+            'name'       => 'Sponsors & Partnerships',
+            'logo_url'   => 'assets/img/sponsors.webp',
+            'updated_by' => $adminId,
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
 
         // 14. Sponsor Tiers and Sponsors (Brief §1.9 and Frontend sponsors.php)
         $db->table('sponsors')->where('event_id', $eventId)->delete();
@@ -580,6 +591,9 @@ class FrontendDataSeeder extends Seeder
         $db->table('sponsors')->insert(['event_id' => $eventId, 'tier_id' => $tierPartId, 'name' => 'Partner 2', 'logo_url' => 'assets/img/sponsor5.png', 'sort_order' => 2, 'created_by' => $adminId, 'updated_by' => $adminId, 'created_at' => date('Y-m-d H:i:s')]);
         $db->table('sponsors')->insert(['event_id' => $eventId, 'tier_id' => $tierPartId, 'name' => 'Partner 3', 'logo_url' => 'assets/img/sponsor6.png', 'sort_order' => 3, 'created_by' => $adminId, 'updated_by' => $adminId, 'created_at' => date('Y-m-d H:i:s')]);
         $db->table('sponsors')->insert(['event_id' => $eventId, 'tier_id' => $tierPartId, 'name' => 'Partner 4', 'logo_url' => 'assets/img/sponsor7.png', 'sort_order' => 4, 'created_by' => $adminId, 'updated_by' => $adminId, 'created_at' => date('Y-m-d H:i:s')]);
+
+        // 15. Clear section decorations (temporarily empty per user request)
+        $db->table('section_decorations')->where('event_id', $eventId)->delete();
 
         echo "Frontend mock content seeded into idscms2026 successfully.\n";
     }

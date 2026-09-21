@@ -219,6 +219,7 @@ class EventApiController extends ResourceController
                 $sessionItem = [
                     'id'           => (int)$sess['id'],
                     'title'        => $sess['title'],
+                    'subtitle'     => $sess['subtitle'] ?? '',
                     'description'  => $sess['description'] ?? '',
                     'time'         => substr($sess['start_time'], 0, 5) . ' - ' . substr($sess['end_time'], 0, 5) . ' WIB',
                     'start_time'   => substr($sess['start_time'], 0, 5),
@@ -404,9 +405,13 @@ class EventApiController extends ResourceController
                 'image_url'           => $makeUrl($dec['image_url']),
                 'size_px'            => (int)$dec['size_px'],
                 'opacity'            => (float)$dec['opacity'],
-                'is_rotated'         => (bool)$dec['is_rotated'],
-                'rotation_direction' => $dec['rotation_direction'] ?? 'clockwise',
-                'show_on_mobile'     => (bool)$dec['show_on_mobile'],
+                'is_rotated'          => (bool)$dec['is_rotated'],
+                'rotation_direction'  => $dec['rotation_direction'] ?? 'clockwise',
+                'perspective_enabled' => (bool)($dec['perspective_enabled'] ?? false),
+                'perspective_value'   => (int)($dec['perspective_value'] ?? 800),
+                'rotate_x'            => (float)($dec['rotate_x'] ?? 0),
+                'rotate_y'            => (float)($dec['rotate_y'] ?? 0),
+                'show_on_mobile'      => (bool)$dec['show_on_mobile'],
             ];
         }
 
