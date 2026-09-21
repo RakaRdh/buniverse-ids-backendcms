@@ -71,7 +71,7 @@
                 </div>
 
                 <div id="cat_<?= esc($catKey) ?>" class="cms-card-body" style="display: <?= $catInfo['open'] ? 'block' : 'none' ?>; padding: 20px;">
-                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 18px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px;">
                         <?php foreach ($props as $p): ?>
                             <?php
                                 $val = $p['css_value'];

@@ -10,7 +10,7 @@
 </div>
 
 <!-- ROW 1: 4 KPI Summary Cards + Registration Telemetry Summary -->
-<div class="dashboard-kpi-grid" style="display: grid; grid-template-columns: repeat(4, 1fr) 1.2fr; gap: 16px; margin-bottom: 24px;">
+<div class="dashboard-kpi-grid metric-grid-5">
     <!-- Confirmed Speakers -->
     <div class="metric-card" style="padding: 16px;">
         <div class="metric-icon-box teal">

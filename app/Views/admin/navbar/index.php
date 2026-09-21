@@ -14,7 +14,7 @@
 <form id="navbarForm" action="<?= base_url('admin/navbar/update') ?>" method="POST" enctype="multipart/form-data">
     <?= csrf_field() ?>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start;">
+    <div class="form-grid-2" style="gap: 24px; align-items: start;">
         
         <!-- Column 1: Branding Logos & Navigation Links -->
         <div style="display: flex; flex-direction: column; gap: 24px;">
@@ -98,7 +98,7 @@
                 </div>
                 <div class="cms-card-body" style="padding: 20px;">
                     <!-- CTA Label & URL -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px;">
+                    <div class="form-grid-2" style="gap: 14px; margin-bottom: 20px;">
                         <div class="form-group" style="margin-bottom: 0;">
                             <label class="form-label" style="font-weight: 600;">Button Text / Label</label>
                             <input type="text" id="cta_label_input" name="cta_label" value="<?= esc($settings['cta_label'] ?? 'Get Tickets') ?>" class="form-control" oninput="updateLivePreview()">
