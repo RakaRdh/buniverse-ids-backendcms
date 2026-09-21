@@ -129,6 +129,13 @@
             <!-- Top Utility Bar 48px (§6.2) -->
             <header class="app-topbar">
                 <div class="topbar-left">
+                    <button type="button" class="btn-sidebar-toggle" id="btnSidebarToggle" aria-label="Toggle Navigation Menu">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
                     <div class="topbar-event-title">
                         <span class="topbar-prefix">Edition:</span>
                         <strong><?= esc($activeEvent['title'] ?? 'Investor Daily Summit') ?> (<?= esc($activeEvent['year'] ?? date('Y')) ?>)</strong>
@@ -136,17 +143,15 @@
                 </div>
 
                 <div class="topbar-right">
-                    <?php if ($activeEvent): ?>
-                        <span class="status-pill status-<?= esc($activeEvent['status']) ?>">
-                            <?= esc(ucfirst($activeEvent['status'])) ?>
-                        </span>
-                    <?php endif; ?>
                     <a href="<?= base_url('admin/events') ?>" class="btn-topbar-edition" title="Switch Event Edition">
                         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                         <span>Event Editions</span>
                     </a>
                 </div>
             </header>
+
+            <!-- Backdrop for Mobile Sidebar Drawer -->
+            <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
             <!-- Page Content Canvas (max-width 1160px left-aligned) -->
             <main class="app-content">
@@ -166,6 +171,47 @@
             </main>
         </div>
     </div>
+
+    <!-- Mobile Drawer Interaction Script -->
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const toggleBtn = document.getElementById('btnSidebarToggle');
+        const sidebar = document.querySelector('.app-sidebar');
+        const backdrop = document.getElementById('sidebarBackdrop');
+
+        function openDrawer() {
+            if (sidebar) sidebar.classList.add('is-open');
+            if (backdrop) backdrop.classList.add('is-open');
+            document.body.classList.add('sidebar-drawer-open');
+        }
+
+        function closeDrawer() {
+            if (sidebar) sidebar.classList.remove('is-open');
+            if (backdrop) backdrop.classList.remove('is-open');
+            document.body.classList.remove('sidebar-drawer-open');
+        }
+
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', () => {
+                if (sidebar && sidebar.classList.contains('is-open')) {
+                    closeDrawer();
+                } else {
+                    openDrawer();
+                }
+            });
+        }
+
+        if (backdrop) {
+            backdrop.addEventListener('click', closeDrawer);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && sidebar && sidebar.classList.contains('is-open')) {
+                closeDrawer();
+            }
+        });
+    });
+    </script>
 </body>
 </html>
 

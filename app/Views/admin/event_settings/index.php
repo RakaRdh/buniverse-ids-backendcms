@@ -6,7 +6,7 @@
 </div>
 
 <!-- Sub-navigation Tabs -->
-<div class="filter-tabs" style="margin-bottom: 24px;">
+<!-- <div class="filter-tabs" style="margin-bottom: 24px;">
     <a href="<?= base_url('admin/event-settings?tab=general') ?>" class="filter-tab <?= ($activeTab === 'general') ? 'active' : '' ?>">
         General Settings
     </a>
@@ -16,7 +16,7 @@
     <a href="<?= base_url('admin/footer') ?>" class="filter-tab">
         Footer Settings &rarr;
     </a>
-</div>
+</div> -->
 
 <?php if ($activeTab === 'general'): ?>
     <!-- TAB 1: GENERAL (events table) -->

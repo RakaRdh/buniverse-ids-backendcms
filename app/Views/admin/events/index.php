@@ -15,9 +15,6 @@
                     <img src="<?= base_url('assets/img/image1.png') ?>" alt="<?= esc($evt['title'] ?? '') ?>" class="event-card-img">
                     <div class="event-card-overlay"></div>
                     <div class="event-card-year-badge"><?= esc($evt['year']) ?></div>
-                    <span class="status-pill status-<?= esc($evt['status']) ?> event-card-status">
-                        <?= esc(ucfirst($evt['status'])) ?>
-                    </span>
                 </div>
 
                 <!-- Event Details Body -->

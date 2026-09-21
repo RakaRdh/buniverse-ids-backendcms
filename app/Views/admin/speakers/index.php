@@ -1,35 +1,43 @@
 <div class="page-header">
     <div>
         <h1 class="page-title">Summit Speakers</h1>
-        <p class="page-subtitle">Manage speakers, keynote panelists, profile photos, and track ordering for <?= esc($activeEvent['name'] ?? '') ?></p>
+        <p class="page-subtitle">Drag and drop to rearrange speaker display order, or edit speaker details for <?= esc($activeEvent['name'] ?? '') ?></p>
     </div>
-    <a href="<?= base_url('admin/speakers/new') ?>" class="btn btn-gold">+ Add New Speaker</a>
+    <div style="display: flex; gap: 10px; align-items: center;">
+        <span id="reorderStatus" style="font-size: 13px; font-weight: 600; color: #22c55e; display: none;">Order Saved!</span>
+        <a href="<?= base_url('admin/speakers/new') ?>" class="btn btn-gold">+ Add New Speaker</a>
+    </div>
 </div>
 
 <div class="cms-card">
     <div class="card-title-bar">
         <span class="card-title-text">All Speakers (<?= count($speakers) ?>)</span>
+        <span style="font-size: 12px; color: var(--text-muted);">Tip: Drag rows via the &#9776; icon to reorder</span>
     </div>
     <div class="table-responsive">
-        <table class="cms-table">
+        <table class="cms-table" id="speakersTable">
             <thead>
                 <tr>
+                    <th style="width: 40px; text-align: center;">#</th>
                     <th style="width: 70px;">Photo</th>
                     <th style="width: 280px;">Name</th>
                     <th>Role / Title</th>
                     <th style="text-align: right; width: 140px;">Actions</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="sortableSpeakers">
                 <?php if (!empty($speakers)): ?>
                     <?php foreach ($speakers as $spk): ?>
-                        <tr>
+                        <tr data-id="<?= $spk['id'] ?>" class="draggable-speaker-row" style="cursor: move;">
+                            <td style="text-align: center; color: var(--text-muted); cursor: grab;" class="drag-handle" title="Drag to reorder">
+                                <span style="font-size: 18px; line-height: 1;">&#9776;</span>
+                            </td>
                             <td>
                                 <?php if (!empty($spk['photo_url'])): ?>
                                     <img src="<?= base_url(esc($spk['photo_url'])) ?>" alt="<?= esc($spk['name']) ?>" style="width: 64px; height: 85px; border-radius: var(--radius-card); object-fit: cover; background: var(--primary-1-7); border: 1.5px solid var(--line); box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
                                 <?php else: ?>
                                     <div style="width: 64px; height: 85px; border-radius: var(--radius-card); background: var(--primary-1-7); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: #ffffff; border: 1.5px solid var(--line);">
-                                        <?= strtoupper(substr($spk['name'], 0, 1)) ?>
+                                        <img src="<?= base_url(esc('assets/img/placeholder.png')) ?>" alt="<?= esc($spk['name']) ?>" style="width: 64px; height: 85px; border-radius: var(--radius-card); object-fit: cover; background: var(--primary-1-7); border: 1.5px solid var(--line); box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
                                     </div>
                                 <?php endif; ?>
                             </td>
@@ -48,7 +56,7 @@
                     <?php endforeach; ?>
                 <?php else: ?>
                     <tr>
-                        <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                        <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 30px;">
                             No speakers found for this event. Click "+ Add New Speaker" to create one.
                         </td>
                     </tr>
@@ -57,3 +65,56 @@
         </table>
     </div>
 </div>
+
+<!-- SortableJS library for smooth drag-and-drop -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const tbody = document.getElementById('sortableSpeakers');
+    const statusMsg = document.getElementById('reorderStatus');
+    if (!tbody || typeof Sortable === 'undefined') return;
+
+    Sortable.create(tbody, {
+        animation: 150,
+        handle: '.drag-handle',
+        ghostClass: 'sortable-ghost',
+        onEnd: function() {
+            const rows = tbody.querySelectorAll('tr[data-id]');
+            const order = [];
+            rows.forEach(r => {
+                const id = r.getAttribute('data-id');
+                if (id) order.push(id);
+            });
+
+            // Post reordered array to backend
+            const formData = new FormData();
+            order.forEach((id, idx) => {
+                formData.append('order[' + idx + ']', id);
+            });
+
+            fetch('<?= base_url('admin/speakers/reorder') ?>', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.status === 'success') {
+                    if (statusMsg) {
+                        statusMsg.style.display = 'inline-block';
+                        statusMsg.textContent = 'Order saved!';
+                        setTimeout(() => {
+                            statusMsg.style.display = 'none';
+                        }, 2500);
+                    }
+                }
+            })
+            .catch(err => {
+                console.error('Reorder error:', err);
+            });
+        }
+    });
+});
+</script>

@@ -6,6 +6,7 @@ use App\Models\EventHeroImageModel;
 use App\Models\EventHeroModel;
 use App\Models\EventModel;
 use App\Models\EventOverviewModel;
+use App\Models\EventSeoModel;
 use App\Models\EventSettingModel;
 use App\Models\EventThemePropertyModel;
 use App\Models\GalleryImageModel;
@@ -50,6 +51,7 @@ class EventApiController extends ResourceController
         $heroImageModel  = new EventHeroImageModel();
         $overviewModel   = new EventOverviewModel();
         $settingModel    = new EventSettingModel();
+        $seoModel        = new EventSeoModel();
         $speakerModel    = new SpeakerModel();
         $moderatorModel  = new ModeratorModel();
         $dayModel        = new ScheduleDayModel();
@@ -62,6 +64,7 @@ class EventApiController extends ResourceController
         // 1. Site Metadata & Branding
         $hero     = $heroModel->getByEventId($event['id']) ?? [];
         $settings = $settingModel->getByEventId($event['id']) ?? [];
+        $seo      = $seoModel->getByEventId($event['id']) ?? [];
 
         // Build URLs
         $makeUrl = function ($path) {
@@ -184,6 +187,7 @@ class EventApiController extends ResourceController
         foreach ($speakerRows as $sp) {
             $speakers[] = [
                 'id'        => (int)$sp['id'],
+                'slug'      => $sp['slug'] ?? url_title($sp['name'], '-', true),
                 'name'      => $sp['name'],
                 'role'      => $sp['role_text'] ?? '',
                 'bio'       => $sp['bio'] ?? '',
@@ -236,9 +240,13 @@ class EventApiController extends ResourceController
                 }
 
                 $sessionItem['speakers'] = [];
+                $sessionItem['speaker_ids'] = [];
                 foreach ($sess['speakers'] as $spk) {
+                    $spkSlug = $spk['slug'] ?? ('speaker-' . $spk['speaker_id']);
+                    $sessionItem['speaker_ids'][] = $spkSlug;
                     $sessionItem['speakers'][] = [
                         'id'    => (int)$spk['speaker_id'],
+                        'slug'  => $spkSlug,
                         'name'  => $spk['name'],
                         'role'  => $spk['role_text'] ?? '',
                         'photo' => $makeUrl($spk['photo_url'] ?? ''),
@@ -459,6 +467,11 @@ class EventApiController extends ResourceController
             'status' => 'success',
             'data'   => [
                 'site'                => $site,
+                'seo'                 => [
+                    'meta_title'       => $seo['meta_title'] ?? '',
+                    'meta_description' => $seo['meta_description'] ?? '',
+                    'og_image_url'     => $makeUrl($seo['og_image_url'] ?? ''),
+                ],
                 'hero_carousel'       => $heroCarousel,
                 'overview'            => $overview,
                 'economicModel'       => $economicModel,

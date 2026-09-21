@@ -124,3 +124,7 @@ _modules/*
 
 /results/
 /phpunit.xml
+
+# Public uploads
+public/uploads/events/*
+!public/uploads/events/.gitkeep
