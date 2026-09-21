@@ -139,6 +139,22 @@
                             </div>
                         </div>
 
+                        <!-- Dynamic Color Tinting via Mask-Image -->
+                        <div class="form-group" style="margin-bottom:12px; padding:10px 12px; background:rgba(0,0,0,0.2); border-radius:var(--radius-md); border:1px solid rgba(255,255,255,0.06);">
+                            <label class="form-label" style="font-weight:600; color:var(--text-strong); font-size:12px; display:flex; justify-content:space-between;">
+                                <span>Color Tinting (CSS mask)</span>
+                                <span style="font-size:10px; color:var(--gold);">Optional</span>
+                            </label>
+                            <div style="display:flex; gap:8px; align-items:center; margin-top:4px;">
+                                <input type="color" id="formTintColorPicker" value="#c5a880" oninput="document.getElementById('formTintColor').value = this.value" style="width:34px; height:32px; padding:2px; border-radius:4px; border:1px solid var(--line); background:none; cursor:pointer;">
+                                <input type="text" name="tint_color" id="formTintColor" class="form-control" placeholder="e.g. #ff5733" style="font-size:12px;" oninput="if(this.value.startsWith('#') && this.value.length===7) document.getElementById('formTintColorPicker').value = this.value">
+                                <button type="button" class="btn btn-sm btn-secondary" style="padding:4px 8px; font-size:11px;" onclick="document.getElementById('formTintColor').value='';">Clear</button>
+                            </div>
+                            <small style="color:var(--text-muted); font-size:10.5px; display:block; margin-top:4px;">
+                                Applies color over <code>decoration_white.png</code> mask.
+                            </small>
+                        </div>
+
                         <!-- Size & Opacity -->
                         <div class="row" style="margin-bottom:12px;">
                             <div class="col-md-6 form-group">
@@ -403,6 +419,7 @@ function startNewPlacement() {
     updateMarkerPosition(50.0, 50.0);
     document.getElementById('formSizePx').value = '220';
     document.getElementById('formOpacity').value = '1.00';
+    document.getElementById('formTintColor').value = '';
     document.getElementById('formIsRotated').checked = false;
     toggleFormRotation(false);
     document.getElementById('formRotationDir').value = 'clockwise';
@@ -424,6 +441,10 @@ function loadPlacementIntoStudio(data) {
     updateMarkerPosition(parseFloat(data.pos_x_percent) || 50.0, parseFloat(data.pos_y_percent) || 50.0);
     document.getElementById('formSizePx').value = data.size_px || 220;
     document.getElementById('formOpacity').value = data.opacity || '1.00';
+    document.getElementById('formTintColor').value = data.tint_color || '';
+    if (data.tint_color && data.tint_color.startsWith('#') && data.tint_color.length === 7) {
+        document.getElementById('formTintColorPicker').value = data.tint_color;
+    }
     
     const isRot = parseInt(data.is_rotated) === 1;
     document.getElementById('formIsRotated').checked = isRot;

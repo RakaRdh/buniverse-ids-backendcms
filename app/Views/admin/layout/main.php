@@ -89,6 +89,14 @@
                     </a>
 
                     <div class="nav-section-label">Media & partners</div>
+                    <a href="<?= base_url('admin/livestreams') ?>" class="nav-item <?= ($activeMenu ?? '') === 'livestreams' ? 'active' : '' ?>">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+                        <span>Live Stream</span>
+                    </a>
+                    <a href="<?= base_url('admin/news-portals') ?>" class="nav-item <?= ($activeMenu ?? '') === 'news_portals' ? 'active' : '' ?>">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1m2 13a2 2 0 0 1-2-2V7m2 13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
+                        <span>News Portals</span>
+                    </a>
                     <a href="<?= base_url('admin/gallery') ?>" class="nav-item <?= ($activeMenu ?? '') === 'gallery' ? 'active' : '' ?>">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
                         <span>Gallery</span>

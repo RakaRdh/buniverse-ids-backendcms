@@ -26,6 +26,7 @@ class SectionDecorationModel extends Model
         'image_url',
         'size_px',
         'opacity',
+        'tint_color',
         'is_rotated',
         'rotation_direction',
         'perspective_enabled',

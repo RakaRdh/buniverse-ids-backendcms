@@ -91,6 +91,7 @@ class CustomPlacementController extends BaseAdminController
             'show_on_mobile'     => $showOnMobile,
             'is_active'          => $isActive,
             'z_index'            => $zIndex,
+            'tint_color'         => $this->request->getPost('tint_color') ?: null,
             'updated_by'         => $userId,
         ];
 

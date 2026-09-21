@@ -53,6 +53,21 @@ class OverviewController extends BaseAdminController
             'updated_by' => $userId,
         ];
 
+        // Handle 4 collage images upload
+        $targetDir = FCPATH . 'uploads/events/' . $eventId . '/overview';
+        if (!is_dir($targetDir)) {
+            mkdir($targetDir, 0777, true);
+        }
+
+        for ($i = 1; $i <= 4; $i++) {
+            $file = $this->request->getFile('collage_img_' . $i);
+            if ($file && $file->isValid() && !$file->hasMoved()) {
+                $newName = $file->getRandomName();
+                $file->move($targetDir, $newName);
+                $overviewData['collage_img_' . $i] = 'uploads/events/' . $eventId . '/overview/' . $newName;
+            }
+        }
+
         $existing = $overviewModel->getByEventId($eventId);
         if ($existing) {
             $overviewModel->update($existing['id'], $overviewData);
@@ -62,6 +77,6 @@ class OverviewController extends BaseAdminController
             $overviewModel->insert($overviewData);
         }
 
-        return redirect()->back()->with('success', 'Overview editorial narrative updated successfully.');
+        return redirect()->back()->with('success', 'Overview editorial narrative and collage images updated successfully.');
     }
 }

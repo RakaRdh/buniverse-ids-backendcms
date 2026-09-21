@@ -21,6 +21,7 @@ class CustomPlacementModel extends Model
         'pos_y_percent',
         'size_px',
         'opacity',
+        'tint_color',
         'is_rotated',
         'rotation_direction',
         'show_on_mobile',

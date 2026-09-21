@@ -114,6 +114,7 @@ class DecorationController extends BaseAdminController
             'perspective_value'   => $perspectiveValue,
             'rotate_x'            => $rotateX,
             'rotate_y'            => $rotateY,
+            'tint_color'          => $this->request->getPost('tint_color') ?: null,
             'show_on_mobile'      => $showOnMobile,
             'is_active'           => $isActive,
             'updated_by'          => $userId,

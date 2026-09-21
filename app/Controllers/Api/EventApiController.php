@@ -105,6 +105,12 @@ class EventApiController extends ResourceController
             'hero_image'          => $makeUrl($hero['hero_image_url'] ?? ''),
             'logo_a'              => $makeUrl($settings['logo_a_url'] ?? ''),
             'logo_b'              => $makeUrl($settings['logo_b_url'] ?? ''),
+            'logo_a_color'        => $makeUrl($settings['logo_a_url'] ?? ''),
+            'logo_a_white'        => $makeUrl($settings['logo_a_white'] ?? ''),
+            'logo_a_target_url'   => $settings['logo_a_target_url'] ?? '#home',
+            'logo_b_color'        => $makeUrl($settings['logo_b_url'] ?? ''),
+            'logo_b_white'        => $makeUrl($settings['logo_b_white'] ?? ''),
+            'logo_b_target_url'   => $settings['logo_b_target_url'] ?? 'https://investor.id',
             'logo_footer'         => $makeUrl(!empty($settings['logo_footer_url']) ? $settings['logo_footer_url'] : ($settings['logo_b_url'] ?? '')),
             'copyright'           => $settings['copyright_text'] ?? 'Investor Daily Summit.',
             'nav_items'           => $navItems,
@@ -126,7 +132,8 @@ class EventApiController extends ResourceController
             ],
             'contact'             => [
                 'email' => $settings['contact_email'] ?? '',
-                'phone' => $settings['contact_phone'] ?? '',
+                'phone' => $settings['contact_phone'] ?? '+62 855-1235-000',
+                'label' => $settings['contact_label'] ?? 'Phone',
             ],
             'news_tag_slug'       => $event['news_tag_slug'] ?? 'ids2026',
         ];
@@ -164,6 +171,12 @@ class EventApiController extends ResourceController
             'content'         => $overviewRow['body_text'] ?? '',
             'video_url'       => $overviewRow['video_url'] ?? '',
             'video_cover_url' => $makeUrl($overviewRow['video_cover_url'] ?? ''),
+            'collage_images'  => [
+                'img_1' => $makeUrl($overviewRow['collage_img_1'] ?? ''),
+                'img_2' => $makeUrl($overviewRow['collage_img_2'] ?? ''),
+                'img_3' => $makeUrl($overviewRow['collage_img_3'] ?? ''),
+                'img_4' => $makeUrl($overviewRow['collage_img_4'] ?? ''),
+            ],
             'stats'           => [
                 [
                     'number' => '8%',
@@ -180,6 +193,30 @@ class EventApiController extends ResourceController
             ],
         ];
         $economicModel = $overview;
+
+        // 3b. Livestream Settings
+        $livestreamModel = new \App\Models\EventLivestreamModel();
+        $livestreamRow = $livestreamModel->getActiveByEvent($event['id']);
+        $livestream = null;
+        if (!empty($livestreamRow)) {
+            $livestream = [
+                'title'       => $livestreamRow['title'] ?? 'Investor Daily Summit Live Broadcast',
+                'youtube_url' => $livestreamRow['youtube_url'] ?? 'https://www.youtube.com/watch?v=rFZHOHl-L8A',
+                'is_active'   => !empty($livestreamRow['is_active']),
+            ];
+        }
+
+        // 3c. News Portals
+        $portalModel = new \App\Models\NewsPortalModel();
+        $portalRows = $portalModel->getActiveByEvent($event['id']);
+        $newsPortals = [];
+        foreach ($portalRows as $pr) {
+            $newsPortals[$pr['portal_key']] = [
+                'name'      => $pr['portal_name'],
+                'url'       => $pr['portal_url'],
+                'is_active' => (bool)$pr['is_active'],
+            ];
+        }
 
         // 4. Speakers
         $speakers = [];
@@ -411,6 +448,7 @@ class EventApiController extends ResourceController
                 'perspective_value'   => (int)($dec['perspective_value'] ?? 800),
                 'rotate_x'            => (float)($dec['rotate_x'] ?? 0),
                 'rotate_y'            => (float)($dec['rotate_y'] ?? 0),
+                'tint_color'          => $dec['tint_color'] ?? null,
                 'show_on_mobile'      => (bool)$dec['show_on_mobile'],
             ];
         }
@@ -463,6 +501,7 @@ class EventApiController extends ResourceController
                 'opacity'            => (float)$cp['opacity'],
                 'is_rotated'         => (bool)$cp['is_rotated'],
                 'rotation_direction' => $cp['rotation_direction'] ?? 'clockwise',
+                'tint_color'         => $cp['tint_color'] ?? null,
                 'show_on_mobile'     => (bool)$cp['show_on_mobile'],
                 'z_index'            => (int)($cp['z_index'] ?? 1),
             ];
@@ -480,6 +519,8 @@ class EventApiController extends ResourceController
                 'hero_carousel'       => $heroCarousel,
                 'overview'            => $overview,
                 'economicModel'       => $economicModel,
+                'livestream'          => $livestream,
+                'news_portals'        => $newsPortals,
                 'speakers'            => $speakers,
                 'moderators'          => $moderators,
                 'schedule'            => $schedule,
@@ -505,7 +546,6 @@ class EventApiController extends ResourceController
         $clickModel->insert([
             'event_id'   => $event['id'],
             'clicked_at' => date('Y-m-d H:i:s'),
-            'ip_address' => $this->request->getIPAddress(),
             'user_agent' => substr((string)$this->request->getUserAgent(), 0, 500),
             'referrer'   => substr((string)$this->request->getServer('HTTP_REFERER'), 0, 500),
         ]);

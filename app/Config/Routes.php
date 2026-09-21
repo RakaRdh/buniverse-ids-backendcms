@@ -100,6 +100,16 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     $routes->post('sponsors/tier/delete/(:num)', 'Admin\SponsorController::deleteTier/$1');
     === END LEGACY ROUTES === */
 
+    // Live Stream Settings (Support both singular 'livestream' and plural 'livestreams')
+    $routes->get('livestreams', 'Admin\LivestreamController::index');
+    $routes->post('livestreams/update', 'Admin\LivestreamController::update');
+    $routes->get('livestream', 'Admin\LivestreamController::index');
+    $routes->post('livestream/update', 'Admin\LivestreamController::update');
+
+    // News Portals Links
+    $routes->get('news-portals', 'Admin\NewsPortalController::index');
+    $routes->post('news-portals/update', 'Admin\NewsPortalController::update');
+
     // Section Decorations (Cakram / Disc)
     $routes->get('decorations', 'Admin\DecorationController::index');
     $routes->post('decorations/save', 'Admin\DecorationController::save');

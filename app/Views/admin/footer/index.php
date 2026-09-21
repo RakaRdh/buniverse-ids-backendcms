@@ -51,6 +51,25 @@
                 </div>
             </div>
 
+            <!-- Card 1.5: Contact Support Details -->
+            <div class="cms-card" style="margin-bottom: 0;">
+                <div class="card-title-bar">
+                    <span class="card-title-text">Contact Information (Left Footer Box)</span>
+                </div>
+                <div class="cms-card-body" style="padding: 20px;">
+                    <div class="form-group" style="margin-bottom: 14px;">
+                        <label class="form-label" style="font-weight: 600;">Contact Label</label>
+                        <input type="text" name="contact_label" class="form-control" value="<?= esc($settings['contact_label'] ?? 'Phone') ?>" placeholder="e.g. Phone or Call Us">
+                        <div class="form-hint" style="font-size: 11px; color: var(--text-muted); margin-top: 3px;">Header text above the phone number in footer.</div>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" style="font-weight: 600;">Telephone / Hotline Number</label>
+                        <input type="text" name="contact_phone" class="form-control" value="<?= esc($settings['contact_phone'] ?? '+62 855-1235-000') ?>" placeholder="e.g. +62 855-1235-000">
+                        <div class="form-hint" style="font-size: 11px; color: var(--text-muted); margin-top: 3px;">Clicking on the icon/number opens tel: prompt.</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Card 2: Social Media Channels -->
             <div class="cms-card" style="margin-bottom: 0;">
                 <div class="card-title-bar">

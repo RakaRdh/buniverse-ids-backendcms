@@ -61,6 +61,8 @@ class FooterController extends BaseAdminController
 
         $settingData = [
             'copyright_text' => $this->request->getPost('copyright_text') ?: 'Investor Daily Summit.',
+            'contact_phone'  => $this->request->getPost('contact_phone') ?: '+62 855-1235-000',
+            'contact_label'  => $this->request->getPost('contact_label') ?: 'Phone',
             'instagram_url'  => $this->request->getPost('instagram_url'),
             'youtube_url'    => $this->request->getPost('youtube_url'),
             'facebook_url'   => $this->request->getPost('facebook_url'),

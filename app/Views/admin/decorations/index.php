@@ -232,6 +232,22 @@
                 </div>
             </div>
 
+            <!-- Dynamic Color Tinting via Mask-Image -->
+            <div class="form-group" style="margin-bottom:14px; padding:12px; background:rgba(0,0,0,0.25); border-radius:var(--radius-md); border:1px solid rgba(255,255,255,0.06);">
+                <label class="form-label" style="font-weight:600; color:var(--text-strong); display:flex; justify-content:space-between;">
+                    <span>Color Tinting (CSS mask-image)</span>
+                    <span style="font-size:11px; color:var(--gold);">Optional</span>
+                </label>
+                <div style="display:flex; gap:10px; align-items:center; margin-top:6px;">
+                    <input type="color" id="decTintColorPicker" value="#c5a880" oninput="document.getElementById('decTintColor').value = this.value" style="width:40px; height:36px; padding:2px; border-radius:4px; border:1px solid var(--line); background:none; cursor:pointer;">
+                    <input type="text" name="tint_color" id="decTintColor" class="form-control" placeholder="e.g. #ff5733 or var(--primary-1-3)" oninput="if(this.value.startsWith('#') && this.value.length===7) document.getElementById('decTintColorPicker').value = this.value">
+                    <button type="button" class="btn btn-sm btn-secondary" onclick="document.getElementById('decTintColor').value='';">Clear</button>
+                </div>
+                <small style="color:var(--text-muted); font-size:11px; display:block; margin-top:6px;">
+                    If specified, the white silhouette (<code>decoration_white.png</code>) will be recolored into this color via CSS mask. Leave empty to use normal original image.
+                </small>
+            </div>
+
             <!-- Size & Opacity -->
             <div class="row" style="margin-bottom:14px;">
                 <div class="col-md-6 form-group">
@@ -364,6 +380,7 @@ function openAddModal() {
     document.getElementById('edgeOffsetVal').innerText = '50%';
     document.getElementById('decSizePx').value = '220';
     document.getElementById('decOpacity').value = '1.00';
+    document.getElementById('decTintColor').value = '';
     document.getElementById('decIsRotated').checked = false;
     toggleRotationFields(false);
     document.getElementById('decRotationDirection').value = 'clockwise';
@@ -414,6 +431,10 @@ function openEditModal(data) {
 
     document.getElementById('decSizePx').value = data.size_px || 200;
     document.getElementById('decOpacity').value = data.opacity || '1.00';
+    document.getElementById('decTintColor').value = data.tint_color || '';
+    if (data.tint_color && data.tint_color.startsWith('#') && data.tint_color.length === 7) {
+        document.getElementById('decTintColorPicker').value = data.tint_color;
+    }
 
     const isRot = parseInt(data.is_rotated) === 1;
     document.getElementById('decIsRotated').checked = isRot;

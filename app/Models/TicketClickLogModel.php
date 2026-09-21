@@ -15,7 +15,6 @@ class TicketClickLogModel extends Model
     protected $allowedFields    = [
         'event_id',
         'clicked_at',
-        'ip_address',
         'user_agent',
         'referrer',
     ];

@@ -79,19 +79,23 @@ class NavbarController extends BaseAdminController
         }
 
         $settingData = [
-            'ticket_url' => $this->request->getPost('ticket_url'),
-            'cta_label'  => $this->request->getPost('cta_label') ?: 'Get Tickets',
-            'updated_by' => $userId,
+            'ticket_url'         => $this->request->getPost('ticket_url'),
+            'cta_label'          => $this->request->getPost('cta_label') ?: 'Get Tickets',
+            'logo_a_target_url'  => $this->request->getPost('logo_a_target_url') ?: '#home',
+            'logo_b_target_url'  => $this->request->getPost('logo_b_target_url') ?: 'https://investor.id',
+            'updated_by'         => $userId,
         ];
 
         if ($navItemsJson !== null) {
             $settingData['nav_items_json'] = $navItemsJson;
         }
 
-        // Handle brand logos upload (Logo A & Logo B)
+        // Handle brand logos upload (Logo A & Logo B - Color & White)
         $uploadMap = [
-            'logo_a_file' => 'logo_a_url',
-            'logo_b_file' => 'logo_b_url',
+            'logo_a_file'       => 'logo_a_url',
+            'logo_b_file'       => 'logo_b_url',
+            'logo_a_white_file' => 'logo_a_white',
+            'logo_b_white_file' => 'logo_b_white',
         ];
 
         foreach ($uploadMap as $inputName => $dbField) {

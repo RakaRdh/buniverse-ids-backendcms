@@ -26,27 +26,69 @@
                 </div>
                 <div class="cms-card-body" style="padding: 20px;">
                     <!-- Logo A -->
-                    <div class="form-group" style="margin-bottom: 20px;">
-                        <label class="form-label" style="font-weight: 600;">Logo 1 (Summit Event Logo)</label>
-                        <?php if (!empty($settings['logo_a_url'])): ?>
-                            <div style="margin-bottom: 10px; background: #072c40; padding: 12px; border-radius: 6px; display: inline-block;">
-                                <img src="<?= base_url($settings['logo_a_url']) ?>" alt="Logo A" style="max-height: 40px; display: block;">
+                    <div class="form-group" style="margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--line);">
+                        <label class="form-label" style="font-weight: 700;">Logo 1 (Summit Event Logo)</label>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 10px;">
+                            <div>
+                                <label class="form-label" style="font-size: 11.5px;">Color Version (Default)</label>
+                                <?php if (!empty($settings['logo_a_url'])): ?>
+                                    <div style="margin-bottom: 6px; background: #072c40; padding: 10px; border-radius: 6px; text-align: center;">
+                                        <img src="<?= base_url($settings['logo_a_url']) ?>" alt="Logo A Color" style="max-height: 36px; max-width: 100%; display: inline-block;">
+                                    </div>
+                                <?php endif; ?>
+                                <input type="file" name="logo_a_file" class="form-control" accept="image/*">
                             </div>
-                        <?php endif; ?>
-                        <input type="file" name="logo_a_file" class="form-control" accept="image/*">
-                        <div class="form-hint" style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px;">Recommended: Transparent PNG or SVG (~200x50px).</div>
+
+                            <div>
+                                <label class="form-label" style="font-size: 11.5px;">White Version (Monochrome)</label>
+                                <?php if (!empty($settings['logo_a_white'])): ?>
+                                    <div style="margin-bottom: 6px; background: #072c40; padding: 10px; border-radius: 6px; text-align: center;">
+                                        <img src="<?= base_url($settings['logo_a_white']) ?>" alt="Logo A White" style="max-height: 36px; max-width: 100%; display: inline-block;">
+                                    </div>
+                                <?php endif; ?>
+                                <input type="file" name="logo_a_white_file" class="form-control" accept="image/*">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="form-label" style="font-size: 12px; font-weight: 600;">Logo 1 Target URL (Operan Link)</label>
+                            <input type="text" name="logo_a_target_url" class="form-control" value="<?= esc($settings['logo_a_target_url'] ?? '#home') ?>" placeholder="#home or https://...">
+                            <div class="form-hint" style="font-size: 11px; color: var(--text-muted); margin-top: 3px;">Default: #home (scroll to hero)</div>
+                        </div>
                     </div>
 
                     <!-- Logo B -->
                     <div class="form-group" style="margin-bottom: 0;">
-                        <label class="form-label" style="font-weight: 600;">Logo 2 (Investor Daily Indonesia)</label>
-                        <?php if (!empty($settings['logo_b_url'])): ?>
-                            <div style="margin-bottom: 10px; background: #072c40; padding: 12px; border-radius: 6px; display: inline-block;">
-                                <img src="<?= base_url($settings['logo_b_url']) ?>" alt="Logo B" style="max-height: 40px; display: block;">
+                        <label class="form-label" style="font-weight: 700;">Logo 2 (Investor Daily Indonesia)</label>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 10px;">
+                            <div>
+                                <label class="form-label" style="font-size: 11.5px;">Color Version (Default)</label>
+                                <?php if (!empty($settings['logo_b_url'])): ?>
+                                    <div style="margin-bottom: 6px; background: #072c40; padding: 10px; border-radius: 6px; text-align: center;">
+                                        <img src="<?= base_url($settings['logo_b_url']) ?>" alt="Logo B Color" style="max-height: 36px; max-width: 100%; display: inline-block;">
+                                    </div>
+                                <?php endif; ?>
+                                <input type="file" name="logo_b_file" class="form-control" accept="image/*">
                             </div>
-                        <?php endif; ?>
-                        <input type="file" name="logo_b_file" class="form-control" accept="image/*">
-                        <div class="form-hint" style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px;">Recommended: Transparent PNG or SVG.</div>
+
+                            <div>
+                                <label class="form-label" style="font-size: 11.5px;">White Version (Monochrome)</label>
+                                <?php if (!empty($settings['logo_b_white'])): ?>
+                                    <div style="margin-bottom: 6px; background: #072c40; padding: 10px; border-radius: 6px; text-align: center;">
+                                        <img src="<?= base_url($settings['logo_b_white']) ?>" alt="Logo B White" style="max-height: 36px; max-width: 100%; display: inline-block;">
+                                    </div>
+                                <?php endif; ?>
+                                <input type="file" name="logo_b_white_file" class="form-control" accept="image/*">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="form-label" style="font-size: 12px; font-weight: 600;">Logo 2 Target URL (Operan Link)</label>
+                            <input type="text" name="logo_b_target_url" class="form-control" value="<?= esc($settings['logo_b_target_url'] ?? 'https://investor.id') ?>" placeholder="https://investor.id">
+                            <div class="form-hint" style="font-size: 11px; color: var(--text-muted); margin-top: 3px;">Default: https://investor.id (external portal)</div>
+                        </div>
                     </div>
                 </div>
             </div>
