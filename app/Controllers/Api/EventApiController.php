@@ -85,6 +85,122 @@ class EventApiController extends ResourceController
             ];
         }
 
+        // Resolve Master Logos and Section Placements
+        $placementModel = new \App\Models\SectionLogoPlacementModel();
+        $placementsRaw = $placementModel->getPlacementsWithLogos($event['id']);
+        $logoPlacements = [];
+        foreach ($placementsRaw as $pr) {
+            $logoPlacements[$pr['slot_key']] = [
+                'logo_id'    => $pr['logo_id'],
+                'name'       => $pr['logo_name'] ?? '',
+                'color_url'  => $makeUrl($pr['logo_url'] ?? ''),
+                'white_url'  => $makeUrl($pr['logo_white_url'] ?? ''),
+                'variant'    => $pr['variant'] ?? 'auto',
+                'target_url' => $pr['target_url'] ?? null,
+                'is_active'  => (bool)$pr['is_active'],
+            ];
+        }
+
+        // Helper to resolve slot logo image URL and target link based on variant
+        $resolveSlotLogo = function ($slotKey, $defaultTarget, $fallbackColorUrl, $fallbackWhiteUrl = null) use ($logoPlacements, $settings, $makeUrl) {
+            $slot = $logoPlacements[$slotKey] ?? null;
+            if ($slot && !empty($slot['is_active']) && (!empty($slot['color_url']) || !empty($slot['white_url']))) {
+                $variant = $slot['variant'] ?? 'auto';
+                $color = !empty($slot['color_url']) ? $slot['color_url'] : $slot['white_url'];
+                $white = !empty($slot['white_url']) ? $slot['white_url'] : $slot['color_url'];
+
+                if ($variant === 'color') {
+                    $activeLogo = $color;
+                } elseif ($variant === 'white') {
+                    $activeLogo = $white;
+                } else {
+                    // auto variant: return color as main, white as monochrome
+                    $activeLogo = $color;
+                }
+
+                $target = !empty($slot['target_url']) ? $slot['target_url'] : $defaultTarget;
+                return [
+                    'active_logo' => $activeLogo,
+                    'color_url'   => $color,
+                    'white_url'   => $white,
+                    'variant'     => $variant,
+                    'target_url'  => $target,
+                    'is_active'   => true,
+                ];
+            }
+
+            // Fallback to settings / defaults
+            $fColor = $makeUrl($fallbackColorUrl);
+            $fWhite = $fallbackWhiteUrl ? $makeUrl($fallbackWhiteUrl) : $fColor;
+            return [
+                'active_logo' => $fColor,
+                'color_url'   => $fColor,
+                'white_url'   => $fWhite,
+                'variant'     => 'auto',
+                'target_url'  => $defaultTarget,
+                'is_active'   => true,
+            ];
+        };
+
+        // Slot 1: Navbar Logo 1 (Summit Event Logo)
+        $slot1Resolved = $resolveSlotLogo(
+            'navbar_slot_1',
+            $settings['logo_a_target_url'] ?? '#home',
+            $settings['logo_a_url'] ?? 'assets/img/logo_ids26_color.webp',
+            $settings['logo_a_white_url'] ?? 'assets/img/logo_ids26_white.webp'
+        );
+
+        // Slot 2: Navbar Logo 2 (Investor Daily Indonesia)
+        $slot2Resolved = $resolveSlotLogo(
+            'navbar_slot_2',
+            $settings['logo_b_target_url'] ?? 'https://investor.id',
+            $settings['logo_b_url'] ?? 'assets/img/logo_id_color.webp',
+            $settings['logo_b_white_url'] ?? 'assets/img/logo_id_white.webp'
+        );
+
+        // Slot 3: Overview (About Us Section)
+        $slotOverviewResolved = $resolveSlotLogo(
+            'overview',
+            '#home',
+            $settings['logo_a_url'] ?? 'assets/img/logo_ids26_color.webp',
+            $settings['logo_a_white_url'] ?? 'assets/img/logo_ids26_white.webp'
+        );
+
+        // Slot 4: Floating Bottom Bar
+        $slotFloatingResolved = $resolveSlotLogo(
+            'floating_bottom',
+            $settings['logo_a_target_url'] ?? '#home',
+            $settings['logo_a_white_url'] ?? 'assets/img/logo_ids26_white.webp',
+            $settings['logo_a_white_url'] ?? 'assets/img/logo_ids26_white.webp'
+        );
+
+        // Slot 5: Footer
+        $slotFooterResolved = $resolveSlotLogo(
+            'footer',
+            $settings['logo_b_target_url'] ?? 'https://investor.id',
+            !empty($settings['logo_footer_url']) ? $settings['logo_footer_url'] : ($settings['logo_b_white_url'] ?? 'assets/img/logo_id_white.webp'),
+            $settings['logo_b_white_url'] ?? 'assets/img/logo_id_white.webp'
+        );
+
+        $logoAColor = $slot1Resolved['color_url'];
+        $logoAWhite = $slot1Resolved['white_url'];
+        $logoATargetUrl = $slot1Resolved['target_url'];
+
+        $logoBColor = $slot2Resolved['color_url'];
+        $logoBWhite = $slot2Resolved['white_url'];
+        $logoBTargetUrl = $slot2Resolved['target_url'];
+
+        $logoOverview = $slotOverviewResolved['active_logo'];
+        $logoOverviewTargetUrl = $slotOverviewResolved['target_url'];
+
+        $logoFloating = $slotFloatingResolved['active_logo'];
+
+        $logoFooter = $slotFooterResolved['active_logo'];
+        $logoFooterWhite = $slotFooterResolved['white_url'];
+        $logoFooterTargetUrl = $slotFooterResolved['target_url'];
+
+        $ctaTicketActive = isset($settings['cta_ticket_active']) ? (bool)$settings['cta_ticket_active'] : (bool)($hero['cta_ticket_active'] ?? true);
+
         $site = [
             'name'                => $event['title'] ?? $event['name'] ?? '',
             'title'               => $event['title'] ?? '',
@@ -96,22 +212,49 @@ class EventApiController extends ResourceController
             'venue'               => $hero['venue'] ?? $hero['venue_name'] ?? '',
             'city'                => $hero['venue_city'] ?? '',
             'location'            => $event['location_display'] ?? '',
-            'dates'               => (!empty($event['event_date_start']) && !empty($event['event_date_end'])) ? (date('d', strtotime($event['event_date_start'])) . '-' . date('d F Y', strtotime($event['event_date_end']))) : '',
+            'dates'               => (!empty($event['event_date_start']) && !empty($event['event_date_end'])) ? (function($start, $end) {
+                $t1 = strtotime($start);
+                $t2 = strtotime($end);
+                $m1 = date('F', $t1);
+                $m2 = date('F', $t2);
+                $y1 = date('Y', $t1);
+                $y2 = date('Y', $t2);
+                $d1 = date('jS', $t1);
+                $d2 = date('jS', $t2);
+                if ($y1 === $y2 && $m1 === $m2) {
+                    return "{$m1} {$d1}-{$d2}, {$y1}";
+                } elseif ($y1 === $y2) {
+                    return "{$m1} {$d1} - {$m2} {$d2}, {$y1}";
+                }
+                return "{$m1} {$d1}, {$y1} - {$m2} {$d2}, {$y2}";
+            })($event['event_date_start'], $event['event_date_end']) : '',
             'cta_ticket_label'    => $settings['cta_label'] ?? $hero['cta_ticket_label'] ?? 'Get Tickets',
             'cta_ticket_url'      => $settings['ticket_url'] ?? $hero['cta_ticket_url'] ?? '',
-            'cta_ticket_active'   => (bool)($hero['cta_ticket_active'] ?? true),
+            'cta_ticket_active'   => $ctaTicketActive,
             'cta_secondary_label' => $hero['cta_secondary_label'] ?? 'Explore Speakers',
             'cta_secondary_url'   => $hero['cta_secondary_url'] ?? '#speakers',
             'hero_image'          => $makeUrl($hero['hero_image_url'] ?? ''),
-            'logo_a'              => $makeUrl($settings['logo_a_url'] ?? ''),
-            'logo_b'              => $makeUrl($settings['logo_b_url'] ?? ''),
-            'logo_a_color'        => $makeUrl($settings['logo_a_url'] ?? ''),
-            'logo_a_white'        => $makeUrl($settings['logo_a_white'] ?? ''),
-            'logo_a_target_url'   => $settings['logo_a_target_url'] ?? '#home',
-            'logo_b_color'        => $makeUrl($settings['logo_b_url'] ?? ''),
-            'logo_b_white'        => $makeUrl($settings['logo_b_white'] ?? ''),
-            'logo_b_target_url'   => $settings['logo_b_target_url'] ?? 'https://investor.id',
-            'logo_footer'         => $makeUrl(!empty($settings['logo_footer_url']) ? $settings['logo_footer_url'] : ($settings['logo_b_url'] ?? '')),
+            'logo_a'              => $logoAColor,
+            'logo_b'              => $logoBColor,
+            'logo_a_color'        => $logoAColor,
+            'logo_a_white'        => $logoAWhite,
+            'logo_a_target_url'   => $logoATargetUrl,
+            'logo_b_color'        => $logoBColor,
+            'logo_b_white'        => $logoBWhite,
+            'logo_b_target_url'   => $logoBTargetUrl,
+            'logo_overview'       => $logoOverview,
+            'logo_overview_target_url' => $logoOverviewTargetUrl,
+            'logo_floating'       => $logoFloating,
+            'logo_footer'         => $logoFooter,
+            'logo_footer_white'   => $logoFooterWhite,
+            'logo_footer_target_url' => $logoFooterTargetUrl,
+            'logo_placements'     => $logoPlacements,
+            'floating_bar'        => [
+                'enabled'   => isset($settings['floating_bar_enabled']) ? (bool)$settings['floating_bar_enabled'] : true,
+                'text'      => $settings['floating_bar_text'] ?? 'Get Your Seat Now!',
+                'btn_label' => $settings['floating_bar_btn_label'] ?? 'Get Tickets',
+                'btn_url'   => $settings['floating_bar_btn_url'] ?? null,
+            ],
             'copyright'           => $settings['copyright_text'] ?? 'Investor Daily Summit.',
             'nav_items'           => $navItems,
             'colors'              => [
@@ -132,8 +275,9 @@ class EventApiController extends ResourceController
             ],
             'contact'             => [
                 'email' => $settings['contact_email'] ?? '',
-                'phone' => $settings['contact_phone'] ?? '+62 855-1235-000',
+                'phone' => $settings['contact_phone'] ?? '+62 812-1267-8789',
                 'label' => $settings['contact_label'] ?? 'Phone',
+                'url'   => $settings['contact_url'] ?? null,
             ],
             'news_tag_slug'       => $event['news_tag_slug'] ?? 'ids2026',
         ];
@@ -448,8 +592,10 @@ class EventApiController extends ResourceController
                 'perspective_value'   => (int)($dec['perspective_value'] ?? 800),
                 'rotate_x'            => (float)($dec['rotate_x'] ?? 0),
                 'rotate_y'            => (float)($dec['rotate_y'] ?? 0),
+                'rotate_z'            => (float)($dec['rotate_z'] ?? 0),
                 'tint_color'          => $dec['tint_color'] ?? null,
                 'show_on_mobile'      => (bool)$dec['show_on_mobile'],
+                'device_visibility'   => $dec['device_visibility'] ?? (!empty($dec['show_on_mobile']) ? 'all' : 'desktop_only'),
             ];
         }
 
@@ -491,19 +637,25 @@ class EventApiController extends ResourceController
         $customPlacements = [];
         foreach ($placementRows as $cp) {
             $customPlacements[] = [
-                'id'                 => (int)$cp['id'],
-                'name'               => $cp['name'] ?? '',
-                'section_key'        => $cp['section_key'],
-                'image_url'          => $makeUrl($cp['image_url']),
-                'pos_x_percent'      => (float)$cp['pos_x_percent'],
-                'pos_y_percent'      => (float)$cp['pos_y_percent'],
-                'size_px'            => (int)$cp['size_px'],
-                'opacity'            => (float)$cp['opacity'],
-                'is_rotated'         => (bool)$cp['is_rotated'],
-                'rotation_direction' => $cp['rotation_direction'] ?? 'clockwise',
-                'tint_color'         => $cp['tint_color'] ?? null,
-                'show_on_mobile'     => (bool)$cp['show_on_mobile'],
-                'z_index'            => (int)($cp['z_index'] ?? 1),
+                'id'                  => (int)$cp['id'],
+                'name'                => $cp['name'] ?? '',
+                'section_key'         => $cp['section_key'],
+                'image_url'           => $makeUrl($cp['image_url']),
+                'pos_x_percent'       => (float)$cp['pos_x_percent'],
+                'pos_y_percent'       => (float)$cp['pos_y_percent'],
+                'size_px'             => (int)$cp['size_px'],
+                'opacity'             => (float)$cp['opacity'],
+                'is_rotated'          => (bool)$cp['is_rotated'],
+                'rotation_direction'  => $cp['rotation_direction'] ?? 'clockwise',
+                'perspective_enabled' => (bool)($cp['perspective_enabled'] ?? false),
+                'perspective_value'   => (int)($cp['perspective_value'] ?? 800),
+                'rotate_x'            => (float)($cp['rotate_x'] ?? 0),
+                'rotate_y'            => (float)($cp['rotate_y'] ?? 0),
+                'rotate_z'            => (float)($cp['rotate_z'] ?? 0),
+                'tint_color'          => $cp['tint_color'] ?? null,
+                'show_on_mobile'      => (bool)$cp['show_on_mobile'],
+                'device_visibility'   => $cp['device_visibility'] ?? (!empty($cp['show_on_mobile']) ? 'all' : 'desktop_only'),
+                'z_index'             => (int)($cp['z_index'] ?? 1),
             ];
         }
 

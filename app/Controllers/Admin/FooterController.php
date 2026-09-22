@@ -39,6 +39,9 @@ class FooterController extends BaseAdminController
         $colors['--footer-social-color']  = $colors['--footer-social-color'] ?? '#ffffff';
         $colors['--footer-border-color']  = $colors['--footer-border-color'] ?? 'rgba(255, 255, 255, 0.12)';
 
+        $placementModel = new \App\Models\SectionLogoPlacementModel();
+        $this->data['placements'] = $placementModel->getPlacementsWithLogos($eventId);
+
         $this->data['footerColors'] = $colors;
         $this->data['palette']      = $themeModel->getPaletteForPicker($eventId);
         $this->data['pageTitle']    = 'Footer Settings & Social Links';
@@ -61,27 +64,14 @@ class FooterController extends BaseAdminController
 
         $settingData = [
             'copyright_text' => $this->request->getPost('copyright_text') ?: 'Investor Daily Summit.',
-            'contact_phone'  => $this->request->getPost('contact_phone') ?: '+62 855-1235-000',
+            'contact_phone'  => $this->request->getPost('contact_phone') ?: '+62 812-1267-8789',
             'contact_label'  => $this->request->getPost('contact_label') ?: 'Phone',
+            'contact_url'    => $this->request->getPost('contact_url') ?: null,
             'instagram_url'  => $this->request->getPost('instagram_url'),
             'youtube_url'    => $this->request->getPost('youtube_url'),
             'facebook_url'   => $this->request->getPost('facebook_url'),
-            'linkedin_url'   => $this->request->getPost('linkedin_url'),
-            'twitter_url'    => $this->request->getPost('twitter_url'),
             'updated_by'     => $userId,
         ];
-
-        // Handle footer logo upload
-        $file = $this->request->getFile('logo_footer_file');
-        if ($file && $file->isValid() && !$file->hasMoved()) {
-            $newName = $file->getRandomName();
-            $targetDir = FCPATH . 'uploads/events/' . $eventId . '/branding';
-            if (!is_dir($targetDir)) {
-                mkdir($targetDir, 0777, true);
-            }
-            $file->move($targetDir, $newName);
-            $settingData['logo_footer_url'] = 'uploads/events/' . $eventId . '/branding/' . $newName;
-        }
 
         if ($existingSetting) {
             $settingModel->update($existingSetting['id'], $settingData);

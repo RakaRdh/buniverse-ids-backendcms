@@ -29,6 +29,12 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     $routes->get('navbar', 'Admin\NavbarController::index');
     $routes->post('navbar/update', 'Admin\NavbarController::update');
 
+    // Master Logos & Placements (Centralized Brand Asset Repository)
+    $routes->get('master-logos', 'Admin\MasterLogoController::index');
+    $routes->post('master-logos/save', 'Admin\MasterLogoController::saveLogo');
+    $routes->get('master-logos/delete/(:num)', 'Admin\MasterLogoController::deleteLogo/$1');
+    $routes->post('master-logos/placements/save', 'Admin\MasterLogoController::savePlacements');
+
     // Hero Banner & Venue (Dedicated Module)
     $routes->get('hero', 'Admin\HeroController::index');
     $routes->post('hero/venue', 'Admin\HeroController::updateVenue');
@@ -95,6 +101,7 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     $routes->get('sponsors', 'Admin\SponsorController::index');
     $routes->post('sponsors/save', 'Admin\SponsorController::save');
     $routes->post('sponsors/delete/(:num)', 'Admin\SponsorController::delete/$1');
+    $routes->get('sponsors/delete/(:num)', 'Admin\SponsorController::delete/$1');
     /* === LEGACY TIER-BASED SPONSORS ROUTES (COMMENTED OUT) ===
     $routes->post('sponsors/tier/save', 'Admin\SponsorController::saveTier');
     $routes->post('sponsors/tier/delete/(:num)', 'Admin\SponsorController::deleteTier/$1');

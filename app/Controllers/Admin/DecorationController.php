@@ -24,10 +24,13 @@ class DecorationController extends BaseAdminController
         }
 
         $decorationModel = new SectionDecorationModel();
+        $themeModel      = new \App\Models\EventThemePropertyModel();
+
         $decorations = $decorationModel->getByEvent($eventId);
 
         $this->data['decorations']   = $decorations;
         $this->data['sections']      = $this->sections;
+        $this->data['palette']       = $themeModel->getPaletteForPicker($eventId);
         $this->data['defaultImage']  = 'assets/img/cakram.webp';
         $this->data['pageTitle']     = 'Section Decorations';
         $this->data['activeMenu']    = 'decorations';
@@ -48,13 +51,16 @@ class DecorationController extends BaseAdminController
 
         $sectionKey         = $this->request->getPost('section_key');
         $layoutMode         = $this->request->getPost('layout_mode') ?: 'manual';
-        $position           = $this->request->getPost('position') ?: null;
-        $autoCount          = (int)$this->request->getPost('auto_count') ?: 1;
-        $autoGapPx          = (int)$this->request->getPost('auto_gap_px') ?: 100;
-        $autoStartSide      = $this->request->getPost('auto_start_side') ?: 'left';
-        $autoGapUnit        = $this->request->getPost('auto_gap_unit') ?: 'px';
+        $isAuto             = ($layoutMode === 'auto');
+        $position           = $isAuto ? null : ($this->request->getPost('position') ?: null);
+
+        $autoCount          = $isAuto ? max(1, (int)$this->request->getPost('auto_count')) : null;
+        $autoGapPx          = $isAuto ? max(10, (int)$this->request->getPost('auto_gap_px')) : null;
+        $autoStartSide      = $isAuto ? ($this->request->getPost('auto_start_side') ?: 'left') : null;
+        $autoGapUnit        = $isAuto ? ($this->request->getPost('auto_gap_unit') ?: 'px') : null;
         $edgeOffsetMode     = $this->request->getPost('edge_offset_mode') ?: 'fixed';
         $edgeOffsetPercent  = $this->request->getPost('edge_offset_percent') !== null ? (int)$this->request->getPost('edge_offset_percent') : 50;
+
         $sizePx             = (int)$this->request->getPost('size_px') ?: 200;
         $opacity            = (float)$this->request->getPost('opacity') ?: 1.00;
         $isRotated          = $this->request->getPost('is_rotated') ? 1 : 0;
@@ -63,7 +69,9 @@ class DecorationController extends BaseAdminController
         $perspectiveValue   = $this->request->getPost('perspective_value') !== null ? (int)$this->request->getPost('perspective_value') : 800;
         $rotateX            = $this->request->getPost('rotate_x') !== null ? (float)$this->request->getPost('rotate_x') : 0.0;
         $rotateY            = $this->request->getPost('rotate_y') !== null ? (float)$this->request->getPost('rotate_y') : 0.0;
-        $showOnMobile       = $this->request->getPost('show_on_mobile') ? 1 : 0;
+        $rotateZ            = $this->request->getPost('rotate_z') !== null ? (float)$this->request->getPost('rotate_z') : 0.0;
+        $deviceVisibility   = $this->request->getPost('device_visibility') ?: 'all';
+        $showOnMobile       = ($deviceVisibility !== 'desktop_only') ? 1 : 0;
         $isActive           = $this->request->getPost('is_active') !== null ? (int)$this->request->getPost('is_active') : 1;
         $userId             = $this->currentAdmin['id'] ?? session()->get('admin_id') ?? session()->get('admin_user')['id'] ?? 1;
 
@@ -95,10 +103,10 @@ class DecorationController extends BaseAdminController
         }
 
         $data = [
-            'event_id'           => $eventId,
-            'section_key'        => $sectionKey,
-            'layout_mode'        => $layoutMode,
-            'position'           => $layoutMode === 'manual' ? $position : null,
+            'event_id'            => $eventId,
+            'section_key'         => $sectionKey,
+            'layout_mode'         => $layoutMode,
+            'position'            => $position,
             'auto_count'          => $autoCount,
             'auto_gap_px'         => $autoGapPx,
             'auto_start_side'     => $autoStartSide,
@@ -106,15 +114,17 @@ class DecorationController extends BaseAdminController
             'edge_offset_mode'    => $edgeOffsetMode,
             'edge_offset_percent' => $edgeOffsetPercent,
             'image_url'           => $imageUrl,
-            'size_px'            => $sizePx,
-            'opacity'            => $opacity,
+            'size_px'             => $sizePx,
+            'opacity'             => $opacity,
             'is_rotated'          => $isRotated,
             'rotation_direction'  => $rotationDirection,
             'perspective_enabled' => $perspectiveEnabled,
             'perspective_value'   => $perspectiveValue,
             'rotate_x'            => $rotateX,
             'rotate_y'            => $rotateY,
+            'rotate_z'            => $rotateZ,
             'tint_color'          => $this->request->getPost('tint_color') ?: null,
+            'device_visibility'   => $deviceVisibility,
             'show_on_mobile'      => $showOnMobile,
             'is_active'           => $isActive,
             'updated_by'          => $userId,

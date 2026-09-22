@@ -24,10 +24,13 @@ class CustomPlacementController extends BaseAdminController
         }
 
         $placementModel = new CustomPlacementModel();
+        $themeModel     = new \App\Models\EventThemePropertyModel();
+
         $placements = $placementModel->getByEvent($eventId);
 
         $this->data['placements']    = $placements;
         $this->data['sections']      = $this->sections;
+        $this->data['palette']       = $themeModel->getPaletteForPicker($eventId);
         $this->data['defaultImage']  = 'assets/img/disc.png';
         $this->data['frontendUrl']   = 'http://localhost:8080';
         $this->data['pageTitle']     = 'Custom Placement (Freeform Coordinates)';
@@ -55,7 +58,8 @@ class CustomPlacementController extends BaseAdminController
         $opacity            = (float)$this->request->getPost('opacity') ?: 1.00;
         $isRotated          = $this->request->getPost('is_rotated') ? 1 : 0;
         $rotationDirection  = $this->request->getPost('rotation_direction') ?: 'clockwise';
-        $showOnMobile       = $this->request->getPost('show_on_mobile') ? 1 : 0;
+        $deviceVisibility   = $this->request->getPost('device_visibility') ?: 'all';
+        $showOnMobile       = ($deviceVisibility !== 'desktop_only') ? 1 : 0;
         $isActive           = $this->request->getPost('is_active') !== null ? (int)$this->request->getPost('is_active') : 1;
         $zIndex             = (int)$this->request->getPost('z_index') ?: 1;
         $userId             = $this->currentAdmin['id'] ?? session()->get('admin_id') ?? session()->get('admin_user')['id'] ?? 1;
@@ -77,22 +81,34 @@ class CustomPlacementController extends BaseAdminController
             $imageUrl = 'uploads/events/' . $eventId . '/custom_placements/' . $newName;
         }
 
+        $perspectiveEnabled = $this->request->getPost('perspective_enabled') ? 1 : 0;
+        $perspectiveValue   = (int)$this->request->getPost('perspective_value') ?: 800;
+        $rotateX            = (float)$this->request->getPost('rotate_x') ?: 0.0;
+        $rotateY            = (float)$this->request->getPost('rotate_y') ?: 0.0;
+        $rotateZ            = (float)$this->request->getPost('rotate_z') ?: 0.0;
+
         $data = [
-            'event_id'           => $eventId,
-            'name'               => $name ?: ($this->sections[$sectionKey] . ' Disc ' . round($posXPercent) . '%, ' . round($posYPercent) . '%'),
-            'section_key'        => $sectionKey,
-            'image_url'          => $imageUrl,
-            'pos_x_percent'      => max(0.0, min(100.0, $posXPercent)),
-            'pos_y_percent'      => max(0.0, min(100.0, $posYPercent)),
-            'size_px'            => $sizePx,
-            'opacity'            => $opacity,
-            'is_rotated'         => $isRotated,
-            'rotation_direction' => $rotationDirection,
-            'show_on_mobile'     => $showOnMobile,
-            'is_active'          => $isActive,
-            'z_index'            => $zIndex,
-            'tint_color'         => $this->request->getPost('tint_color') ?: null,
-            'updated_by'         => $userId,
+            'event_id'            => $eventId,
+            'name'                => $name ?: null,
+            'section_key'         => $sectionKey,
+            'pos_x_percent'       => $posXPercent,
+            'pos_y_percent'       => $posYPercent,
+            'size_px'             => $sizePx,
+            'opacity'             => $opacity,
+            'is_rotated'          => $isRotated,
+            'rotation_direction'  => $rotationDirection,
+            'perspective_enabled' => $perspectiveEnabled,
+            'perspective_value'   => $perspectiveValue,
+            'rotate_x'            => $rotateX,
+            'rotate_y'            => $rotateY,
+            'rotate_z'            => $rotateZ,
+            'show_on_mobile'      => $showOnMobile,
+            'device_visibility'   => $deviceVisibility,
+            'is_active'           => $isActive,
+            'z_index'             => $zIndex,
+            'tint_color'          => $this->request->getPost('tint_color') ?: null,
+            'image_url'           => $imageUrl,
+            'updated_by'          => $userId,
         ];
 
         if ($existing) {

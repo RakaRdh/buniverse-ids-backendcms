@@ -11,7 +11,81 @@
     </div>
 </div>
 
-<form id="navbarForm" action="<?= base_url('admin/navbar/update') ?>" method="POST" enctype="multipart/form-data">
+<!-- Full-Width Sticky Live Navbar Preview at Top -->
+<div class="cms-card" style="margin-bottom: 24px; border: 1px solid rgba(56, 189, 248, 0.25); background: linear-gradient(180deg, rgba(7, 44, 64, 0.7) 0%, rgba(1, 10, 45, 0.95) 100%); overflow: hidden;">
+    <!-- <div class="card-title-bar" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: rgba(0, 0, 0, 0.3);">
+        <span class="card-title-text" style="font-size: 13px; letter-spacing: 0.5px; color: #38bdf8; display: flex; align-items: center; gap: 8px;">
+            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #22c55e;"></span>
+            LIVE NAVBAR PREVIEW (TOP FIXED BANNER)
+        </span>
+        <span style="font-size: 11.5px; color: var(--text-muted);">Real-time synchronized header replica</span>
+    </div> -->
+    <div style="padding: 16px 24px; background: rgba(1, 10, 45, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 24px; max-width: 1360px; margin: 0 auto;">
+            <!-- Brand Logos Lockup -->
+            <?php 
+                $placementsMap = [];
+                if (!empty($placements)) {
+                    foreach ($placements as $p) {
+                        $placementsMap[$p['slot_key']] = $p;
+                    }
+                }
+                $pSlot1 = $placementsMap['navbar_slot_1'] ?? null;
+                $pSlot2 = $placementsMap['navbar_slot_2'] ?? null;
+
+                $pSlot1Active = !isset($pSlot1['is_active']) || !empty($pSlot1['is_active']);
+                $pSlot2Active = !isset($pSlot2['is_active']) || !empty($pSlot2['is_active']);
+
+                // Resolve Preview Logo 1
+                if (!empty($pSlot1['logo_url']) || !empty($pSlot1['logo_white_url'])) {
+                    $previewLogoA = ($pSlot1['variant'] === 'color') 
+                        ? (!empty($pSlot1['logo_url']) ? base_url($pSlot1['logo_url']) : base_url($pSlot1['logo_white_url']))
+                        : (!empty($pSlot1['logo_white_url']) ? base_url($pSlot1['logo_white_url']) : base_url($pSlot1['logo_url']));
+                } else {
+                    $previewLogoA = base_url('assets/img/logo_ids26_white.webp');
+                }
+
+                // Resolve Preview Logo 2
+                if (!empty($pSlot2['logo_url']) || !empty($pSlot2['logo_white_url'])) {
+                    $previewLogoB = ($pSlot2['variant'] === 'color') 
+                        ? (!empty($pSlot2['logo_url']) ? base_url($pSlot2['logo_url']) : base_url($pSlot2['logo_white_url']))
+                        : (!empty($pSlot2['logo_white_url']) ? base_url($pSlot2['logo_white_url']) : base_url($pSlot2['logo_url']));
+                } else {
+                    $previewLogoB = base_url('assets/img/logo_id_white.webp');
+                }
+            ?>
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <?php if ($pSlot1Active): ?>
+                    <img id="navPreviewLogoA" src="<?= esc($previewLogoA) ?>" alt="Logo A" style="height: 36px; width: auto; object-fit: contain;">
+                <?php endif; ?>
+                <?php if ($pSlot1Active && $pSlot2Active): ?>
+                    <div style="width: 1.5px; height: 26px; background-color: rgba(255, 255, 255, 0.35);"></div>
+                <?php endif; ?>
+                <?php if ($pSlot2Active): ?>
+                    <img id="navPreviewLogoB" src="<?= esc($previewLogoB) ?>" alt="Logo B" style="height: 26px; width: auto; object-fit: contain;">
+                <?php endif; ?>
+            </div>
+
+            <!-- Navigation Links & CTA -->
+            <div style="display: flex; align-items: center; gap: 24px;">
+                <div id="navPreviewMenuLinks" style="display: flex; align-items: center; gap: 20px; font-size: 14px; font-weight: 500; color: #ffffff;">
+                    <span style="color: #38bdf8; font-weight: 600;">Home</span>
+                    <span style="opacity: 0.85;">About Us</span>
+                    <span style="opacity: 0.85;">Schedule</span>
+                    <span style="opacity: 0.85;">Gallery</span>
+                    <span style="opacity: 0.85;">News</span>
+                    <span style="opacity: 0.85;">Sponsor</span>
+                </div>
+                
+                <a href="javascript:void(0)" id="live_cta_preview" class="btn-ticket-preview">
+                    <?= esc($settings['cta_label'] ?? 'Get Tickets') ?>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form id="navbarForm" action="<?= base_url('admin/navbar/update') ?>" method="POST">
     <?= csrf_field() ?>
 
     <div class="form-grid-2" style="gap: 24px; align-items: start;">
@@ -19,76 +93,38 @@
         <!-- Column 1: Branding Logos & Navigation Links -->
         <div style="display: flex; flex-direction: column; gap: 24px;">
             
-            <!-- Card 1: Brand Logos -->
+            <!-- Card 1: Brand Logos Centralized Notice & Target URLs -->
             <div class="cms-card" style="margin-bottom: 0;">
-                <div class="card-title-bar">
-                    <span class="card-title-text">Brand Logos</span>
+                <div class="card-title-bar" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="card-title-text">Brand Logos Management</span>
+                    <a href="<?= base_url('admin/master-logos') ?>" class="btn btn-primary btn-sm" style="font-size: 11.5px; padding: 4px 12px;">
+                        Manage in Master Logos Hub &rarr;
+                    </a>
                 </div>
                 <div class="cms-card-body" style="padding: 20px;">
-                    <!-- Logo A -->
-                    <div class="form-group" style="margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--line);">
-                        <label class="form-label" style="font-weight: 700;">Logo 1 (Summit Event Logo)</label>
-                        
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 10px;">
-                            <div>
-                                <label class="form-label" style="font-size: 11.5px;">Color Version (Default)</label>
-                                <?php if (!empty($settings['logo_a_url'])): ?>
-                                    <div style="margin-bottom: 6px; background: #072c40; padding: 10px; border-radius: 6px; text-align: center;">
-                                        <img src="<?= base_url($settings['logo_a_url']) ?>" alt="Logo A Color" style="max-height: 36px; max-width: 100%; display: inline-block;">
-                                    </div>
-                                <?php endif; ?>
-                                <input type="file" name="logo_a_file" class="form-control" accept="image/*">
-                            </div>
-
-                            <div>
-                                <label class="form-label" style="font-size: 11.5px;">White Version (Monochrome)</label>
-                                <?php if (!empty($settings['logo_a_white'])): ?>
-                                    <div style="margin-bottom: 6px; background: #072c40; padding: 10px; border-radius: 6px; text-align: center;">
-                                        <img src="<?= base_url($settings['logo_a_white']) ?>" alt="Logo A White" style="max-height: 36px; max-width: 100%; display: inline-block;">
-                                    </div>
-                                <?php endif; ?>
-                                <input type="file" name="logo_a_white_file" class="form-control" accept="image/*">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="form-label" style="font-size: 12px; font-weight: 600;">Logo 1 Target URL (Operan Link)</label>
-                            <input type="text" name="logo_a_target_url" class="form-control" value="<?= esc($settings['logo_a_target_url'] ?? '#home') ?>" placeholder="#home or https://...">
-                            <div class="form-hint" style="font-size: 11px; color: var(--text-muted); margin-top: 3px;">Default: #home (scroll to hero)</div>
+                    <div style="display: flex; gap: 14px; background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); padding: 14px 16px; border-radius: 8px; margin-bottom: 20px;">
+                        <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; color: #38bdf8; flex-shrink: 0;" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                        <div style="font-size: 12.5px; line-height: 1.5; color: var(--text-primary);">
+                            <strong>Terpusat di Master Logos Hub</strong><br>
+                            Semua aset gambar logo, varian warna/putih, dan aktivasi slot navbar kini dikelola langsung dan tersinkronisasi di menu <a href="<?= base_url('admin/master-logos') ?>" style="color: #38bdf8; text-decoration: underline; font-weight: 600;">Master Logos</a>.
                         </div>
                     </div>
 
-                    <!-- Logo B -->
+                    <!-- Target URLs only -->
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label class="form-label" style="font-size: 12px; font-weight: 600;">Logo 1 Target URL (Klik Logo Utama)</label>
+                        <input type="text" name="logo_a_target_url" class="form-control" value="<?= esc($settings['logo_a_target_url'] ?? '#home') ?>" placeholder="#home or https://...">
+                        <div class="form-hint" style="font-size: 11px; color: var(--text-muted); margin-top: 3px;">Default: <code>#home</code> (scroll ke hero banner)</div>
+                    </div>
+
                     <div class="form-group" style="margin-bottom: 0;">
-                        <label class="form-label" style="font-weight: 700;">Logo 2 (Investor Daily Indonesia)</label>
-                        
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 10px;">
-                            <div>
-                                <label class="form-label" style="font-size: 11.5px;">Color Version (Default)</label>
-                                <?php if (!empty($settings['logo_b_url'])): ?>
-                                    <div style="margin-bottom: 6px; background: #072c40; padding: 10px; border-radius: 6px; text-align: center;">
-                                        <img src="<?= base_url($settings['logo_b_url']) ?>" alt="Logo B Color" style="max-height: 36px; max-width: 100%; display: inline-block;">
-                                    </div>
-                                <?php endif; ?>
-                                <input type="file" name="logo_b_file" class="form-control" accept="image/*">
-                            </div>
-
-                            <div>
-                                <label class="form-label" style="font-size: 11.5px;">White Version (Monochrome)</label>
-                                <?php if (!empty($settings['logo_b_white'])): ?>
-                                    <div style="margin-bottom: 6px; background: #072c40; padding: 10px; border-radius: 6px; text-align: center;">
-                                        <img src="<?= base_url($settings['logo_b_white']) ?>" alt="Logo B White" style="max-height: 36px; max-width: 100%; display: inline-block;">
-                                    </div>
-                                <?php endif; ?>
-                                <input type="file" name="logo_b_white_file" class="form-control" accept="image/*">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="form-label" style="font-size: 12px; font-weight: 600;">Logo 2 Target URL (Operan Link)</label>
-                            <input type="text" name="logo_b_target_url" class="form-control" value="<?= esc($settings['logo_b_target_url'] ?? 'https://investor.id') ?>" placeholder="https://investor.id">
-                            <div class="form-hint" style="font-size: 11px; color: var(--text-muted); margin-top: 3px;">Default: https://investor.id (external portal)</div>
-                        </div>
+                        <label class="form-label" style="font-size: 12px; font-weight: 600;">Logo 2 Target URL (Klik Logo Media Partner)</label>
+                        <input type="text" name="logo_b_target_url" class="form-control" value="<?= esc($settings['logo_b_target_url'] ?? 'https://investor.id') ?>" placeholder="https://investor.id">
+                        <div class="form-hint" style="font-size: 11px; color: var(--text-muted); margin-top: 3px;">Default: <code>https://investor.id</code> (portal media)</div>
                     </div>
                 </div>
             </div>
@@ -130,13 +166,17 @@
 
         </div>
 
-        <!-- Column 2: CTA Button & Section Colors -->
+        <!-- Column 2: CTA Button & Section Colors & Floating Bar -->
         <div style="display: flex; flex-direction: column; gap: 24px;">
 
             <!-- Card 3: CTA Button & Styling -->
             <div class="cms-card" style="margin-bottom: 0;">
-                <div class="card-title-bar">
+                <div class="card-title-bar" style="display: flex; justify-content: space-between; align-items: center;">
                     <span class="card-title-text">CTA Ticket Button & Styling</span>
+                    <label style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 12px; font-weight: 600; color: #4ade80;">
+                        <input type="checkbox" name="cta_ticket_active" value="1" <?= (!isset($settings['cta_ticket_active']) || !empty($settings['cta_ticket_active'])) ? 'checked' : '' ?> onchange="toggleCtaVisibility(this.checked)">
+                        Show Ticket Button
+                    </label>
                 </div>
                 <div class="cms-card-body" style="padding: 20px;">
                     <!-- CTA Label & URL -->
@@ -149,14 +189,6 @@
                             <label class="form-label" style="font-weight: 600;">Target Ticket URL</label>
                             <input type="text" name="ticket_url" value="<?= esc($settings['ticket_url'] ?? '') ?>" placeholder="https://..." class="form-control">
                         </div>
-                    </div>
-
-                    <!-- Live CTA Preview Box -->
-                    <div style="background: #072c40; border-radius: 8px; padding: 24px; text-align: center; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.1);">
-                        <div style="font-size: 11px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;">Live Button Preview (Hover to test)</div>
-                        <a href="javascript:void(0)" id="live_cta_preview" class="btn-ticket-preview">
-                            <?= esc($settings['cta_label'] ?? 'Get Tickets') ?>
-                        </a>
                     </div>
 
                     <h3 style="font-size: 13.5px; font-weight: 700; color: var(--text-strong); margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid var(--line);">
@@ -212,6 +244,38 @@
                         'cssProp'      => '--navbar-cta-hover-outline',
                     ]) ?>
 
+                </div>
+            </div>
+
+            <!-- Card 4: Floating Bottom Bar Settings -->
+            <div class="cms-card" style="margin-bottom: 0; border: 1px solid rgba(217, 119, 6, 0.25);">
+                <div class="card-title-bar" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="card-title-text" style="color: var(--gold); display: flex; align-items: center; gap: 8px;">
+                        <svg class="icon" viewBox="0 0 24 24" style="width: 16px; height: 16px;"><rect x="2" y="16" width="20" height="6" rx="2"/><path d="M6 12h12"/></svg>
+                        Floating Bottom Bar (Mobile & Desktop)
+                    </span>
+                    <label style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 12px; font-weight: 600; color: #4ade80;">
+                        <input type="checkbox" name="floating_bar_enabled" value="1" <?= (!isset($settings['floating_bar_enabled']) || !empty($settings['floating_bar_enabled'])) ? 'checked' : '' ?>>
+                        Enable Floating Bar
+                    </label>
+                </div>
+                <div class="cms-card-body" style="padding: 20px;">
+                    <div class="form-group" style="margin-bottom: 14px;">
+                        <label class="form-label" style="font-weight: 600;">Typewriter Teaser Text</label>
+                        <input type="text" name="floating_bar_text" class="form-control" value="<?= esc($settings['floating_bar_text'] ?? 'Get Your Seat Now!') ?>" placeholder="e.g. Get Your Seat Now!">
+                        <div class="form-hint" style="font-size: 11px; color: var(--text-muted); margin-top: 3px;">Animasi teks ketik berjalan di bagian tengah floating bar.</div>
+                    </div>
+
+                    <div class="form-grid-2" style="gap: 14px;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label" style="font-weight: 600;">Floating Button Label</label>
+                            <input type="text" name="floating_bar_btn_label" class="form-control" value="<?= esc($settings['floating_bar_btn_label'] ?? 'Get Tickets') ?>" placeholder="e.g. Get Tickets">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label" style="font-weight: 600;">Override URL (Optional)</label>
+                            <input type="text" name="floating_bar_btn_url" class="form-control" value="<?= esc($settings['floating_bar_btn_url'] ?? '') ?>" placeholder="Kosongkan jika sama dengan ticket URL">
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -339,5 +403,18 @@ function addNavItem() {
     container.appendChild(row);
 }
 
-document.addEventListener('DOMContentLoaded', updateLivePreview);
+function toggleCtaVisibility(visible) {
+    const btn = document.getElementById('live_cta_preview');
+    if (btn) {
+        btn.style.display = visible ? 'inline-flex' : 'none';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    updateLivePreview();
+    const ctaCheckbox = document.querySelector('input[name="cta_ticket_active"]');
+    if (ctaCheckbox) {
+        toggleCtaVisibility(ctaCheckbox.checked);
+    }
+});
 </script>

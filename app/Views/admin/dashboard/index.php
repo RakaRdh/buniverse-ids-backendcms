@@ -9,8 +9,8 @@
     </div>
 </div>
 
-<!-- ROW 1: 4 KPI Summary Cards + Registration Telemetry Summary -->
-<div class="dashboard-kpi-grid metric-grid-5">
+<!-- ROW 1: 3 KPI Summary Cards + Registration Telemetry Summary -->
+<div class="dashboard-kpi-grid metric-grid-3">
     <!-- Confirmed Speakers -->
     <div class="metric-card" style="padding: 16px;">
         <div class="metric-icon-box teal">
@@ -23,7 +23,7 @@
         </div>
     </div>
 
-    <!-- Moderators -->
+    <!-- Moderators
     <div class="metric-card" style="padding: 16px;">
         <div class="metric-icon-box blue">
             <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
@@ -33,7 +33,7 @@
             <div class="metric-value"><?= number_format($stats['total_moderators'] ?? 0) ?></div>
             <div class="metric-sub">Track Facilitators</div>
         </div>
-    </div>
+    </div> -->
 
     <!-- Schedule Tracks -->
     <div class="metric-card" style="padding: 16px;">
@@ -47,7 +47,7 @@
         </div>
     </div>
 
-    <!-- Sponsors & Partners -->
+    <!-- Sponsors & Partners
     <div class="metric-card" style="padding: 16px;">
         <div class="metric-icon-box blue">
             <svg class="icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
@@ -57,15 +57,15 @@
             <div class="metric-value"><?= number_format($stats['total_sponsors'] ?? 0) ?></div>
             <div class="metric-sub">Commercial Partners</div>
         </div>
-    </div>
+    </div> -->
 
     <!-- Registration Telemetry -->
-    <div class="metric-card" style="padding: 16px; background: linear-gradient(135deg, rgba(11,81,108,0.18) 0%, rgba(2,43,58,0.08) 100%);">
+    <div class="metric-card" style="padding: 16px;">
         <div class="metric-icon-box teal">
             <svg class="icon" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
         </div>
         <div class="metric-info">
-            <div class="metric-label">Megatix Clicks</div>
+            <div class="metric-label">Ticket Button Clicks</div>
             <div class="metric-value" style="color: var(--primary-1-7);"><?= number_format($stats['ticket_clicks'] ?? 0) ?></div>
             <div class="metric-sub">Live CTA Conversions</div>
         </div>

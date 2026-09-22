@@ -118,7 +118,7 @@ $roomsListJson = json_encode(array_map(function($r) {
                 <div class="form-group">
                     <label class="form-label">Moderators</label>
                     <div class="autocomplete-chips-container" id="plenaryModContainer">
-                        <div class="autocomplete-chips-box" onclick="focusChipInput('plenaryModInput')">
+                        <div class="autocomplete-chips-box" id="plenaryModBox" onclick="focusChipInput('plenaryModInput')">
                             <!-- Chips will render here -->
                             <input type="text" id="plenaryModInput" class="autocomplete-chips-input" placeholder="Type to search and add moderator...">
                         </div>
@@ -131,7 +131,7 @@ $roomsListJson = json_encode(array_map(function($r) {
                 <div class="form-group">
                     <label class="form-label">Speakers</label>
                     <div class="autocomplete-chips-container" id="plenarySpkContainer">
-                        <div class="autocomplete-chips-box" onclick="focusChipInput('plenarySpkInput')">
+                        <div class="autocomplete-chips-box" id="plenarySpkBox" onclick="focusChipInput('plenarySpkInput')">
                             <!-- Chips will render here -->
                             <input type="text" id="plenarySpkInput" class="autocomplete-chips-input" placeholder="Type to search and add speaker...">
                         </div>
@@ -507,7 +507,7 @@ function removeRoomItem(rIdx, itIdx) {
 document.addEventListener('DOMContentLoaded', () => {
     // Plenary Autocomplete
     setupAutocompleteChips({
-        boxId: 'plenaryModContainer',
+        boxId: 'plenaryModBox',
         inputId: 'plenaryModInput',
         dropdownId: 'plenaryModDropdown',
         inputName: 'moderators[]',
@@ -516,7 +516,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     setupAutocompleteChips({
-        boxId: 'plenarySpkContainer',
+        boxId: 'plenarySpkBox',
         inputId: 'plenarySpkInput',
         dropdownId: 'plenarySpkDropdown',
         inputName: 'speakers[]',

@@ -49,6 +49,10 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="6" rx="1.5"></rect><line x1="3" y1="13" x2="21" y2="13"></line><line x1="3" y1="18" x2="14" y2="18"></line></svg>
                         <span>Navbar</span>
                     </a>
+                    <a href="<?= base_url('admin/master-logos') ?>" class="nav-item <?= ($activeMenu ?? '') === 'master_logos' ? 'active' : '' ?>">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                        <span>Master Logos</span>
+                    </a>
                     <a href="<?= base_url('admin/hero') ?>" class="nav-item <?= ($activeMenu ?? '') === 'hero' ? 'active' : '' ?>">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
                         <span>Hero Banner & Venue</span>

@@ -547,6 +547,13 @@ svg.icon, .nav-item svg, .btn svg {
   margin-bottom: 24px;
 }
 
+.metric-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
 .metric-card {
   background: var(--bg-surface);
   border: 1px solid var(--line);
@@ -1462,7 +1469,7 @@ textarea.form-control {
    Responsive Adaptations & Mobile Drawer
    ========================================================================== */
 @media (max-width: 1024px) {
-  .metric-grid, .metric-grid-5 {
+  .metric-grid, .metric-grid-5, .metric-grid-3 {
     grid-template-columns: repeat(2, 1fr);
   }
 
@@ -1553,7 +1560,7 @@ textarea.form-control {
     grid-template-columns: 1fr;
   }
 
-  .metric-grid, .metric-grid-5 {
+  .metric-grid, .metric-grid-5, .metric-grid-3 {
     grid-template-columns: 1fr;
   }
 

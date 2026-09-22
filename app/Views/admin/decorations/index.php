@@ -115,7 +115,7 @@
 </div>
 
 <!-- Modal: Add / Edit Decoration -->
-<div id="decorationModal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.7); z-index:200; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
+<div id="decorationModal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.75); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(4px); padding:20px;">
     <div style="background:var(--bg-surface); width:540px; max-width:95vw; max-height:90vh; overflow-y:auto; border-radius:var(--radius-lg); padding:24px; border:1px solid var(--line); box-shadow:0 20px 40px rgba(0,0,0,0.5);">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid var(--line); padding-bottom:12px;">
             <h3 id="modalTitle" style="font-size:16px; font-weight:700; color:var(--text-strong); margin:0;">Add Section Decoration</h3>
@@ -240,9 +240,20 @@
                 </label>
                 <div style="display:flex; gap:10px; align-items:center; margin-top:6px;">
                     <input type="color" id="decTintColorPicker" value="#c5a880" oninput="document.getElementById('decTintColor').value = this.value" style="width:40px; height:36px; padding:2px; border-radius:4px; border:1px solid var(--line); background:none; cursor:pointer;">
-                    <input type="text" name="tint_color" id="decTintColor" class="form-control" placeholder="e.g. #ff5733 or var(--primary-1-3)" oninput="if(this.value.startsWith('#') && this.value.length===7) document.getElementById('decTintColorPicker').value = this.value">
-                    <button type="button" class="btn btn-sm btn-secondary" onclick="document.getElementById('decTintColor').value='';">Clear</button>
+                    <input type="text" name="tint_color" id="decTintColor" class="form-control" placeholder="e.g. #ff5733" oninput="if(this.value.startsWith('#') && this.value.length===7) document.getElementById('decTintColorPicker').value = this.value">
+                    <button type="button" class="btn btn-sm btn-secondary" onclick="document.getElementById('decTintColor').value=''; document.getElementById('decPaletteSelect').value='';">Clear</button>
                 </div>
+                <!-- Palette Dropdown -->
+                <?php if (!empty($palette)): ?>
+                    <div style="margin-top: 8px;">
+                        <select id="decPaletteSelect" class="form-control" style="font-size: 12px;" onchange="if(this.value){ document.getElementById('decTintColor').value=this.value; if(this.value.startsWith('#')&&this.value.length===7) document.getElementById('decTintColorPicker').value=this.value; }">
+                            <option value="">-- Choose from Theme Palette --</option>
+                            <?php foreach ($palette as $pal): ?>
+                                <option value="<?= esc($pal['value']) ?>"><?= esc($pal['label']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                <?php endif; ?>
                 <small style="color:var(--text-muted); font-size:11px; display:block; margin-top:6px;">
                     If specified, the white silhouette (<code>decoration_white.png</code>) will be recolored into this color via CSS mask. Leave empty to use normal original image.
                 </small>
@@ -263,55 +274,67 @@
             </div>
 
             <!-- Rotation Settings -->
-            <div class="form-group" style="margin-bottom:14px; padding:12px; background:rgba(0,0,0,0.25); border-radius:var(--radius-md); border:1px solid rgba(255,255,255,0.06);">
-                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:600; color:var(--text-strong); font-size:13px;">
-                    <input type="checkbox" name="is_rotated" id="decIsRotated" value="1" onchange="toggleRotationFields(this.checked)">
-                    Enable Continuous Rotation Animation
-                </label>
-                <div id="rotationDirContainer" style="display:none; margin-top:10px;">
-                    <label class="form-label" style="font-size:12px; color:var(--text-muted); margin-bottom:4px; display:block;">Rotation Direction</label>
+            <div class="row" style="margin-bottom:14px;">
+                <div class="col-md-6 form-group">
+                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:600; color:var(--text-strong); margin-bottom:8px;">
+                        <input type="checkbox" name="is_rotated" id="decIsRotated" value="1" onchange="toggleRotationFields(this.checked)">
+                        Enable Continuous Rotation (Spin)
+                    </label>
+                </div>
+                <div class="col-md-6 form-group" id="rotationDirectionGroup" style="display:none;">
+                    <label class="form-label" style="font-weight:600; color:var(--text-strong);">Direction</label>
                     <select name="rotation_direction" id="decRotationDirection" class="form-control">
                         <option value="clockwise">Clockwise (Searah jarum jam)</option>
-                        <option value="counter-clockwise">Counter-Clockwise (Berlawanan arah jarum jam)</option>
+                        <option value="counter-clockwise">Counter-Clockwise (Berlawanan jarum jam)</option>
                     </select>
                 </div>
             </div>
 
-            <!-- 3D Perspective Settings -->
-            <div class="form-group" style="margin-bottom:14px; padding:12px; background:rgba(0,0,0,0.25); border-radius:var(--radius-md); border:1px solid rgba(255,255,255,0.06);">
-                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:600; color:var(--text-strong); font-size:13px;">
+            <!-- 3D Perspective Tilt Settings -->
+            <div class="form-group" style="margin-bottom:16px; padding:12px; background:rgba(0,0,0,0.15); border-radius:var(--radius-md); border:1px solid rgba(255,255,255,0.06);">
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:600; color:var(--text-strong); margin-bottom:8px;">
                     <input type="checkbox" name="perspective_enabled" id="decPerspectiveEnabled" value="1" onchange="togglePerspectiveFields(this.checked)">
-                    Enable 3D Perspective & Tilt
+                    Enable 3D Perspective Tilt (Sudut Kemiringan 3D)
                 </label>
-                <div id="perspectiveContainer" style="display:none; margin-top:10px;">
+                <div id="perspectiveControls" style="display:none; margin-top:10px;">
                     <div class="row">
-                        <div class="col-md-4 form-group">
-                            <label class="form-label" style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">Perspective (px)</label>
+                        <div class="col-md-3 form-group">
+                            <label class="form-label" style="font-size:12px; color:var(--text-muted);">Perspective (px)</label>
                             <input type="number" name="perspective_value" id="decPerspectiveValue" class="form-control" value="800" min="100" max="3000">
                         </div>
-                        <div class="col-md-4 form-group">
-                            <label class="form-label" style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">Rotate X (°)</label>
-                            <input type="number" name="rotate_x" id="decRotateX" class="form-control" value="0.0" step="0.5" min="-90" max="90">
+                        <div class="col-md-3 form-group">
+                            <label class="form-label" style="font-size:12px; color:var(--text-muted);">Rotate X (deg)</label>
+                            <input type="number" name="rotate_x" id="decRotateX" class="form-control" value="0" step="1" min="-180" max="180">
                         </div>
-                        <div class="col-md-4 form-group">
-                            <label class="form-label" style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">Rotate Y (°)</label>
-                            <input type="number" name="rotate_y" id="decRotateY" class="form-control" value="0.0" step="0.5" min="-90" max="90">
+                        <div class="col-md-3 form-group">
+                            <label class="form-label" style="font-size:12px; color:var(--text-muted);">Rotate Y (deg)</label>
+                            <input type="number" name="rotate_y" id="decRotateY" class="form-control" value="0" step="1" min="-180" max="180">
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label class="form-label" style="font-size:12px; color:var(--text-muted);">Rotate Z (deg)</label>
+                            <input type="number" name="rotate_z" id="decRotateZ" class="form-control" value="0" step="1" min="-180" max="180">
                         </div>
                     </div>
-                    <small style="color:var(--text-muted); font-size:11px; display:block; margin-top:2px;">Beri kemiringan sudut 3D pada cakram dekorasi.</small>
+                    <small style="color:var(--text-muted); font-size:11px; display:block; margin-top:2px;">Beri sudut kemiringan 3D dan rotasi sudut Z pada cakram dekorasi.</small>
                 </div>
             </div>
 
-            <!-- Mobile & Active Flags -->
-            <div style="display:flex; gap:20px; margin-bottom:20px;">
-                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:13px; color:var(--text-strong);">
-                    <input type="checkbox" name="show_on_mobile" id="decShowOnMobile" value="1">
-                    Show on Mobile Devices
-                </label>
-                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:13px; color:var(--text-strong);">
-                    <input type="checkbox" name="is_active" id="decIsActive" value="1" checked>
-                    Active
-                </label>
+            <!-- Device Visibility & Status -->
+            <div class="row" style="margin-bottom:20px; align-items:flex-end;">
+                <div class="col-md-7 form-group" style="margin-bottom:0;">
+                    <label class="form-label" style="font-weight:600; color:var(--text-strong); font-size:12.5px;">Device Visibility</label>
+                    <select name="device_visibility" id="decDeviceVisibility" class="form-control" style="font-size:12.5px;">
+                        <option value="all">All Devices (Desktop & Mobile)</option>
+                        <option value="desktop_only">Desktop Only</option>
+                        <option value="mobile_only">Mobile Only (Dedicated)</option>
+                    </select>
+                </div>
+                <div class="col-md-5 form-group" style="margin-bottom:0;">
+                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:13px; color:var(--text-strong); padding-top:6px;">
+                        <input type="checkbox" name="is_active" id="decIsActive" value="1" checked>
+                        Active on Landing Page
+                    </label>
+                </div>
             </div>
 
             <div style="display:flex; justify-content:flex-end; gap:10px; border-top:1px solid var(--line); padding-top:16px;">
@@ -338,13 +361,13 @@ function toggleLayoutMode(mode) {
 }
 
 function toggleRotationFields(enabled) {
-    const dir = document.getElementById('rotationDirContainer');
-    dir.style.display = enabled ? 'block' : 'none';
+    const dir = document.getElementById('rotationDirectionGroup');
+    if (dir) dir.style.display = enabled ? 'block' : 'none';
 }
 
 function togglePerspectiveFields(enabled) {
-    const persp = document.getElementById('perspectiveContainer');
-    persp.style.display = enabled ? 'block' : 'none';
+    const persp = document.getElementById('perspectiveControls');
+    if (persp) persp.style.display = enabled ? 'block' : 'none';
 }
 
 function previewModalImage(input) {
@@ -389,7 +412,10 @@ function openAddModal() {
     document.getElementById('decPerspectiveValue').value = '800';
     document.getElementById('decRotateX').value = '0.0';
     document.getElementById('decRotateY').value = '0.0';
-    document.getElementById('decShowOnMobile').checked = false;
+    document.getElementById('decRotateZ').value = '0.0';
+    if (document.getElementById('decDeviceVisibility')) {
+        document.getElementById('decDeviceVisibility').value = 'all';
+    }
     document.getElementById('decIsActive').checked = true;
     document.getElementById('modalPreviewImg').src = defaultDiscUrl;
 
@@ -447,8 +473,15 @@ function openEditModal(data) {
     document.getElementById('decPerspectiveValue').value = data.perspective_value || 800;
     document.getElementById('decRotateX').value = data.rotate_x !== undefined ? data.rotate_x : 0;
     document.getElementById('decRotateY').value = data.rotate_y !== undefined ? data.rotate_y : 0;
+    document.getElementById('decRotateZ').value = data.rotate_z !== undefined ? data.rotate_z : 0;
 
-    document.getElementById('decShowOnMobile').checked = parseInt(data.show_on_mobile) === 1;
+    if (document.getElementById('decDeviceVisibility')) {
+        let devVis = data.device_visibility;
+        if (!devVis) {
+            devVis = (parseInt(data.show_on_mobile) === 1) ? 'all' : 'desktop_only';
+        }
+        document.getElementById('decDeviceVisibility').value = devVis;
+    }
     document.getElementById('decIsActive').checked = parseInt(data.is_active) === 1;
 
     let imgUrl = data.image_url;

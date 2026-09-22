@@ -39,6 +39,9 @@ class NavbarController extends BaseAdminController
         $colors['--navbar-cta-hover-text']    = $colors['--navbar-cta-hover-text'] ?? '#041a24';
         $colors['--navbar-cta-hover-outline'] = $colors['--navbar-cta-hover-outline'] ?? '#ffffff';
 
+        $placementModel = new \App\Models\SectionLogoPlacementModel();
+        $this->data['placements'] = $placementModel->getPlacementsWithLogos($eventId);
+
         $this->data['navbarColors'] = $colors;
         $this->data['palette']      = $themeModel->getPaletteForPicker($eventId);
         $this->data['pageTitle']    = 'Navbar Settings & CTA Button';
@@ -79,36 +82,20 @@ class NavbarController extends BaseAdminController
         }
 
         $settingData = [
-            'ticket_url'         => $this->request->getPost('ticket_url'),
-            'cta_label'          => $this->request->getPost('cta_label') ?: 'Get Tickets',
-            'logo_a_target_url'  => $this->request->getPost('logo_a_target_url') ?: '#home',
-            'logo_b_target_url'  => $this->request->getPost('logo_b_target_url') ?: 'https://investor.id',
-            'updated_by'         => $userId,
+            'ticket_url'           => $this->request->getPost('ticket_url'),
+            'cta_label'            => $this->request->getPost('cta_label') ?: 'Get Tickets',
+            'cta_ticket_active'     => $this->request->getPost('cta_ticket_active') !== null ? (int)$this->request->getPost('cta_ticket_active') : 1,
+            'floating_bar_enabled' => $this->request->getPost('floating_bar_enabled') !== null ? (int)$this->request->getPost('floating_bar_enabled') : 1,
+            'floating_bar_text'    => $this->request->getPost('floating_bar_text') ?: 'Get Your Seat Now!',
+            'floating_bar_btn_label' => $this->request->getPost('floating_bar_btn_label') ?: 'Get Tickets',
+            'floating_bar_btn_url' => $this->request->getPost('floating_bar_btn_url') ?: null,
+            'logo_a_target_url'    => $this->request->getPost('logo_a_target_url') ?: '#home',
+            'logo_b_target_url'    => $this->request->getPost('logo_b_target_url') ?: 'https://investor.id',
+            'updated_by'           => $userId,
         ];
 
         if ($navItemsJson !== null) {
             $settingData['nav_items_json'] = $navItemsJson;
-        }
-
-        // Handle brand logos upload (Logo A & Logo B - Color & White)
-        $uploadMap = [
-            'logo_a_file'       => 'logo_a_url',
-            'logo_b_file'       => 'logo_b_url',
-            'logo_a_white_file' => 'logo_a_white',
-            'logo_b_white_file' => 'logo_b_white',
-        ];
-
-        foreach ($uploadMap as $inputName => $dbField) {
-            $file = $this->request->getFile($inputName);
-            if ($file && $file->isValid() && !$file->hasMoved()) {
-                $newName = $file->getRandomName();
-                $targetDir = FCPATH . 'uploads/events/' . $eventId . '/branding';
-                if (!is_dir($targetDir)) {
-                    mkdir($targetDir, 0777, true);
-                }
-                $file->move($targetDir, $newName);
-                $settingData[$dbField] = 'uploads/events/' . $eventId . '/branding/' . $newName;
-            }
         }
 
         if ($existingSetting) {

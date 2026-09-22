@@ -21,14 +21,14 @@
     </div>
 
     <!-- Interactive Visual Editor Section -->
-    <div class="card" style="margin-bottom:32px; border:1px solid rgba(217,119,6,0.25); background:linear-gradient(180deg, rgba(30,41,59,0.7) 0%, rgba(15,23,42,0.85) 100%); box-shadow:0 12px 32px rgba(0,0,0,0.4);">
-        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; border-bottom:1px solid rgba(255,255,255,0.08); padding:16px 20px;">
+    <div class="cms-card" style="margin-bottom:32px;">
+        <div class="card-title-bar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
             <div style="display:flex; align-items:center; gap:12px;">
-                <div style="width:32px; height:32px; border-radius:8px; background:rgba(217,119,6,0.2); display:flex; align-items:center; justify-content:center; color:var(--gold);">
+                <div style="width:32px; height:32px; border-radius:var(--radius-control); background:rgba(0, 75, 132, 0.12); display:flex; align-items:center; justify-content:center; color:var(--action);">
                     <svg class="icon" style="width:18px; height:18px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3m0 14v3M2 12h3m14 0h3"></path></svg>
                 </div>
                 <div>
-                    <h2 id="editorHeading" style="font-size:16px; font-weight:700; color:var(--text-strong); margin:0;">Visual Coordinate Studio</h2>
+                    <h2 id="editorHeading" style="font-size:15px; font-weight:700; color:var(--text-strong); margin:0;">Visual Coordinate Studio</h2>
                     <span id="editorSubheading" style="font-size:12px; color:var(--text-muted);">Click anywhere on the preview canvas or drag the disc marker</span>
                 </div>
             </div>
@@ -44,12 +44,12 @@
             </div>
         </div>
 
-        <div class="card-body" style="padding:20px;">
+        <div class="cms-card-body" style="padding:20px;">
             <div class="row" style="display:flex; flex-wrap:wrap; margin:-12px;">
                 
                 <!-- Left: Interactive Canvas -->
                 <div class="col-lg-7" style="flex:1 1 560px; min-width:320px; padding:12px;">
-                    <div style="position:relative; width:100%; height:440px; background:#070b13; border-radius:var(--radius-md); border:1px solid rgba(255,255,255,0.1); overflow:hidden; box-shadow:inset 0 2px 10px rgba(0,0,0,0.6);" id="canvasContainer">
+                    <div style="position:relative; width:100%; height:440px; background:var(--bg-page, #01061a); border-radius:var(--radius-md); border:1px solid rgba(255,255,255,0.1); overflow:hidden; box-shadow:inset 0 2px 10px rgba(0,0,0,0.6);" id="canvasContainer">
                         
                         <!-- Grid overlay for visual guideline -->
                         <div style="position:absolute; inset:0; pointer-events:none; background-image:radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px); background-size:24px 24px; z-index:1;"></div>
@@ -72,8 +72,8 @@
                             <p id="simulatedSectionDesc" style="color:#94a3b8; font-size:13px; max-width:440px;">Interactive canvas representation for freeform decorative placement positioning.</p>
                         </div>
 
-                        <!-- Scaled Frontend Iframe (if reachable) -->
-                        <iframe id="fePreviewIframe" src="<?= esc($frontendUrl) ?>/#gallery" style="position:absolute; top:0; left:0; width:1440px; height:900px; transform-origin:0 0; transform:scale(0.48); border:none; pointer-events:none; z-index:3; opacity:0.25;" onerror="this.style.display='none'"></iframe>
+                        <!-- Scaled Frontend Iframe (True-View 1.0 Opacity) -->
+                        <iframe id="fePreviewIframe" src="<?= esc($frontendUrl) ?>/#gallery" style="position:absolute; top:0; left:0; width:1440px; height:900px; transform-origin:0 0; transform:scale(0.48); border:none; pointer-events:none; z-index:3; opacity:1.0;" onerror="this.style.display='none'"></iframe>
 
                         <!-- Crosshair guide lines -->
                         <div id="crosshairH" style="position:absolute; left:0; right:0; top:50%; height:1px; background:rgba(217,119,6,0.3); pointer-events:none; z-index:5;"></div>
@@ -87,7 +87,7 @@
                         </div>
                     </div>
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; font-size:12px; color:var(--text-muted);">
-                        <span>💡 Tip: Click anywhere on the box or drag the disc directly to adjust.</span>
+                        <span>Tip: Drag the disc or click anywhere on the canvas to set exact coordinates.</span>
                         <button type="button" onclick="centerMarker()" class="btn btn-outline btn-sm" style="padding:2px 8px; font-size:11px;">Center Disc (50%, 50%)</button>
                     </div>
                 </div>
@@ -145,6 +145,28 @@
                                 <span>Color Tinting (CSS mask)</span>
                                 <span style="font-size:10px; color:var(--gold);">Optional</span>
                             </label>
+
+                            <!-- Theme Palette Quick Pick -->
+                            <?php if (!empty($palette)): ?>
+                                <div style="margin-bottom:8px;">
+                                    <label style="font-size:11px; color:var(--text-muted); margin-bottom:4px; display:block;">Pilih dari Palette Tema:</label>
+                                    <select class="form-control" id="formPaletteSelect" style="font-size:12px; padding:4px 8px;" onchange="if(this.value){document.getElementById('formTintColor').value=this.value; if(this.value.startsWith('#')&&this.value.length===7) document.getElementById('formTintColorPicker').value=this.value;}">
+                                        <option value="">-- Preset Warna Tema --</option>
+                                        <?php foreach ($palette as $item): ?>
+                                            <?php if (isset($item['shades']) && is_array($item['shades'])): ?>
+                                                <optgroup label="<?= esc($item['label'] ?? 'Palette') ?>">
+                                                    <?php foreach ($item['shades'] as $shade => $hex): ?>
+                                                        <option value="<?= esc($hex) ?>"><?= esc($shade) ?> (<?= esc($hex) ?>)</option>
+                                                    <?php endforeach; ?>
+                                                </optgroup>
+                                            <?php else: ?>
+                                                <option value="<?= esc($item['value'] ?? '') ?>"><?= esc($item['label'] ?? $item['value'] ?? '') ?></option>
+                                            <?php endif; ?>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                            <?php endif; ?>
+
                             <div style="display:flex; gap:8px; align-items:center; margin-top:4px;">
                                 <input type="color" id="formTintColorPicker" value="#c5a880" oninput="document.getElementById('formTintColor').value = this.value" style="width:34px; height:32px; padding:2px; border-radius:4px; border:1px solid var(--line); background:none; cursor:pointer;">
                                 <input type="text" name="tint_color" id="formTintColor" class="form-control" placeholder="e.g. #ff5733" style="font-size:12px;" oninput="if(this.value.startsWith('#') && this.value.length===7) document.getElementById('formTintColorPicker').value = this.value">
@@ -183,19 +205,57 @@
                             </div>
                         </div>
 
-                        <!-- Mobile, Active & Z-Index -->
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
-                            <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:12px; color:var(--text-strong);">
-                                <input type="checkbox" name="show_on_mobile" id="formShowOnMobile" value="1">
-                                Visible on Mobile
+                        <!-- 3D Perspective Tilt Settings -->
+                        <div style="padding:10px 12px; background:rgba(0,0,0,0.2); border-radius:var(--radius-md); border:1px solid rgba(255,255,255,0.06); margin-bottom:12px;">
+                            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:600; color:var(--text-strong); font-size:12px;">
+                                <input type="checkbox" name="perspective_enabled" id="formPerspectiveEnabled" value="1" onchange="toggleFormPerspective(this.checked)">
+                                3D Perspective Tilt (Kemiringan 3D)
                             </label>
-                            <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:12px; color:var(--text-strong);">
-                                <input type="checkbox" name="is_active" id="formIsActive" value="1" checked>
-                                Active
-                            </label>
-                            <div style="display:flex; align-items:center; gap:6px;">
-                                <label style="font-size:12px; color:var(--text-muted);">Z-Index:</label>
-                                <input type="number" name="z_index" id="formZIndex" class="form-control" value="1" min="0" max="99" style="width:60px; padding:4px 8px; font-size:12px;">
+                            <div id="formPerspectiveControls" style="display:none; margin-top:8px;">
+                                <div class="row" style="margin-bottom:6px;">
+                                    <div class="col-6 form-group" style="margin-bottom:6px;">
+                                        <label class="form-label" style="font-size:11px; color:var(--text-muted);">Perspective (px)</label>
+                                        <input type="number" name="perspective_value" id="formPerspectiveValue" class="form-control" value="800" min="100" max="3000" style="font-size:12px;" oninput="updateMarkerStyles()">
+                                    </div>
+                                    <div class="col-6 form-group" style="margin-bottom:6px;">
+                                        <label class="form-label" style="font-size:11px; color:var(--text-muted);">Rotate Z (deg)</label>
+                                        <input type="number" name="rotate_z" id="formRotateZ" class="form-control" value="0" step="1" min="-180" max="180" style="font-size:12px;" oninput="updateMarkerStyles()">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6 form-group" style="margin-bottom:0;">
+                                        <label class="form-label" style="font-size:11px; color:var(--text-muted);">Rotate X (deg)</label>
+                                        <input type="number" name="rotate_x" id="formRotateX" class="form-control" value="0" step="1" min="-180" max="180" style="font-size:12px;" oninput="updateMarkerStyles()">
+                                    </div>
+                                    <div class="col-6 form-group" style="margin-bottom:0;">
+                                        <label class="form-label" style="font-size:11px; color:var(--text-muted);">Rotate Y (deg)</label>
+                                        <input type="number" name="rotate_y" id="formRotateY" class="form-control" value="0" step="1" min="-180" max="180" style="font-size:12px;" oninput="updateMarkerStyles()">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Device Visibility & Status -->
+                        <div class="row" style="margin-bottom:16px; align-items:flex-end;">
+                            <div class="col-md-7 form-group" style="margin-bottom:0;">
+                                <label class="form-label" style="font-weight:600; color:var(--text-strong); font-size:12px;">Device Visibility</label>
+                                <select name="device_visibility" id="formDeviceVisibility" class="form-control" style="font-size:12px;">
+                                    <option value="all">All Devices</option>
+                                    <option value="desktop_only">Desktop Only</option>
+                                    <option value="mobile_only">Mobile Only</option>
+                                </select>
+                            </div>
+                            <div class="col-md-5 form-group" style="margin-bottom:0;">
+                                <div style="display:flex; align-items:center; gap:12px; padding-top:6px;">
+                                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:12px; color:var(--text-strong);">
+                                        <input type="checkbox" name="is_active" id="formIsActive" value="1" checked>
+                                        Active
+                                    </label>
+                                    <div style="display:flex; align-items:center; gap:4px;">
+                                        <label style="font-size:11px; color:var(--text-muted);">Z:</label>
+                                        <input type="number" name="z_index" id="formZIndex" class="form-control" value="1" min="0" max="99" style="width:48px; padding:3px 6px; font-size:11px;">
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -211,11 +271,11 @@
     </div>
 
     <!-- Existing Custom Placements Table -->
-    <div class="card">
-        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
-            <h2 style="font-size:16px; font-weight:700; color:var(--text-strong); margin:0;">Active Custom Placements (<?= count($placements) ?>)</h2>
+    <div class="cms-card">
+        <div class="card-title-bar" style="display:flex; justify-content:space-between; align-items:center;">
+            <h2 style="font-size:15px; font-weight:700; color:var(--text-strong); margin:0;">Active Custom Placements (<?= count($placements) ?>)</h2>
         </div>
-        
+        <div class="cms-card-body" style="padding:0;">
         <?php if (!empty($placements)): ?>
             <div class="table-responsive">
                 <table class="table" style="width:100%; border-collapse:collapse;">
@@ -227,7 +287,7 @@
                             <th style="padding:12px 16px;">Coordinates (X, Y)</th>
                             <th style="padding:12px 16px;">Size / Opacity</th>
                             <th style="padding:12px 16px;">Animation</th>
-                            <th style="padding:12px 16px;">Mobile</th>
+                            <th style="padding:12px 16px;">Device</th>
                             <th style="padding:12px 16px;">Status</th>
                             <th style="padding:12px 16px; text-align:right;">Actions</th>
                         </tr>
@@ -266,10 +326,15 @@
                                     <?php endif; ?>
                                 </td>
                                 <td style="padding:12px 16px;">
-                                    <?php if (!empty($p['show_on_mobile'])): ?>
-                                        <span style="color:#60a5fa; font-size:11px;">Yes</span>
+                                    <?php 
+                                        $devVis = $p['device_visibility'] ?? (!empty($p['show_on_mobile']) ? 'all' : 'desktop_only');
+                                        if ($devVis === 'all'):
+                                    ?>
+                                        <span class="badge" style="background:rgba(34,197,94,0.15); color:#4ade80; font-size:11px; padding:3px 8px; border-radius:4px;">All Devices</span>
+                                    <?php elseif ($devVis === 'mobile_only'): ?>
+                                        <span class="badge" style="background:rgba(217,119,6,0.15); color:var(--gold); font-size:11px; padding:3px 8px; border-radius:4px;">Mobile Only</span>
                                     <?php else: ?>
-                                        <span style="color:var(--text-muted); font-size:11px;">Hidden</span>
+                                        <span class="badge" style="background:rgba(148,163,184,0.15); color:#94a3b8; font-size:11px; padding:3px 8px; border-radius:4px;">Desktop Only</span>
                                     <?php endif; ?>
                                 </td>
                                 <td style="padding:12px 16px;">
@@ -306,6 +371,7 @@
                 <button type="button" onclick="startNewPlacement()" class="btn btn-gold btn-sm">Create Your First Placement</button>
             </div>
         <?php endif; ?>
+        </div>
     </div>
 
 </div>
@@ -383,10 +449,24 @@ function updateMarkerStyles() {
     const isRot = document.getElementById('formIsRotated').checked;
     const rotDir = document.getElementById('formRotationDir').value;
 
+    const isPersp = document.getElementById('formPerspectiveEnabled').checked;
+    const perspVal = parseInt(document.getElementById('formPerspectiveValue').value) || 800;
+    const rotX = parseFloat(document.getElementById('formRotateX').value) || 0;
+    const rotY = parseFloat(document.getElementById('formRotateY').value) || 0;
+    const rotZ = parseFloat(document.getElementById('formRotateZ').value) || 0;
+
     const scaledWidth = Math.max(40, Math.min(220, Math.round(size * 0.45)));
     const img = document.getElementById('markerImg');
     img.style.width = scaledWidth + 'px';
     dragMarker.style.opacity = opacity;
+
+    if (isPersp) {
+        dragMarker.style.perspective = perspVal + 'px';
+        img.style.transform = `rotateZ(${rotZ}deg) rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+    } else {
+        dragMarker.style.perspective = 'none';
+        img.style.transform = `rotateZ(${rotZ}deg)`;
+    }
 
     if (isRot) {
         img.style.animation = (rotDir === 'counter-clockwise' ? 'spin-ccw' : 'spin-cw') + ' 25s linear infinite';
@@ -397,6 +477,11 @@ function updateMarkerStyles() {
 
 function toggleFormRotation(checked) {
     document.getElementById('formRotationDirWrap').style.display = checked ? 'block' : 'none';
+    updateMarkerStyles();
+}
+
+function toggleFormPerspective(checked) {
+    document.getElementById('formPerspectiveControls').style.display = checked ? 'block' : 'none';
     updateMarkerStyles();
 }
 
@@ -423,7 +508,15 @@ function startNewPlacement() {
     document.getElementById('formIsRotated').checked = false;
     toggleFormRotation(false);
     document.getElementById('formRotationDir').value = 'clockwise';
-    document.getElementById('formShowOnMobile').checked = false;
+    document.getElementById('formPerspectiveEnabled').checked = false;
+    toggleFormPerspective(false);
+    document.getElementById('formPerspectiveValue').value = '800';
+    document.getElementById('formRotateX').value = '0';
+    document.getElementById('formRotateY').value = '0';
+    document.getElementById('formRotateZ').value = '0';
+    if (document.getElementById('formDeviceVisibility')) {
+        document.getElementById('formDeviceVisibility').value = 'all';
+    }
     document.getElementById('formIsActive').checked = true;
     document.getElementById('formZIndex').value = '1';
     document.getElementById('markerImg').src = defaultDiscUrl;
@@ -451,7 +544,21 @@ function loadPlacementIntoStudio(data) {
     toggleFormRotation(isRot);
     document.getElementById('formRotationDir').value = data.rotation_direction || 'clockwise';
 
-    document.getElementById('formShowOnMobile').checked = parseInt(data.show_on_mobile) === 1;
+    const isPersp = parseInt(data.perspective_enabled) === 1;
+    document.getElementById('formPerspectiveEnabled').checked = isPersp;
+    toggleFormPerspective(isPersp);
+    document.getElementById('formPerspectiveValue').value = data.perspective_value || 800;
+    document.getElementById('formRotateX').value = data.rotate_x !== undefined ? data.rotate_x : 0;
+    document.getElementById('formRotateY').value = data.rotate_y !== undefined ? data.rotate_y : 0;
+    document.getElementById('formRotateZ').value = data.rotate_z !== undefined ? data.rotate_z : 0;
+
+    if (document.getElementById('formDeviceVisibility')) {
+        let devVis = data.device_visibility;
+        if (!devVis) {
+            devVis = (parseInt(data.show_on_mobile) === 1) ? 'all' : 'desktop_only';
+        }
+        document.getElementById('formDeviceVisibility').value = devVis;
+    }
     document.getElementById('formIsActive').checked = parseInt(data.is_active) === 1;
     document.getElementById('formZIndex').value = data.z_index || 1;
 
