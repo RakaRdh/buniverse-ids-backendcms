@@ -340,7 +340,7 @@ class EventApiController extends ResourceController
 
         // 3b. Livestream Settings
         $livestreamModel = new \App\Models\EventLivestreamModel();
-        $livestreamRow = $livestreamModel->getActiveByEvent($event['id']);
+        $livestreamRow = $livestreamModel->where('event_id', $event['id'])->orderBy('id', 'DESC')->first();
         $livestream = null;
         if (!empty($livestreamRow)) {
             $livestream = [

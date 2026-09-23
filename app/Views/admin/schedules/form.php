@@ -20,8 +20,14 @@ $startTimeVal = !empty($session['start_time']) ? substr($session['start_time'], 
 $endTimeVal   = !empty($session['end_time']) ? substr($session['end_time'], 0, 5) : '10:30';
 
 // Current speakers & moderators for plenary
-$currentSpeakers = !empty($session['speakers']) ? array_column($session['speakers'], 'id') : [];
-$currentModerators = !empty($session['moderators']) ? array_column($session['moderators'], 'id') : [];
+$currentSpeakers = !empty($session['speakers']) ? array_map(function($s) {
+    return (int)($s['speaker_id'] ?? $s['id'] ?? 0);
+}, $session['speakers']) : [];
+$currentModerators = !empty($session['moderators']) ? array_map(function($m) {
+    return (int)($m['moderator_id'] ?? $m['id'] ?? 0);
+}, $session['moderators']) : [];
+$currentSpeakers = array_values(array_filter($currentSpeakers));
+$currentModerators = array_values(array_filter($currentModerators));
 
 // Candidate lookup JSON
 $speakersList = is_array($speakers ?? null) ? $speakers : [];
@@ -191,8 +197,12 @@ const initialSessionRooms = <?= json_encode(!empty($session['session_rooms']) ? 
             return [
                 'title'       => $it['title'],
                 'subtitle'    => $it['subtitle'] ?? '',
-                'moderators'  => array_column($it['moderators'] ?? [], 'id'),
-                'speakers'    => array_column($it['speakers'] ?? [], 'id'),
+                'moderators'  => array_values(array_filter(array_map(function($m) {
+                    return (int)($m['moderator_id'] ?? $m['id'] ?? 0);
+                }, $it['moderators'] ?? []))),
+                'speakers'    => array_values(array_filter(array_map(function($s) {
+                    return (int)($s['speaker_id'] ?? $s['id'] ?? 0);
+                }, $it['speakers'] ?? []))),
             ];
         }, $sr['items'] ?? [])
     ];
