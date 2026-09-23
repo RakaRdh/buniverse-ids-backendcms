@@ -169,9 +169,14 @@
                         <input type="url" name="youtube_url" value="<?= esc($settings['youtube_url'] ?? '') ?>" placeholder="https://youtube.com/..." class="form-control">
                     </div>
 
-                    <div class="form-group" style="margin-bottom: 0;">
+                    <div class="form-group" style="margin-bottom: 14px;">
                         <label class="form-label" style="font-weight: 600;">Facebook URL</label>
                         <input type="url" name="facebook_url" value="<?= esc($settings['facebook_url'] ?? '') ?>" placeholder="https://facebook.com/..." class="form-control">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" style="font-weight: 600;">TikTok URL</label>
+                        <input type="url" name="tiktok_url" value="<?= esc($settings['tiktok_url'] ?? '') ?>" placeholder="https://www.tiktok.com/@..." class="form-control">
                     </div>
                 </div>
             </div>

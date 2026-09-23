@@ -16,6 +16,7 @@ class SponsorPartnershipModel extends Model
         'event_id',
         'name',
         'logo_url',
+        'is_active',
         'updated_by',
         'created_at',
         'updated_at',

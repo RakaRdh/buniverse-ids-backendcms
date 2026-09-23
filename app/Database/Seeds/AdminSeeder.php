@@ -8,11 +8,12 @@ class AdminSeeder extends Seeder
 {
     public function run()
     {
+        /* === DEPRECATED: Consolidated into MasterSeeder ===
         $data = [
             'name'          => 'Raka Herdika',
-            'username'      => 'rakaherdika',
+            'username'      => 'rakah',
             'email'         => 'rakaherdika15@gmail.com',
-            'password_hash' => password_hash('admin123', PASSWORD_DEFAULT),
+            'password_hash' => password_hash('adm!n123', PASSWORD_DEFAULT),
             'role'          => 'superadmin',
             'is_active'     => 1,
             'created_at'    => date('Y-m-d H:i:s'),
@@ -34,5 +35,7 @@ class AdminSeeder extends Seeder
             ]);
             echo "Admin user {$data['username']} ({$data['email']}) updated successfully.\n";
         }
+        === END DEPRECATED === */
+        echo "AdminSeeder is deprecated. Please run MasterSeeder.\n";
     }
 }

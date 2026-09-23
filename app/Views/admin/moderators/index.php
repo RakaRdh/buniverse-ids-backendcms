@@ -7,8 +7,12 @@
 </div>
 
 <div class="cms-card">
-    <div class="card-title-bar">
-        <span class="card-title-text">All Moderators (<?= count($moderators) ?>)</span>
+    <div class="card-title-bar" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <span class="card-title-text">All Moderators (<span id="moderatorsCount"><?= count($moderators) ?></span>)</span>
+        <div style="position: relative; width: 280px; max-width: 100%;">
+            <input type="text" id="moderatorSearchInput" class="form-control" placeholder="Search moderator or role..." style="padding-left: 32px; font-size: 13px; height: 36px; border-radius: var(--radius-sm);">
+            <svg style="position: absolute; left: 10px; top: 10px; width: 16px; height: 16px; color: var(--text-muted); pointer-events: none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </div>
     </div>
     <div class="table-responsive">
         <table class="cms-table">
@@ -20,17 +24,15 @@
                     <th style="text-align: right; width: 140px;">Actions</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="moderatorsTableBody">
                 <?php if (!empty($moderators)): ?>
                     <?php foreach ($moderators as $mod): ?>
-                        <tr>
+                        <tr class="moderator-row-item">
                             <td>
                                 <?php if (!empty($mod['photo_url'])): ?>
                                     <img src="<?= base_url(esc($mod['photo_url'])) ?>" alt="<?= esc($mod['name']) ?>" style="width: 64px; height: 85px; border-radius: var(--radius-card); object-fit: cover; background: var(--primary-1-7); border: 1.5px solid var(--line); box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
                                 <?php else: ?>
-                                    <div style="width: 64px; height: 85px; border-radius: var(--radius-card); background: var(--primary-1-7); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: #ffffff; border: 1.5px solid var(--line);">
-                                        <?= strtoupper(substr($mod['name'], 0, 1)) ?>
-                                    </div>
+                                    <img src="<?= base_url(esc('assets/img/placeholder.png')) ?>" alt="<?= esc($mod['name']) ?>" style="width: 64px; height: 85px; border-radius: var(--radius-card); object-fit: cover; background: var(--primary-1-7); border: 1.5px solid var(--line); box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
                                 <?php endif; ?>
                             </td>
                             <td><strong style="color: var(--text-strong); font-size: 14px;"><?= esc($mod['name']) ?></strong></td>
@@ -57,3 +59,32 @@
         </table>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('moderatorSearchInput');
+    const tbody = document.getElementById('moderatorsTableBody');
+    const countDisplay = document.getElementById('moderatorsCount');
+    if (!searchInput || !tbody) return;
+
+    searchInput.addEventListener('input', function() {
+        const query = this.value.toLowerCase().trim();
+        const rows = tbody.querySelectorAll('tr.moderator-row-item');
+        let visibleCount = 0;
+
+        rows.forEach(r => {
+            const text = r.innerText.toLowerCase();
+            if (!query || text.includes(query)) {
+                r.style.display = '';
+                visibleCount++;
+            } else {
+                r.style.display = 'none';
+            }
+        });
+
+        if (countDisplay) {
+            countDisplay.textContent = visibleCount;
+        }
+    });
+});
+</script>

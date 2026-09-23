@@ -3,7 +3,13 @@
         <h1 class="page-title"><?= $session ? 'Edit Schedule Session' : 'Add Schedule Session' ?></h1>
         <p class="page-subtitle">Configure session timing, track type (Plenary vs Special Session), and speakers/moderators</p>
     </div>
-    <a href="<?= base_url('admin/schedules?day_id=' . ($dayId ?? '')) ?>" class="btn btn-outline">
+    <?php
+    $backUrl = base_url('admin/schedules?day_id=' . ($selectedDayId ?? $dayId ?? ''));
+    if (!empty($session['id'])) {
+        $backUrl .= '#session-' . $session['id'];
+    }
+    ?>
+    <a href="<?= $backUrl ?>" class="btn btn-outline" id="btnBackToSchedule">
         <svg class="icon" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
         Back to Schedules
     </a>
@@ -122,7 +128,10 @@ $roomsListJson = json_encode(array_map(function($r) {
 
                 <!-- Plenary Moderator Autocomplete Chips -->
                 <div class="form-group">
-                    <label class="form-label">Moderators</label>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <label class="form-label" style="margin-bottom: 0;">Moderators</label>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="openQuickAddModal('moderator', 'plenaryModBox')" style="padding: 2px 8px; font-size: 11.5px;">+ Quick Add Moderator</button>
+                    </div>
                     <div class="autocomplete-chips-container" id="plenaryModContainer">
                         <div class="autocomplete-chips-box" id="plenaryModBox" onclick="focusChipInput('plenaryModInput')">
                             <!-- Chips will render here -->
@@ -130,12 +139,15 @@ $roomsListJson = json_encode(array_map(function($r) {
                         </div>
                         <div class="autocomplete-dropdown" id="plenaryModDropdown"></div>
                     </div>
-                    <div class="help-text">Search moderator name. Click or press enter to add tag chip.</div>
+                    <div class="help-text">Search moderator name. Click or press enter to add. Use ◀/▶ to reorder.</div>
                 </div>
 
                 <!-- Plenary Speakers Autocomplete Chips -->
                 <div class="form-group">
-                    <label class="form-label">Speakers</label>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <label class="form-label" style="margin-bottom: 0;">Speakers</label>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="openQuickAddModal('speaker', 'plenarySpkBox')" style="padding: 2px 8px; font-size: 11.5px;">+ Quick Add Speaker</button>
+                    </div>
                     <div class="autocomplete-chips-container" id="plenarySpkContainer">
                         <div class="autocomplete-chips-box" id="plenarySpkBox" onclick="focusChipInput('plenarySpkInput')">
                             <!-- Chips will render here -->
@@ -143,7 +155,7 @@ $roomsListJson = json_encode(array_map(function($r) {
                         </div>
                         <div class="autocomplete-dropdown" id="plenarySpkDropdown"></div>
                     </div>
-                    <div class="help-text">Search speaker name. Add multiple speakers as tag chips.</div>
+                    <div class="help-text">Search speaker name. Click or press enter to add. Use ◀/▶ to reorder.</div>
                 </div>
             </div>
 
@@ -172,10 +184,65 @@ $roomsListJson = json_encode(array_map(function($r) {
 
             <!-- Action Buttons -->
             <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line); display: flex; gap: 10px;">
-                <button type="submit" class="btn btn-primary"><?= $isEdit ? 'Update Session' : 'Save Session Schedule' ?></button>
-                <a href="<?= base_url('admin/schedules?day_id=' . ($selectedDayId ?? '')) ?>" class="btn btn-outline">Cancel</a>
+                <button type="submit" class="btn btn-primary" id="btnSubmitSession"><?= $isEdit ? 'Update Session' : 'Save Session Schedule' ?></button>
+                <a href="<?= $backUrl ?>" class="btn btn-outline" id="btnCancelSession">Cancel</a>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- ================= QUICK-ADD SPEAKER / MODERATOR MODAL ================= -->
+<div id="quickAddModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1050; align-items:center; justify-content:center; backdrop-filter:blur(3px);">
+    <div style="background:var(--bg-surface); border:1px solid var(--line); border-radius:var(--radius-card); width:95%; max-width:480px; box-shadow:0 12px 36px rgba(0,0,0,0.5); overflow:hidden;">
+        <div style="padding:16px 20px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;">
+            <h3 id="quickAddTitle" style="font-size:15px; font-weight:700; color:var(--text-strong); margin:0;">Quick Add</h3>
+            <button type="button" onclick="closeQuickAddModal()" style="background:none; border:none; font-size:20px; color:var(--text-muted); cursor:pointer;">&times;</button>
+        </div>
+        <form id="quickAddForm" onsubmit="handleQuickAddSubmit(event)" style="padding:20px;">
+            <input type="hidden" id="quickAddType" value="speaker">
+            <input type="hidden" id="quickAddTargetBoxId" value="">
+
+            <div class="form-group" style="margin-bottom:14px;">
+                <label class="form-label" style="font-weight:600; color:var(--text-strong);">Full Name *</label>
+                <input type="text" id="quickAddName" class="form-control" required placeholder="e.g. John Doe, M.B.A">
+            </div>
+
+            <div class="form-group" style="margin-bottom:14px;">
+                <label class="form-label" style="font-weight:600; color:var(--text-strong);">Role / Title / Designation *</label>
+                <textarea id="quickAddRole" class="form-control" rows="2" required placeholder="e.g. Minister of Finance / Executive Director"></textarea>
+            </div>
+
+            <div class="form-group" style="margin-bottom:20px;">
+                <label class="form-label" style="font-weight:600; color:var(--text-strong);">Photo (Optional)</label>
+                <input type="file" id="quickAddPhoto" class="form-control" accept="image/*">
+            </div>
+
+            <div id="quickAddError" style="display:none; color:var(--danger); font-size:12.5px; margin-bottom:12px; font-weight:600;"></div>
+
+            <div style="display:flex; justify-content:flex-end; gap:10px;">
+                <button type="button" onclick="closeQuickAddModal()" class="btn btn-outline btn-sm">Cancel</button>
+                <button type="submit" id="quickAddSubmitBtn" class="btn btn-primary btn-sm">Save & Insert</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ================= DIRTY FORM EXIT CONFIRMATION MODAL ================= -->
+<div id="exitConfirmModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1060; align-items:center; justify-content:center; backdrop-filter:blur(3px);">
+    <div style="background:var(--bg-surface); border:1px solid var(--line); border-radius:var(--radius-card); width:95%; max-width:440px; box-shadow:0 12px 36px rgba(0,0,0,0.5); overflow:hidden;">
+        <div style="padding:16px 20px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="font-size:15px; font-weight:700; color:var(--text-strong); margin:0;">Unsaved Changes</h3>
+            <button type="button" onclick="closeExitConfirmModal()" style="background:none; border:none; font-size:20px; color:var(--text-muted); cursor:pointer;">&times;</button>
+        </div>
+        <div style="padding:20px;">
+            <p style="font-size:13.5px; color:var(--text-body); line-height:1.5; margin:0 0 16px 0;">
+                You have unsaved changes in this session form. Leaving now will discard all your edits. Are you sure you want to proceed?
+            </p>
+            <div style="display:flex; justify-content:flex-end; gap:10px;">
+                <button type="button" onclick="closeExitConfirmModal()" class="btn btn-outline btn-sm">Stay on Form</button>
+                <button type="button" id="btnConfirmLeave" class="btn btn-danger btn-sm" style="background:var(--danger); color:#fff; border:none;">Leave Page</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -226,9 +293,9 @@ function focusChipInput(inputId) {
     if (input) input.focus();
 }
 
-/**
- * Autocomplete Chip Component Builder
- */
+// Global registry of chips instances so Quick Add can push newly created records
+const chipsRegistry = {};
+
 function setupAutocompleteChips(config) {
     const {
         boxId,
@@ -244,20 +311,51 @@ function setupAutocompleteChips(config) {
     const dropdown = document.getElementById(dropdownId);
     if (!box || !input || !dropdown) return;
 
-    let selectedIds = new Set(initialIds.map(Number));
+    // Ordered list of selected IDs (preserves order)
+    let selectedIds = [...initialIds.map(Number)];
+
+    // Register instance
+    chipsRegistry[boxId] = {
+        addId: function(newId) {
+            newId = Number(newId);
+            if (!selectedIds.includes(newId)) {
+                selectedIds.push(newId);
+                renderChips();
+                markDirty();
+            }
+        },
+        refreshItems: function(newItems) {
+            config.items = newItems;
+        }
+    };
+
+    function moveChip(index, direction) {
+        const targetIndex = index + direction;
+        if (targetIndex < 0 || targetIndex >= selectedIds.length) return;
+        const temp = selectedIds[index];
+        selectedIds[index] = selectedIds[targetIndex];
+        selectedIds[targetIndex] = temp;
+        renderChips();
+        markDirty();
+    }
 
     function renderChips() {
         box.querySelectorAll('.autocomplete-chip, input[type="hidden"]').forEach(el => el.remove());
 
-        selectedIds.forEach(id => {
+        selectedIds.forEach((id, idx) => {
             const item = items.find(x => Number(x.id) === Number(id));
             if (!item) return;
 
             const chip = document.createElement('span');
             chip.className = 'autocomplete-chip';
+            chip.title = (item.role ? item.role : item.name);
             chip.innerHTML = `
                 <span>${escapeHtml(item.name)}</span>
-                <button type="button" class="remove-chip" data-id="${item.id}">&times;</button>
+                <span class="chip-actions">
+                    ${idx > 0 ? `<button type="button" class="chip-btn chip-move-left" title="Move earlier" data-idx="${idx}">&lsaquo;</button>` : ''}
+                    ${idx < selectedIds.length - 1 ? `<button type="button" class="chip-btn chip-move-right" title="Move later" data-idx="${idx}">&rsaquo;</button>` : ''}
+                    <button type="button" class="remove-chip" data-id="${item.id}" title="Remove">&times;</button>
+                </span>
             `;
 
             const hiddenInput = document.createElement('input');
@@ -265,10 +363,27 @@ function setupAutocompleteChips(config) {
             hiddenInput.name = inputName;
             hiddenInput.value = item.id;
 
+            const moveLeftBtn = chip.querySelector('.chip-move-left');
+            if (moveLeftBtn) {
+                moveLeftBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    moveChip(idx, -1);
+                });
+            }
+
+            const moveRightBtn = chip.querySelector('.chip-move-right');
+            if (moveRightBtn) {
+                moveRightBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    moveChip(idx, 1);
+                });
+            }
+
             chip.querySelector('.remove-chip').addEventListener('click', (e) => {
                 e.stopPropagation();
-                selectedIds.delete(Number(item.id));
+                selectedIds.splice(idx, 1);
                 renderChips();
+                markDirty();
             });
 
             box.insertBefore(chip, input);
@@ -279,7 +394,7 @@ function setupAutocompleteChips(config) {
     function renderDropdown(filterText = '') {
         const query = filterText.toLowerCase().trim();
         const matches = items.filter(item => {
-            if (selectedIds.has(Number(item.id))) return false;
+            if (selectedIds.includes(Number(item.id))) return false;
             if (!query) return true;
             return item.name.toLowerCase().includes(query) || (item.role && item.role.toLowerCase().includes(query));
         });
@@ -306,10 +421,13 @@ function setupAutocompleteChips(config) {
             el.addEventListener('mousedown', (e) => {
                 e.preventDefault();
                 const id = Number(el.dataset.id);
-                selectedIds.add(id);
+                if (!selectedIds.includes(id)) {
+                    selectedIds.push(id);
+                }
                 input.value = '';
                 dropdown.style.display = 'none';
                 renderChips();
+                markDirty();
                 input.focus();
             });
         });
@@ -330,10 +448,10 @@ function setupAutocompleteChips(config) {
     });
 
     input.addEventListener('keydown', (e) => {
-        if (e.key === 'Backspace' && input.value === '' && selectedIds.size > 0) {
-            const arr = Array.from(selectedIds);
-            selectedIds.delete(arr[arr.length - 1]);
+        if (e.key === 'Backspace' && input.value === '' && selectedIds.length > 0) {
+            selectedIds.pop();
             renderChips();
+            markDirty();
         }
     });
 
@@ -465,7 +583,10 @@ function addItemToRoom(rIdx, itemData = null) {
 
         <!-- Moderators Autocomplete -->
         <div class="form-group" style="margin-bottom: 10px;">
-            <label class="form-label">Moderator (Optional)</label>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <label class="form-label" style="margin-bottom: 0;">Moderator (Optional)</label>
+                <button type="button" class="btn btn-outline btn-sm" onclick="openQuickAddModal('moderator', 'modBox_${rIdx}_${itIdx}')" style="padding: 2px 8px; font-size: 11px;">+ Quick Add Moderator</button>
+            </div>
             <div class="autocomplete-chips-container" id="modCont_${rIdx}_${itIdx}">
                 <div class="autocomplete-chips-box" id="modBox_${rIdx}_${itIdx}" onclick="focusChipInput('modInp_${rIdx}_${itIdx}')">
                     <input type="text" id="modInp_${rIdx}_${itIdx}" class="autocomplete-chips-input" placeholder="Type to search and add moderator...">
@@ -476,7 +597,10 @@ function addItemToRoom(rIdx, itemData = null) {
 
         <!-- Speakers Autocomplete -->
         <div class="form-group" style="margin-bottom: 0;">
-            <label class="form-label">Speakers</label>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <label class="form-label" style="margin-bottom: 0;">Speakers</label>
+                <button type="button" class="btn btn-outline btn-sm" onclick="openQuickAddModal('speaker', 'spkBox_${rIdx}_${itIdx}')" style="padding: 2px 8px; font-size: 11px;">+ Quick Add Speaker</button>
+            </div>
             <div class="autocomplete-chips-container" id="spkCont_${rIdx}_${itIdx}">
                 <div class="autocomplete-chips-box" id="spkBox_${rIdx}_${itIdx}" onclick="focusChipInput('spkInp_${rIdx}_${itIdx}')">
                     <input type="text" id="spkInp_${rIdx}_${itIdx}" class="autocomplete-chips-input" placeholder="Type to search and add speakers...">
@@ -538,5 +662,172 @@ document.addEventListener('DOMContentLoaded', () => {
     if (initialSessionRooms && initialSessionRooms.length > 0) {
         initialSessionRooms.forEach(sr => addRoomCard(sr));
     }
+
+    // Attach dirty form detectors
+    const form = document.querySelector('form[action*="schedules/session"]');
+    if (form) {
+        form.addEventListener('input', markDirty);
+        form.addEventListener('change', markDirty);
+        form.addEventListener('submit', () => {
+            isFormDirty = false;
+        });
+    }
+
+    // Intercept Back & Cancel links
+    const backBtn = document.getElementById('btnBackToSchedule');
+    const cancelBtn = document.getElementById('btnCancelSession');
+    [backBtn, cancelBtn].forEach(btn => {
+        if (btn) {
+            btn.addEventListener('click', (e) => {
+                if (isFormDirty) {
+                    e.preventDefault();
+                    pendingExitUrl = btn.getAttribute('href');
+                    openExitConfirmModal();
+                }
+            });
+        }
+    });
+
+    // Also prompt browser on tab close if dirty
+    window.addEventListener('beforeunload', (e) => {
+        if (isFormDirty) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
 });
+
+// ================= DIRTY FORM STATE =================
+let isFormDirty = false;
+let pendingExitUrl = null;
+
+function markDirty() {
+    isFormDirty = true;
+}
+
+function openExitConfirmModal() {
+    const modal = document.getElementById('exitConfirmModal');
+    if (modal) modal.style.display = 'flex';
+}
+
+function closeExitConfirmModal() {
+    const modal = document.getElementById('exitConfirmModal');
+    if (modal) modal.style.display = 'none';
+    pendingExitUrl = null;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const leaveBtn = document.getElementById('btnConfirmLeave');
+    if (leaveBtn) {
+        leaveBtn.addEventListener('click', () => {
+            isFormDirty = false;
+            if (pendingExitUrl) {
+                window.location.href = pendingExitUrl;
+            } else {
+                closeExitConfirmModal();
+            }
+        });
+    }
+});
+
+// ================= QUICK-ADD AJAX LOGIC =================
+function openQuickAddModal(type, targetBoxId) {
+    const modal = document.getElementById('quickAddModal');
+    const title = document.getElementById('quickAddTitle');
+    const typeInp = document.getElementById('quickAddType');
+    const targetBoxInp = document.getElementById('quickAddTargetBoxId');
+    const errorDiv = document.getElementById('quickAddError');
+
+    if (!modal) return;
+
+    typeInp.value = type;
+    targetBoxInp.value = targetBoxId;
+    title.textContent = (type === 'speaker') ? 'Quick Add New Speaker' : 'Quick Add New Moderator';
+    errorDiv.style.display = 'none';
+    errorDiv.textContent = '';
+    document.getElementById('quickAddForm').reset();
+    typeInp.value = type;
+    targetBoxInp.value = targetBoxId;
+
+    modal.style.display = 'flex';
+    setTimeout(() => {
+        document.getElementById('quickAddName').focus();
+    }, 100);
+}
+
+function closeQuickAddModal() {
+    const modal = document.getElementById('quickAddModal');
+    if (modal) modal.style.display = 'none';
+}
+
+function handleQuickAddSubmit(e) {
+    e.preventDefault();
+    const type = document.getElementById('quickAddType').value;
+    const targetBoxId = document.getElementById('quickAddTargetBoxId').value;
+    const name = document.getElementById('quickAddName').value.trim();
+    const role = document.getElementById('quickAddRole').value.trim();
+    const photoFile = document.getElementById('quickAddPhoto').files[0];
+    const submitBtn = document.getElementById('quickAddSubmitBtn');
+    const errorDiv = document.getElementById('quickAddError');
+
+    if (!name || !role) {
+        errorDiv.textContent = 'Name and Role are required.';
+        errorDiv.style.display = 'block';
+        return;
+    }
+
+    const endpoint = (type === 'speaker') 
+        ? '<?= base_url('admin/speakers/quick-save') ?>' 
+        : '<?= base_url('admin/moderators/quick-save') ?>';
+
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('role_text', role);
+    if (photoFile) {
+        formData.append('photo_file', photoFile);
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving...';
+    errorDiv.style.display = 'none';
+
+    fetch(endpoint, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Save & Insert';
+
+        if (data && data.success) {
+            const newRecord = data.speaker || data.moderator;
+            if (type === 'speaker') {
+                allSpeakers.push(newRecord);
+            } else {
+                allModerators.push(newRecord);
+            }
+
+            // If target chip container is registered, insert the new chip immediately
+            if (targetBoxId && chipsRegistry[targetBoxId]) {
+                chipsRegistry[targetBoxId].addId(newRecord.id);
+            }
+
+            closeQuickAddModal();
+        } else {
+            errorDiv.textContent = data.message || 'Failed to save record.';
+            errorDiv.style.display = 'block';
+        }
+    })
+    .catch(err => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Save & Insert';
+        errorDiv.textContent = 'An error occurred while communicating with the server.';
+        errorDiv.style.display = 'block';
+        console.error('Quick Add error:', err);
+    });
+}
 </script>

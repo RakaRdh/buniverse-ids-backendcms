@@ -37,6 +37,7 @@ class EventSettingModel extends Model
         'instagram_url',
         'twitter_url',
         'youtube_url',
+        'tiktok_url',
         'linkedin_url',
         'created_by',
         'updated_by',

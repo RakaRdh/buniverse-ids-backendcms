@@ -34,6 +34,16 @@
                         <input type="file" name="logo_file" class="form-control" accept="image/*" <?= empty($sponsorPartnership) ? 'required' : '' ?> onchange="previewSponsorImage(this)">
                     </div>
 
+                    <div class="form-group" style="margin-bottom: 24px;">
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none;">
+                            <input type="checkbox" name="is_active" value="1" <?= (!isset($sponsorPartnership['is_active']) || !empty($sponsorPartnership['is_active'])) ? 'checked' : '' ?> style="width: 18px; height: 18px; accent-color: var(--accent-gold);">
+                            <span style="font-size: 14px; font-weight: 500; color: var(--text-strong);">Enable Sponsors & Partnerships Banner on Frontend</span>
+                        </label>
+                        <small style="color: var(--text-muted); display: block; margin-top: 5px; margin-left: 28px;">
+                            Jika dinonaktifkan, section sponsor tetap tampil di Frontend namun menampilkan box placeholder <em>"Belum ada sponsor saat ini"</em>.
+                        </small>
+                    </div>
+
                     <div id="imagePreviewContainer" style="margin-bottom: 24px; padding: 20px; background: rgba(0,0,0,0.3); border: 1px dashed rgba(255,255,255,0.15); border-radius: var(--radius-md); text-align: center;">
                         <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Live Image Preview</div>
                         <?php if (!empty($sponsorPartnership['logo_url'])): ?>

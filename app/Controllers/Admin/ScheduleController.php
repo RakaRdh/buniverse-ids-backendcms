@@ -413,7 +413,7 @@ class ScheduleController extends BaseAdminController
                 }
             }
 
-            return redirect()->to(base_url('admin/schedules?day_id=' . $dayId))->with('success', 'Special session updated successfully.');
+            return redirect()->to(base_url('admin/schedules?day_id=' . $dayId . '#session-' . $id))->with('success', 'Special session updated successfully.');
         } else {
             // Plenary update
             $roomId = $this->request->getPost('room_id') ? (int)$this->request->getPost('room_id') : null;
@@ -463,7 +463,7 @@ class ScheduleController extends BaseAdminController
                 }
             }
 
-            return redirect()->to(base_url('admin/schedules?day_id=' . $dayId))->with('success', 'Plenary session updated successfully.');
+            return redirect()->to(base_url('admin/schedules?day_id=' . $dayId . '#session-' . $id))->with('success', 'Plenary session updated successfully.');
         }
     }
 

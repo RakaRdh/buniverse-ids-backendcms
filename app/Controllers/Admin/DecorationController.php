@@ -72,25 +72,25 @@ class DecorationController extends BaseAdminController
         $rotateZ            = $this->request->getPost('rotate_z') !== null ? (float)$this->request->getPost('rotate_z') : 0.0;
         $deviceVisibility   = $this->request->getPost('device_visibility') ?: 'all';
         $showOnMobile       = ($deviceVisibility !== 'desktop_only') ? 1 : 0;
-        $isActive           = $this->request->getPost('is_active') !== null ? (int)$this->request->getPost('is_active') : 1;
+        $isActive           = $this->request->getPost('is_active') ? 1 : 0;
         $userId             = $this->currentAdmin['id'] ?? session()->get('admin_id') ?? session()->get('admin_user')['id'] ?? 1;
 
         if (!array_key_exists($sectionKey, $this->sections)) {
             return redirect()->back()->with('error', 'Invalid section selected.');
         }
 
-        // Validate manual mode position
+        // Validate manual mode position with device visibility check
         if ($layoutMode === 'manual') {
             if (empty($position)) {
                 return redirect()->back()->with('error', 'Position is required for manual layout mode.');
             }
-            if ($isActive && $decorationModel->hasDuplicateManualPosition($eventId, $sectionKey, $position, $id ?: null)) {
-                return redirect()->back()->with('error', "An active decoration already exists at position '{$position}' for this section. Choose another position or deactivate the existing one.");
+            if ($isActive && $decorationModel->hasDuplicateManualPosition($eventId, $sectionKey, $position, $id ?: null, $deviceVisibility)) {
+                return redirect()->back()->with('error', "An active decoration already exists at position '{$position}' for this section with conflicting device visibility. Choose another position or adjust visibility.");
             }
         }
 
-        // Image handling
-        $imageUrl = $existing['image_url'] ?? 'assets/img/cakram.webp';
+        // Image handling: default fallback is decoration_white.png
+        $imageUrl = $existing['image_url'] ?? 'assets/img/decoration_white.png';
         $imageFile = $this->request->getFile('image_file');
         if ($imageFile && $imageFile->isValid() && !$imageFile->hasMoved()) {
             $newName = $imageFile->getRandomName();

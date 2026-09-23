@@ -33,8 +33,48 @@ class MasterSeeder extends Seeder
             $eventId = (int)$event['id'];
         }
 
-        // Get admin ID
-        $admin = $db->table('admin_users')->orderBy('id', 'ASC')->get()->getRowArray();
+        // 1b. Seed / Update Admin Users
+        $adminsToSeed = [
+            [
+                'name'          => 'Raka Herdika',
+                'username'      => 'rakah',
+                'email'         => 'rakaherdika15@gmail.com',
+                'password_hash' => password_hash('adm!n123', PASSWORD_DEFAULT),
+                'role'          => 'superadmin',
+                'is_active'     => 1,
+            ],
+            [
+                'name'          => 'Bryan',
+                'username'      => 'bryans',
+                'email'         => 'bryan@b-universe.id',
+                'password_hash' => password_hash('adm!n123', PASSWORD_DEFAULT),
+                'role'          => 'superadmin',
+                'is_active'     => 1,
+            ],
+        ];
+
+        foreach ($adminsToSeed as $adm) {
+            $existingAdm = $db->table('admin_users')->where('username', $adm['username'])->orWhere('email', $adm['email'])->get()->getRowArray();
+            if (!$existingAdm) {
+                $db->table('admin_users')->insert(array_merge($adm, [
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s'),
+                ]));
+            } else {
+                $db->table('admin_users')->where('id', $existingAdm['id'])->update([
+                    'name'          => $adm['name'],
+                    'username'      => $adm['username'],
+                    'email'         => $adm['email'],
+                    'password_hash' => $adm['password_hash'],
+                    'role'          => $adm['role'],
+                    'is_active'     => 1,
+                    'updated_at'    => date('Y-m-d H:i:s'),
+                ]);
+            }
+        }
+
+        // Get admin ID (rakah)
+        $admin = $db->table('admin_users')->where('username', 'rakah')->get()->getRowArray();
         $adminId = $admin ? (int)$admin['id'] : 1;
 
         // 2. Setup Schedule Rooms

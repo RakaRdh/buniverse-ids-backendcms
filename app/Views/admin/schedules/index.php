@@ -47,7 +47,7 @@
         <?php if (!empty($sessions)): ?>
             <div style="display: flex; flex-direction: column;">
                 <?php foreach ($sessions as $s): ?>
-                    <div style="padding: 18px 20px; border-bottom: 1px solid var(--line); display: flex; gap: 24px; align-items: flex-start; <?= ($s['session_type'] ?? '') === 'break' ? 'background: var(--bg-subtle);' : '' ?>">
+                    <div id="session-<?= $s['id'] ?>" style="padding: 18px 20px; border-bottom: 1px solid var(--line); display: flex; gap: 24px; align-items: flex-start; scroll-margin-top: 80px; <?= ($s['session_type'] ?? '') === 'break' ? 'background: var(--bg-subtle);' : '' ?>">
                         <!-- Time & Room Badge Column (Fixed width so all rows align perfectly) -->
                         <div style="width: 200px; min-width: 200px; max-width: 200px; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px;">
                             <div style="display: flex; width: 100%; box-sizing: border-box; align-items: center; justify-content: center; background: var(--primary-1-1); color: var(--primary-1-10); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 6px 10px; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; text-align: center; white-space: nowrap;">

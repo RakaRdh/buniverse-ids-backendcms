@@ -61,6 +61,7 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     $routes->get('speakers', 'Admin\SpeakerController::index');
     $routes->get('speakers/new', 'Admin\SpeakerController::create');
     $routes->post('speakers/save', 'Admin\SpeakerController::save');
+    $routes->post('speakers/quick-save', 'Admin\SpeakerController::quickSave');
     $routes->get('speakers/edit/(:num)', 'Admin\SpeakerController::edit/$1');
     $routes->post('speakers/update/(:num)', 'Admin\SpeakerController::update/$1');
     $routes->post('speakers/delete/(:num)', 'Admin\SpeakerController::delete/$1');
@@ -70,6 +71,7 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     $routes->get('moderators', 'Admin\ModeratorController::index');
     $routes->get('moderators/new', 'Admin\ModeratorController::create');
     $routes->post('moderators/save', 'Admin\ModeratorController::save');
+    $routes->post('moderators/quick-save', 'Admin\ModeratorController::quickSave');
     $routes->get('moderators/edit/(:num)', 'Admin\ModeratorController::edit/$1');
     $routes->post('moderators/update/(:num)', 'Admin\ModeratorController::update/$1');
     $routes->post('moderators/delete/(:num)', 'Admin\ModeratorController::delete/$1');
@@ -96,6 +98,13 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     $routes->post('gallery/upload', 'Admin\GalleryController::upload');
     $routes->post('gallery/delete/(:num)', 'Admin\GalleryController::delete/$1');
     $routes->post('gallery/toggle-featured/(:num)', 'Admin\GalleryController::toggleFeatured/$1');
+
+    // Event Highlights
+    $routes->get('highlights', 'Admin\HighlightController::index');
+    $routes->post('highlights/save', 'Admin\HighlightController::save');
+    $routes->post('highlights/update/(:num)', 'Admin\HighlightController::update/$1');
+    $routes->post('highlights/toggle/(:num)', 'Admin\HighlightController::toggle/$1');
+    $routes->post('highlights/delete/(:num)', 'Admin\HighlightController::delete/$1');
 
     // Sponsors & Partnerships (Single Image Upload)
     $routes->get('sponsors', 'Admin\SponsorController::index');
@@ -141,6 +150,10 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
         $routes->post('save', 'Admin\UserController::save');
         $routes->post('delete/(:num)', 'Admin\UserController::delete/$1');
     });
+
+    // Profile & Password Change (All logged in admins)
+    $routes->get('profile', 'Admin\ProfileController::index');
+    $routes->post('profile/update-password', 'Admin\ProfileController::updatePassword');
 });
 
 // Public REST API Routes for Frontend

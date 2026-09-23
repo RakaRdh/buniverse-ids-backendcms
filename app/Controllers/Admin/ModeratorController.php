@@ -98,9 +98,20 @@ class ModeratorController extends BaseAdminController
             'updated_by' => $userId,
         ];
 
+        // Check remove photo request
+        if ($this->request->getPost('remove_photo') == '1') {
+            if (!empty($moderator['photo_url']) && file_exists(FCPATH . $moderator['photo_url'])) {
+                @unlink(FCPATH . $moderator['photo_url']);
+            }
+            $data['photo_url'] = null;
+        }
+
         // Upload photo
         $photo = $this->request->getFile('photo_file');
         if ($photo && $photo->isValid() && !$photo->hasMoved()) {
+            if (!empty($moderator['photo_url']) && file_exists(FCPATH . $moderator['photo_url'])) {
+                @unlink(FCPATH . $moderator['photo_url']);
+            }
             $newName = $photo->getRandomName();
             $photo->move(FCPATH . 'uploads/events/' . $moderator['event_id'] . '/moderators', $newName);
             $data['photo_url'] = 'uploads/events/' . $moderator['event_id'] . '/moderators/' . $newName;
@@ -134,5 +145,59 @@ class ModeratorController extends BaseAdminController
             }
         }
         return $this->response->setJSON(['status' => 'success']);
+    }
+
+    public function quickSave()
+    {
+        $eventId = $this->activeEvent['id'] ?? null;
+        if (!$eventId) {
+            return $this->response->setStatusCode(400)->setJSON(['success' => false, 'message' => 'No active event found.']);
+        }
+
+        $name = trim((string)$this->request->getPost('name'));
+        if (empty($name)) {
+            return $this->response->setStatusCode(422)->setJSON(['success' => false, 'message' => 'Moderator name is required.']);
+        }
+
+        $moderatorModel = new ModeratorModel();
+        $count = $moderatorModel->where('event_id', $eventId)->countAllResults();
+        $userId = $this->currentAdmin['id'] ?? session()->get('admin_id') ?? session()->get('admin_user')['id'] ?? 1;
+
+        $roleText = trim((string)$this->request->getPost('role_text'));
+
+        $data = [
+            'event_id'   => $eventId,
+            'name'       => $name,
+            'role_text'  => $roleText,
+            'sort_order' => ($count + 1),
+            'is_active'  => 1,
+            'created_by' => $userId,
+            'updated_by' => $userId,
+        ];
+
+        // Optional photo
+        $photo = $this->request->getFile('photo_file');
+        if ($photo && $photo->isValid() && !$photo->hasMoved()) {
+            $newName = $photo->getRandomName();
+            $photo->move(FCPATH . 'uploads/events/' . $eventId . '/moderators', $newName);
+            $data['photo_url'] = 'uploads/events/' . $eventId . '/moderators/' . $newName;
+        }
+
+        $id = $moderatorModel->insert($data);
+        if (!$id) {
+            return $this->response->setStatusCode(500)->setJSON(['success' => false, 'message' => 'Failed to save moderator.']);
+        }
+
+        return $this->response->setJSON([
+            'success' => true,
+            'moderator' => [
+                'id'        => (int)$id,
+                'name'      => $name,
+                'role'      => $roleText,
+                'role_text' => $roleText,
+                'photo_url' => $data['photo_url'] ?? null,
+            ],
+            'message' => 'Moderator added successfully.',
+        ]);
     }
 }

@@ -105,6 +105,10 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
                         <span>Gallery</span>
                     </a>
+                    <a href="<?= base_url('admin/highlights') ?>" class="nav-item <?= ($activeMenu ?? '') === 'highlights' ? 'active' : '' ?>">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+                        <span>Highlights</span>
+                    </a>
                     <a href="<?= base_url('admin/sponsors') ?>" class="nav-item <?= ($activeMenu ?? '') === 'sponsors' ? 'active' : '' ?>">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                         <span>Sponsors & Partners</span>
@@ -127,18 +131,23 @@
             </nav>
 
             <div class="sidebar-footer">
-                <div class="user-block">
+                <a href="<?= base_url('admin/profile') ?>" class="user-block" style="text-decoration:none; cursor:pointer;" title="Edit Profile & Change Password">
                     <div class="user-avatar">
-                        <?= strtoupper(substr($currentAdmin['name'] ?? 'A', 0, 1)) ?>
+                        <?= strtoupper(substr($currentAdmin['username'] ?? $currentAdmin['name'] ?? 'A', 0, 1)) ?>
                     </div>
                     <div class="user-info">
-                        <div class="user-meta-name"><?= esc($currentAdmin['name'] ?? 'Administrator') ?></div>
+                        <div class="user-meta-name"><?= esc($currentAdmin['username'] ?? $currentAdmin['name'] ?? 'Administrator') ?></div>
                         <div class="user-meta-role"><?= esc($currentAdmin['role'] ?? 'editor') ?></div>
                     </div>
-                </div>
-                <a href="<?= base_url('auth/logout') ?>" class="btn-logout" title="Sign out">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
                 </a>
+                <div style="display:flex; align-items:center; gap:4px;">
+                    <a href="<?= base_url('admin/profile') ?>" class="btn-logout" title="Profile & Password">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </a>
+                    <a href="<?= base_url('auth/logout') ?>" class="btn-logout" title="Sign out">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                    </a>
+                </div>
             </div>
         </aside>
 
@@ -190,12 +199,19 @@
         </div>
     </div>
 
-    <!-- Mobile Drawer Interaction Script -->
+    <!-- Sidebar Desktop Collapse & Mobile Drawer Script -->
     <script>
     document.addEventListener('DOMContentLoaded', () => {
         const toggleBtn = document.getElementById('btnSidebarToggle');
         const sidebar = document.querySelector('.app-sidebar');
         const backdrop = document.getElementById('sidebarBackdrop');
+
+        // Restore desktop collapsed state from localStorage
+        if (window.innerWidth > 768) {
+            if (localStorage.getItem('cms_sidebar_collapsed') === 'true') {
+                document.body.classList.add('sidebar-collapsed');
+            }
+        }
 
         function openDrawer() {
             if (sidebar) sidebar.classList.add('is-open');
@@ -213,10 +229,16 @@
 
         if (toggleBtn) {
             toggleBtn.addEventListener('click', () => {
-                if (sidebar && sidebar.classList.contains('is-open')) {
-                    closeDrawer();
+                if (window.innerWidth <= 768) {
+                    if (sidebar && sidebar.classList.contains('is-open')) {
+                        closeDrawer();
+                    } else {
+                        openDrawer();
+                    }
                 } else {
-                    openDrawer();
+                    // Desktop collapse toggle
+                    const isCollapsed = document.body.classList.toggle('sidebar-collapsed');
+                    localStorage.setItem('cms_sidebar_collapsed', isCollapsed ? 'true' : 'false');
                 }
             });
         }

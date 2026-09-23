@@ -8,6 +8,7 @@ class ThemeAndScheduleSeeder extends Seeder
 {
     public function run()
     {
+        /* === DEPRECATED: Consolidated into MasterSeeder ===
         $db = \Config\Database::connect();
 
         // 1. Get Active Event ID
@@ -217,7 +218,8 @@ class ThemeAndScheduleSeeder extends Seeder
             $roomCount = $db->table('schedule_session_rooms')->where('session_id', $sp['id'])->countAllResults();
             echo "Special Session ID {$sp['id']} '{$sp['title']}': has {$roomCount} breakout rooms.\n";
         }
+        === END DEPRECATED === */
 
-        echo "ThemeAndScheduleSeeder completed successfully.\n";
+        echo "ThemeAndScheduleSeeder is deprecated. Please run MasterSeeder.\n";
     }
 }

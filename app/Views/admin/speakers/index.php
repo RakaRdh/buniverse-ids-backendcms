@@ -10,9 +10,15 @@
 </div>
 
 <div class="cms-card">
-    <div class="card-title-bar">
-        <span class="card-title-text">All Speakers (<?= count($speakers) ?>)</span>
-        <span style="font-size: 12px; color: var(--text-muted);">Tip: Drag rows via the &#9776; icon to reorder</span>
+    <div class="card-title-bar" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span class="card-title-text">All Speakers (<span id="speakersCount"><?= count($speakers) ?></span>)</span>
+            <span style="font-size: 12px; color: var(--text-muted);">Tip: Drag rows via &#9776; icon to reorder</span>
+        </div>
+        <div style="position: relative; width: 280px; max-width: 100%;">
+            <input type="text" id="speakerSearchInput" class="form-control" placeholder="Search speaker or role..." style="padding-left: 32px; font-size: 13px; height: 36px; border-radius: var(--radius-sm);">
+            <svg style="position: absolute; left: 10px; top: 10px; width: 16px; height: 16px; color: var(--text-muted); pointer-events: none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </div>
     </div>
     <div class="table-responsive">
         <table class="cms-table" id="speakersTable">
@@ -116,5 +122,30 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     });
+
+    // Live search filter
+    const searchInput = document.getElementById('speakerSearchInput');
+    const countDisplay = document.getElementById('speakersCount');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            const rows = tbody.querySelectorAll('tr.draggable-speaker-row');
+            let visibleCount = 0;
+
+            rows.forEach(r => {
+                const text = r.innerText.toLowerCase();
+                if (!query || text.includes(query)) {
+                    r.style.display = '';
+                    visibleCount++;
+                } else {
+                    r.style.display = 'none';
+                }
+            });
+
+            if (countDisplay) {
+                countDisplay.textContent = visibleCount;
+            }
+        });
+    }
 });
 </script>

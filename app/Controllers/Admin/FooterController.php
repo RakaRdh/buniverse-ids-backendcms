@@ -70,6 +70,7 @@ class FooterController extends BaseAdminController
             'instagram_url'  => $this->request->getPost('instagram_url'),
             'youtube_url'    => $this->request->getPost('youtube_url'),
             'facebook_url'   => $this->request->getPost('facebook_url'),
+            'tiktok_url'     => $this->request->getPost('tiktok_url'),
             'updated_by'     => $userId,
         ];
 

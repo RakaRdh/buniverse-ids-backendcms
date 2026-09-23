@@ -132,6 +132,53 @@ a {
   left: 0;
   z-index: 100;
   overflow-y: auto;
+  overflow-x: hidden;
+  transition: width 200ms cubic-bezier(0.4, 0, 0.2, 1), transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Collapsed Sidebar State (Desktop) */
+@media (min-width: 769px) {
+  body.sidebar-collapsed .app-sidebar {
+    width: 68px;
+  }
+
+  body.sidebar-collapsed .brand-text,
+  body.sidebar-collapsed .nav-section-label,
+  body.sidebar-collapsed .nav-item span,
+  body.sidebar-collapsed .user-info {
+    display: none !important;
+  }
+
+  body.sidebar-collapsed .sidebar-brand {
+    justify-content: center;
+    padding: 0;
+  }
+
+  body.sidebar-collapsed .brand-mark-group {
+    justify-content: center;
+  }
+
+  body.sidebar-collapsed .nav-item {
+    justify-content: center;
+    padding: 0;
+    width: 100%;
+  }
+
+  body.sidebar-collapsed .sidebar-footer {
+    padding: 12px 8px;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+  }
+
+  body.sidebar-collapsed .user-block {
+    justify-content: center;
+    gap: 0;
+  }
+
+  body.sidebar-collapsed .app-main {
+    margin-left: 68px;
+  }
 }
 
 .sidebar-header, .sidebar-brand {
@@ -364,6 +411,7 @@ a {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  transition: margin-left 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Top Utility Header 48px (§6.2) */
@@ -1088,7 +1136,7 @@ textarea.form-control {
 
 /* Sidebar Hamburger Toggle & Mobile Backdrop */
 .btn-sidebar-toggle {
-  display: none;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   background: transparent;
@@ -1378,15 +1426,42 @@ textarea.form-control {
   to { opacity: 1; transform: scale(1); }
 }
 
+.autocomplete-chip .chip-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 4px;
+}
+
+.autocomplete-chip .chip-btn {
+  background: none;
+  border: none;
+  padding: 0 2px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+  transition: color 100ms ease, background 100ms ease;
+}
+
+.autocomplete-chip .chip-btn:hover {
+  color: var(--text-strong);
+  background: rgba(255, 255, 255, 0.1);
+}
+
 .autocomplete-chip .remove-chip {
   background: none;
   border: none;
-  padding: 0;
+  padding: 0 2px;
   color: var(--text-muted);
   cursor: pointer;
   font-size: 14px;
   line-height: 1;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   transition: color 120ms ease-out;

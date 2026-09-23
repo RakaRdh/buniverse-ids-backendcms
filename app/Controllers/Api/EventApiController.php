@@ -270,6 +270,7 @@ class EventApiController extends ResourceController
                 'facebook'  => $settings['facebook_url'] ?? '',
                 'instagram' => $settings['instagram_url'] ?? '',
                 'youtube'   => $settings['youtube_url'] ?? '',
+                'tiktok'    => $settings['tiktok_url'] ?? '',
                 'linkedin'  => $settings['linkedin_url'] ?? '',
                 'twitter'   => $settings['twitter_url'] ?? '',
             ],
@@ -361,6 +362,28 @@ class EventApiController extends ResourceController
                 'is_active' => (bool)$pr['is_active'],
             ];
         }
+
+        // 3d. Event Highlights (Zero Quota Database Pattern)
+        $highlightModel = new \App\Models\EventHighlightModel();
+        $highlightRows = $highlightModel->getByEventId($event['id'], true);
+        $highlightItems = [];
+        foreach ($highlightRows as $hr) {
+            $vid = $hr['video_id'];
+            $highlightItems[] = [
+                'id'            => (int)$hr['id'],
+                'title'         => $hr['title'],
+                'youtube_url'   => $hr['youtube_url'],
+                'video_id'      => $vid,
+                'thumbnail_url' => "https://i.ytimg.com/vi/{$vid}/hqdefault.jpg",
+                'watch_url'     => "https://www.youtube.com/watch?v={$vid}",
+                'embed_url'     => "https://www.youtube.com/embed/{$vid}",
+                'sort_order'    => (int)$hr['sort_order'],
+            ];
+        }
+        $highlights = [
+            'is_active' => !empty($highlightItems),
+            'items'     => $highlightItems,
+        ];
 
         // 4. Speakers
         $speakers = [];
@@ -466,10 +489,11 @@ class EventApiController extends ResourceController
                             }
 
                             foreach ($it['speakers'] as $cspk) {
-                                $subItem['speaker_ids'][] = $cspk['slug'];
+                                $cSlug = !empty($cspk['slug']) ? $cspk['slug'] : url_title($cspk['name'] ?? ('speaker-' . $cspk['speaker_id']), '-', true);
+                                $subItem['speaker_ids'][] = $cSlug;
                                 $subItem['speakers'][] = [
                                     'id'    => (int)$cspk['speaker_id'],
-                                    'slug'  => $cspk['slug'],
+                                    'slug'  => $cSlug,
                                     'name'  => $cspk['name'],
                                     'role'  => $cspk['role_text'] ?? '',
                                     'photo' => $makeUrl($cspk['photo_url'] ?? ''),
@@ -563,6 +587,7 @@ class EventApiController extends ResourceController
                 'id'         => (int)$spRow['id'],
                 'name'       => $spRow['name'] ?? '',
                 'logo_url'   => $makeUrl($spRow['logo_url']),
+                'is_active'  => isset($spRow['is_active']) ? (bool)$spRow['is_active'] : true,
                 'updated_at' => $spRow['updated_at'] ?? '',
             ];
         }
@@ -673,6 +698,7 @@ class EventApiController extends ResourceController
                 'economicModel'       => $economicModel,
                 'livestream'          => $livestream,
                 'news_portals'        => $newsPortals,
+                'highlights'          => $highlights,
                 'speakers'            => $speakers,
                 'moderators'          => $moderators,
                 'schedule'            => $schedule,

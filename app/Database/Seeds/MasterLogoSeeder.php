@@ -34,8 +34,8 @@ class MasterLogoSeeder extends Seeder
             [
                 'event_id'           => $eventId,
                 'name'               => 'Investor Daily Summit 2026',
-                'logo_url'           => 'assets/img/logo_ids26_color.webp',
-                'logo_white_url'     => 'assets/img/logo_ids26_white.webp',
+                'logo_url'           => "uploads/events/{$eventId}/logos/logo_ids26_color.webp",
+                'logo_white_url'     => "uploads/events/{$eventId}/logos/logo_ids26_white.webp",
                 'default_target_url' => '#home',
                 'created_at'         => date('Y-m-d H:i:s'),
                 'updated_at'         => date('Y-m-d H:i:s'),
@@ -43,8 +43,8 @@ class MasterLogoSeeder extends Seeder
             [
                 'event_id'           => $eventId,
                 'name'               => 'Investor Daily Indonesia',
-                'logo_url'           => 'assets/img/logo_id_color.webp',
-                'logo_white_url'     => 'assets/img/logo_id_white.webp',
+                'logo_url'           => "uploads/events/{$eventId}/logos/logo_id_color.webp",
+                'logo_white_url'     => "uploads/events/{$eventId}/logos/logo_id_white.webp",
                 'default_target_url' => 'https://investor.id',
                 'created_at'         => date('Y-m-d H:i:s'),
                 'updated_at'         => date('Y-m-d H:i:s'),

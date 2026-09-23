@@ -93,7 +93,7 @@
                                 </td>
                                 <td style="padding:12px 16px; text-align:right;">
                                     <div style="display:inline-flex; gap:6px;">
-                                        <button type="button" class="btn btn-outline btn-sm" onclick='openEditModal(<?= json_encode($d) ?>)' style="padding:4px 8px; font-size:12px;">Edit</button>
+                                        <button type="button" class="btn btn-outline btn-sm" onclick='openEditModal(<?= htmlspecialchars(json_encode($d), ENT_QUOTES, 'UTF-8') ?>)' style="padding:4px 8px; font-size:12px;">Edit</button>
                                         <form action="<?= base_url('admin/decorations/delete/' . $d['id']) ?>" method="POST" onsubmit="return confirm('Delete this decoration?');" style="margin:0;">
                                             <?= csrf_field() ?>
                                             <button type="submit" class="btn btn-danger-outline btn-sm" style="padding:4px 8px; font-size:12px; color:#ff8a80; border-color:rgba(255,138,128,0.3);">Delete</button>
@@ -223,11 +223,11 @@
                 <label class="form-label" style="font-weight:600; color:var(--text-strong);">Decoration Image</label>
                 <div style="display:flex; gap:12px; align-items:center;">
                     <div style="width:52px; height:52px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;">
-                        <img id="modalPreviewImg" src="<?= base_url('assets/img/cakram.webp') ?>" alt="cakram" style="max-width:44px; max-height:44px; object-fit:contain;">
+                        <img id="modalPreviewImg" src="<?= base_url('assets/img/decoration_white.png') ?>" alt="cakram" style="max-width:44px; max-height:44px; object-fit:contain;">
                     </div>
                     <div style="flex:1;">
                         <input type="file" name="image_file" class="form-control" accept="image/*" onchange="previewModalImage(this)">
-                        <small style="color:var(--text-muted); display:block; margin-top:4px;">Leave empty to use default <code>assets/img/cakram.webp</code></small>
+                        <small style="color:var(--text-muted); display:block; margin-top:4px;">Leave empty to use default <code>assets/img/decoration_white.png</code></small>
                     </div>
                 </div>
             </div>
@@ -346,7 +346,7 @@
 </div>
 
 <script>
-const defaultDiscUrl = "<?= base_url('assets/img/disc.png') ?>";
+const defaultDiscUrl = "<?= base_url('assets/img/decoration_white.png') ?>";
 
 function toggleLayoutMode(mode) {
     const manualFields = document.getElementById('manualFields');

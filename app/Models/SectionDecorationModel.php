@@ -73,7 +73,7 @@ class SectionDecorationModel extends Model
             ->findAll();
     }
 
-    public function hasDuplicateManualPosition(int $eventId, string $sectionKey, string $position, ?int $excludeId = null): bool
+    public function hasDuplicateManualPosition(int $eventId, string $sectionKey, string $position, ?int $excludeId = null, string $deviceVisibility = 'all'): bool
     {
         $builder = $this->where('event_id', $eventId)
             ->where('section_key', $sectionKey)
@@ -85,6 +85,19 @@ class SectionDecorationModel extends Model
             $builder->where('id !=', $excludeId);
         }
 
-        return $builder->countAllResults() > 0;
+        $existing = $builder->findAll();
+        if (empty($existing)) {
+            return false;
+        }
+
+        foreach ($existing as $row) {
+            $rowVisibility = $row['device_visibility'] ?? 'all';
+            // Conflict if either is 'all', or both have the exact same visibility
+            if ($deviceVisibility === 'all' || $rowVisibility === 'all' || $deviceVisibility === $rowVisibility) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

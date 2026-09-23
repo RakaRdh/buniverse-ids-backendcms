@@ -58,10 +58,13 @@ class SponsorController extends BaseAdminController
             return redirect()->back()->with('error', 'Please upload a sponsors & partnerships image.');
         }
 
+        $isActive = $this->request->getPost('is_active') ? 1 : 0;
+
         $data = [
             'event_id'   => $eventId,
             'name'       => $name,
             'logo_url'   => $logoUrl,
+            'is_active'  => $isActive,
             'updated_by' => $userId,
         ];
 
