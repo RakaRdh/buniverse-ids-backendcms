@@ -56,6 +56,19 @@ class ModeratorController extends BaseAdminController
         // Upload photo
         $photo = $this->request->getFile('photo_file');
         if ($photo && $photo->isValid() && !$photo->hasMoved()) {
+            if (!$this->validate([
+                'photo_file' => [
+                    'rules'  => 'is_image[photo_file]|mime_in[photo_file,image/jpg,image/jpeg,image/png,image/webp]|max_size[photo_file,4096]',
+                    'errors' => [
+                        'is_image' => 'Uploaded file must be a valid image.',
+                        'mime_in'  => 'Only JPG, PNG, and WebP images are allowed.',
+                        'max_size' => 'Image size cannot exceed 4MB.',
+                    ],
+                ],
+            ])) {
+                return redirect()->back()->withInput()->with('error', $this->validator->getError('photo_file'));
+            }
+
             $newName = $photo->getRandomName();
             $targetDir = FCPATH . 'uploads/events/' . $eventId . '/moderators';
             if (!is_dir($targetDir)) {
@@ -73,8 +86,9 @@ class ModeratorController extends BaseAdminController
 
     public function edit($id)
     {
+        $eventId = $this->activeEvent['id'] ?? null;
         $moderatorModel = new ModeratorModel();
-        $moderator = $moderatorModel->find($id);
+        $moderator = $moderatorModel->where('id', (int)$id)->where('event_id', $eventId)->first();
 
         if (!$moderator) {
             return redirect()->to(base_url('admin/moderators'))->with('error', 'Moderator not found.');
@@ -89,8 +103,9 @@ class ModeratorController extends BaseAdminController
 
     public function update($id)
     {
+        $eventId = $this->activeEvent['id'] ?? null;
         $moderatorModel = new ModeratorModel();
-        $moderator = $moderatorModel->find($id);
+        $moderator = $moderatorModel->where('id', (int)$id)->where('event_id', $eventId)->first();
         if (!$moderator) {
             return redirect()->to(base_url('admin/moderators'))->with('error', 'Moderator not found.');
         }
@@ -115,6 +130,19 @@ class ModeratorController extends BaseAdminController
         // Upload photo
         $photo = $this->request->getFile('photo_file');
         if ($photo && $photo->isValid() && !$photo->hasMoved()) {
+            if (!$this->validate([
+                'photo_file' => [
+                    'rules'  => 'is_image[photo_file]|mime_in[photo_file,image/jpg,image/jpeg,image/png,image/webp]|max_size[photo_file,4096]',
+                    'errors' => [
+                        'is_image' => 'Uploaded file must be a valid image.',
+                        'mime_in'  => 'Only JPG, PNG, and WebP images are allowed.',
+                        'max_size' => 'Image size cannot exceed 4MB.',
+                    ],
+                ],
+            ])) {
+                return redirect()->back()->withInput()->with('error', $this->validator->getError('photo_file'));
+            }
+
             if (!empty($moderator['photo_url']) && file_exists(FCPATH . $moderator['photo_url'])) {
                 @unlink(FCPATH . $moderator['photo_url']);
             }
@@ -129,12 +157,13 @@ class ModeratorController extends BaseAdminController
             $data['photo_url'] = 'uploads/events/' . $moderator['event_id'] . '/moderators/' . $newName;
         }
 
-        $moderatorModel->update($id, $data);
+        $moderatorModel->where('event_id', $eventId)->update($id, $data);
         return redirect()->to(base_url('admin/moderators#moderator-' . $id))->with('success', 'Moderator updated successfully.');
     }
 
     public function delete($id)
     {
+        $eventId = $this->activeEvent['id'] ?? null;
         $db = \Config\Database::connect();
         $assignedCount = $db->table('session_moderators')->where('moderator_id', $id)->countAllResults();
 
@@ -143,8 +172,16 @@ class ModeratorController extends BaseAdminController
         }
 
         $moderatorModel = new ModeratorModel();
-        $moderatorModel->delete($id);
-        return redirect()->to(base_url('admin/moderators'))->with('success', 'Moderator deleted successfully.');
+        $moderator = $moderatorModel->where('id', (int)$id)->where('event_id', $eventId)->first();
+        if ($moderator) {
+            if (!empty($moderator['photo_url']) && file_exists(FCPATH . $moderator['photo_url'])) {
+                @unlink(FCPATH . $moderator['photo_url']);
+            }
+            $moderatorModel->where('event_id', $eventId)->delete($id);
+            return redirect()->to(base_url('admin/moderators'))->with('success', 'Moderator deleted successfully.');
+        }
+
+        return redirect()->to(base_url('admin/moderators'))->with('error', 'Moderator not found in active event.');
     }
 
     public function reorder()
@@ -190,6 +227,14 @@ class ModeratorController extends BaseAdminController
         // Optional photo
         $photo = $this->request->getFile('photo_file');
         if ($photo && $photo->isValid() && !$photo->hasMoved()) {
+            if (!$this->validate([
+                'photo_file' => [
+                    'rules' => 'is_image[photo_file]|mime_in[photo_file,image/jpg,image/jpeg,image/png,image/webp]|max_size[photo_file,4096]',
+                ],
+            ])) {
+                return $this->response->setStatusCode(422)->setJSON(['success' => false, 'message' => $this->validator->getError('photo_file')]);
+            }
+
             $newName = $photo->getRandomName();
             $targetDir = FCPATH . 'uploads/events/' . $eventId . '/moderators';
             if (!is_dir($targetDir)) {

@@ -65,6 +65,19 @@ class PengantarController extends BaseAdminController
         // Upload photo
         $photo = $this->request->getFile('photo_file');
         if ($photo && $photo->isValid() && !$photo->hasMoved()) {
+            if (!$this->validate([
+                'photo_file' => [
+                    'rules'  => 'is_image[photo_file]|mime_in[photo_file,image/jpg,image/jpeg,image/png,image/webp]|max_size[photo_file,4096]',
+                    'errors' => [
+                        'is_image' => 'Uploaded file must be a valid image.',
+                        'mime_in'  => 'Only JPG, PNG, and WebP images are allowed.',
+                        'max_size' => 'Image size cannot exceed 4MB.',
+                    ],
+                ],
+            ])) {
+                return redirect()->back()->withInput()->with('error', $this->validator->getError('photo_file'));
+            }
+
             $newName = $photo->getRandomName();
             $targetDir = FCPATH . 'uploads/events/' . $eventId . '/pengantar';
             if (!is_dir($targetDir)) {
@@ -82,8 +95,9 @@ class PengantarController extends BaseAdminController
 
     public function edit($id)
     {
+        $eventId = $this->activeEvent['id'] ?? null;
         $pengantarModel = new PengantarModel();
-        $pengantar = $pengantarModel->find($id);
+        $pengantar = $pengantarModel->where('id', (int)$id)->where('event_id', $eventId)->first();
 
         if (!$pengantar) {
             return redirect()->to(base_url('admin/pengantar'))->with('error', 'Pengantar not found.');
@@ -98,8 +112,9 @@ class PengantarController extends BaseAdminController
 
     public function update($id)
     {
+        $eventId = $this->activeEvent['id'] ?? null;
         $pengantarModel = new PengantarModel();
-        $pengantar = $pengantarModel->find($id);
+        $pengantar = $pengantarModel->where('id', (int)$id)->where('event_id', $eventId)->first();
         if (!$pengantar) {
             return redirect()->to(base_url('admin/pengantar'))->with('error', 'Pengantar not found.');
         }
@@ -128,6 +143,19 @@ class PengantarController extends BaseAdminController
         // Upload photo (if uploaded, it overrides remove_photo)
         $photo = $this->request->getFile('photo_file');
         if ($photo && $photo->isValid() && !$photo->hasMoved()) {
+            if (!$this->validate([
+                'photo_file' => [
+                    'rules'  => 'is_image[photo_file]|mime_in[photo_file,image/jpg,image/jpeg,image/png,image/webp]|max_size[photo_file,4096]',
+                    'errors' => [
+                        'is_image' => 'Uploaded file must be a valid image.',
+                        'mime_in'  => 'Only JPG, PNG, and WebP images are allowed.',
+                        'max_size' => 'Image size cannot exceed 4MB.',
+                    ],
+                ],
+            ])) {
+                return redirect()->back()->withInput()->with('error', $this->validator->getError('photo_file'));
+            }
+
             if (!empty($pengantar['photo_url']) && file_exists(FCPATH . $pengantar['photo_url'])) {
                 @unlink(FCPATH . $pengantar['photo_url']);
             }
@@ -142,12 +170,13 @@ class PengantarController extends BaseAdminController
             $data['photo_url'] = 'uploads/events/' . $pengantar['event_id'] . '/pengantar/' . $newName;
         }
 
-        $pengantarModel->update($id, $data);
+        $pengantarModel->where('event_id', $eventId)->update($id, $data);
         return redirect()->to(base_url('admin/pengantar#pengantar-' . $id))->with('success', 'Pengantar updated successfully.');
     }
 
     public function delete($id)
     {
+        $eventId = $this->activeEvent['id'] ?? null;
         $db = \Config\Database::connect();
         $assignedCount = $db->table('session_pengantar')->where('pengantar_id', $id)->countAllResults();
 
@@ -156,15 +185,16 @@ class PengantarController extends BaseAdminController
         }
 
         $pengantarModel = new PengantarModel();
-        $pengantar = $pengantarModel->find($id);
+        $pengantar = $pengantarModel->where('id', (int)$id)->where('event_id', $eventId)->first();
         if ($pengantar) {
             if (!empty($pengantar['photo_url']) && file_exists(FCPATH . $pengantar['photo_url'])) {
                 @unlink(FCPATH . $pengantar['photo_url']);
             }
-            $pengantarModel->delete($id);
+            $pengantarModel->where('event_id', $eventId)->delete($id);
+            return redirect()->to(base_url('admin/pengantar'))->with('success', 'Pengantar deleted successfully.');
         }
 
-        return redirect()->to(base_url('admin/pengantar'))->with('success', 'Pengantar deleted successfully.');
+        return redirect()->to(base_url('admin/pengantar'))->with('error', 'Pengantar not found in active event.');
     }
 
     public function quickSave()
@@ -205,6 +235,14 @@ class PengantarController extends BaseAdminController
         // Handle quick photo upload if present
         $photo = $this->request->getFile('photo_file');
         if ($photo && $photo->isValid() && !$photo->hasMoved()) {
+            if (!$this->validate([
+                'photo_file' => [
+                    'rules' => 'is_image[photo_file]|mime_in[photo_file,image/jpg,image/jpeg,image/png,image/webp]|max_size[photo_file,4096]',
+                ],
+            ])) {
+                return $this->response->setStatusCode(422)->setJSON(['success' => false, 'message' => $this->validator->getError('photo_file')]);
+            }
+
             $newName = $photo->getRandomName();
             $targetDir = FCPATH . 'uploads/events/' . $eventId . '/pengantar';
             if (!is_dir($targetDir)) {

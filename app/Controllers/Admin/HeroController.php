@@ -63,12 +63,26 @@ class HeroController extends BaseAdminController
             return redirect()->back()->with('error', 'No active event.');
         }
 
+        if (!$this->validate([
+            'hero_image_file' => [
+                'rules'  => 'uploaded[hero_image_file]|is_image[hero_image_file]|mime_in[hero_image_file,image/jpg,image/jpeg,image/png,image/webp]|max_size[hero_image_file,10240]',
+                'errors' => [
+                    'uploaded' => 'Please select an image file to upload.',
+                    'is_image' => 'Uploaded file must be a valid image.',
+                    'mime_in'  => 'Only JPG, JPEG, PNG, and WebP images are allowed.',
+                    'max_size' => 'Image size cannot exceed 10MB.',
+                ],
+            ],
+        ])) {
+            return redirect()->back()->withInput()->with('error', $this->validator->getError('hero_image_file'));
+        }
+
         $image = $this->request->getFile('hero_image_file');
         if ($image && $image->isValid() && !$image->hasMoved()) {
             $newName = $image->getRandomName();
             $uploadDir = FCPATH . 'uploads/events/' . $eventId . '/hero';
             if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0777, true);
+                mkdir($uploadDir, 0755, true);
             }
             $image->move($uploadDir, $newName);
 
@@ -93,8 +107,16 @@ class HeroController extends BaseAdminController
 
     public function deleteHeroImage($id)
     {
+        $eventId = $this->activeEvent['id'] ?? null;
         $heroImageModel = new EventHeroImageModel();
-        $heroImageModel->delete($id);
-        return redirect()->to(base_url('admin/hero'))->with('success', 'Hero image deleted.');
+        $img = $heroImageModel->where('id', (int)$id)->where('event_id', $eventId)->first();
+        if ($img) {
+            if (!empty($img['image_url']) && file_exists(FCPATH . $img['image_url'])) {
+                @unlink(FCPATH . $img['image_url']);
+            }
+            $heroImageModel->where('event_id', $eventId)->delete($id);
+            return redirect()->to(base_url('admin/hero'))->with('success', 'Hero image deleted.');
+        }
+        return redirect()->to(base_url('admin/hero'))->with('error', 'Hero image not found in active event.');
     }
 }

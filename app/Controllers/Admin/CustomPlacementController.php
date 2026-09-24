@@ -76,6 +76,19 @@ class CustomPlacementController extends BaseAdminController
         $imageUrl = $existing['image_url'] ?? 'assets/img/decoration_white.png';
         $imageFile = $this->request->getFile('image_file');
         if ($imageFile && $imageFile->isValid() && !$imageFile->hasMoved()) {
+            if (!$this->validate([
+                'image_file' => [
+                    'rules'  => 'is_image[image_file]|mime_in[image_file,image/jpg,image/jpeg,image/png,image/webp,image/svg+xml]|max_size[image_file,4096]',
+                    'errors' => [
+                        'is_image' => 'Placement image must be a valid image file.',
+                        'mime_in'  => 'Only JPG, PNG, WebP, and SVG images are allowed.',
+                        'max_size' => 'Placement image size cannot exceed 4MB.',
+                    ],
+                ],
+            ])) {
+                return redirect()->back()->withInput()->with('error', $this->validator->getError('image_file'));
+            }
+
             $newName = $imageFile->getRandomName();
             $uploadDir = FCPATH . 'uploads/events/' . $eventId . '/custom_placements';
             if (!is_dir($uploadDir)) {
@@ -116,7 +129,7 @@ class CustomPlacementController extends BaseAdminController
         ];
 
         if ($existing) {
-            $placementModel->update($id, $data);
+            $placementModel->where('event_id', $eventId)->update($id, $data);
             $message = 'Custom placement updated successfully.';
         } else {
             $data['created_by'] = $userId;
@@ -142,7 +155,7 @@ class CustomPlacementController extends BaseAdminController
         }
 
         $newStatus = $item['is_active'] ? 0 : 1;
-        $placementModel->update($id, [
+        $placementModel->where('event_id', $eventId)->update($id, [
             'is_active'  => $newStatus,
             'updated_by' => $this->currentAdmin['id'] ?? session()->get('admin_id') ?? 1,
         ]);
@@ -161,7 +174,10 @@ class CustomPlacementController extends BaseAdminController
         $item = $placementModel->where('event_id', $eventId)->find($id);
 
         if ($item) {
-            $placementModel->delete($id);
+            if (!empty($item['image_url']) && str_starts_with($item['image_url'], 'uploads/') && file_exists(FCPATH . $item['image_url'])) {
+                @unlink(FCPATH . $item['image_url']);
+            }
+            $placementModel->where('event_id', $eventId)->delete($id);
             return redirect()->to(base_url('admin/custom-placements'))->with('success', 'Custom placement deleted.');
         }
 

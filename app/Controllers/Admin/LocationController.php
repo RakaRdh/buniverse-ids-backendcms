@@ -57,6 +57,19 @@ class LocationController extends BaseAdminController
         // Upload new floor plan layout image
         $imageFile = $this->request->getFile('layout_image');
         if ($imageFile && $imageFile->isValid() && !$imageFile->hasMoved()) {
+            if (!$this->validate([
+                'layout_image' => [
+                    'rules'  => 'is_image[layout_image]|mime_in[layout_image,image/jpg,image/jpeg,image/png,image/webp,image/svg+xml]|max_size[layout_image,10240]',
+                    'errors' => [
+                        'is_image' => 'Denah layout harus berupa file gambar yang valid.',
+                        'mime_in'  => 'Hanya format JPG, PNG, WebP, dan SVG yang diperbolehkan.',
+                        'max_size' => 'Ukuran gambar denah tidak boleh melebihi 10MB.',
+                    ],
+                ],
+            ])) {
+                return redirect()->back()->withInput()->with('error', $this->validator->getError('layout_image'));
+            }
+
             if (!empty($existing['layout_image_url']) && file_exists(FCPATH . $existing['layout_image_url'])) {
                 @unlink(FCPATH . $existing['layout_image_url']);
             }
@@ -74,7 +87,7 @@ class LocationController extends BaseAdminController
         }
 
         if ($existing) {
-            $locationModel->update($existing['id'], $data);
+            $locationModel->where('event_id', $eventId)->update($existing['id'], $data);
         } else {
             $data['event_id']   = $eventId;
             $data['created_by'] = $userId;

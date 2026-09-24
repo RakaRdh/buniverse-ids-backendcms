@@ -70,14 +70,31 @@ class MetaController extends BaseAdminController
         // Handle OG image file upload
         $ogFile = $this->request->getFile('og_image_file');
         if ($ogFile && $ogFile->isValid() && !$ogFile->hasMoved()) {
+            if (!$this->validate([
+                'og_image_file' => [
+                    'rules'  => 'is_image[og_image_file]|mime_in[og_image_file,image/jpg,image/jpeg,image/png,image/webp]|max_size[og_image_file,4096]',
+                    'errors' => [
+                        'is_image' => 'OG preview image must be a valid image file.',
+                        'mime_in'  => 'Only JPG, JPEG, PNG, and WebP images are allowed.',
+                        'max_size' => 'OG image size cannot exceed 4MB.',
+                    ],
+                ],
+            ])) {
+                return redirect()->back()->withInput()->with('error', $this->validator->getError('og_image_file'));
+            }
+
+            $uploadDir = FCPATH . 'uploads/events/' . $eventId . '/seo';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
             $newName = $ogFile->getRandomName();
-            $ogFile->move(FCPATH . 'uploads/events/' . $eventId . '/seo', $newName);
+            $ogFile->move($uploadDir, $newName);
             $seoData['og_image_url'] = 'uploads/events/' . $eventId . '/seo/' . $newName;
         }
 
         $existing = $seoModel->getByEventId($eventId);
         if ($existing) {
-            $seoModel->update($existing['id'], $seoData);
+            $seoModel->where('event_id', $eventId)->update($existing['id'], $seoData);
         } else {
             $seoData['event_id']   = $eventId;
             $seoData['created_by'] = $userId;

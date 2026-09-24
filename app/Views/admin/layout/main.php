@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= esc($pageTitle ?? 'Executive Dashboard') ?> — IDS Executive CMS</title>
+    <meta name="csrf-token-name" content="<?= csrf_token() ?>">
+    <meta name="csrf-hash" content="<?= csrf_hash() ?>">
+    <meta name="csrf-header" content="<?= config('Security')->headerName ?? 'X-CSRF-TOKEN' ?>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -152,9 +155,12 @@
                     <a href="<?= base_url('admin/profile') ?>" class="btn-logout" title="Profile & Password">
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                     </a>
-                    <a href="<?= base_url('auth/logout') ?>" class="btn-logout" title="Sign out">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                    </a>
+                    <form action="<?= base_url('auth/logout') ?>" method="POST" style="display:inline; margin:0; padding:0;">
+                        <?= csrf_field() ?>
+                        <button type="submit" class="btn-logout" title="Sign out" style="background:none; border:none; cursor:pointer; padding:0; display:flex; align-items:center; justify-content:center;">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                        </button>
+                    </form>
                 </div>
             </div>
         </aside>

@@ -29,6 +29,20 @@ class GalleryController extends BaseAdminController
             return redirect()->back()->with('error', 'No active event.');
         }
 
+        if (!$this->validate([
+            'image_file' => [
+                'rules'  => 'uploaded[image_file]|is_image[image_file]|mime_in[image_file,image/jpg,image/jpeg,image/png,image/webp]|max_size[image_file,10240]',
+                'errors' => [
+                    'uploaded' => 'Please select an image file to upload.',
+                    'is_image' => 'Uploaded file must be a valid image.',
+                    'mime_in'  => 'Only JPG, JPEG, PNG, and WebP images are allowed.',
+                    'max_size' => 'Image size cannot exceed 10MB.',
+                ],
+            ],
+        ])) {
+            return redirect()->back()->withInput()->with('error', $this->validator->getError('image_file'));
+        }
+
         $image = $this->request->getFile('image_file');
         if ($image && $image->isValid() && !$image->hasMoved()) {
             $newName = $image->getRandomName();
@@ -70,26 +84,34 @@ class GalleryController extends BaseAdminController
 
     public function delete($id)
     {
+        $eventId = $this->activeEvent['id'] ?? null;
         $galleryModel = new GalleryImageModel();
-        $galleryModel->delete($id);
-        return redirect()->back()->with('success', 'Photo removed from gallery.');
+        $img = $galleryModel->where('id', (int)$id)->where('event_id', $eventId)->first();
+        if ($img) {
+            if (!empty($img['image_url']) && file_exists(FCPATH . $img['image_url'])) {
+                @unlink(FCPATH . $img['image_url']);
+            }
+            $galleryModel->where('event_id', $eventId)->delete($id);
+            return redirect()->back()->with('success', 'Photo removed from gallery.');
+        }
+        return redirect()->back()->with('error', 'Photo not found in active event.');
     }
 
     public function toggleFeatured($id)
     {
+        $eventId = $this->activeEvent['id'] ?? null;
         $galleryModel = new GalleryImageModel();
-        $img = $galleryModel->find($id);
+        $img = $galleryModel->where('id', (int)$id)->where('event_id', $eventId)->first();
         if ($img) {
-            $eventId = $img['event_id'];
             $userId  = $this->currentAdmin['id'] ?? session()->get('admin_id') ?? session()->get('admin_user')['id'] ?? 1;
 
             if (!$img['is_featured']) {
                 // Ensure only 1 photo is featured across this event
                 $galleryModel->where('event_id', $eventId)->set(['is_featured' => 0, 'updated_by' => $userId])->update();
-                $galleryModel->update($id, ['is_featured' => 1, 'updated_by' => $userId]);
+                $galleryModel->where('event_id', $eventId)->update($id, ['is_featured' => 1, 'updated_by' => $userId]);
                 $msg = 'Photo set as primary featured image (default expanded in frontend).';
             } else {
-                $galleryModel->update($id, ['is_featured' => 0, 'updated_by' => $userId]);
+                $galleryModel->where('event_id', $eventId)->update($id, ['is_featured' => 0, 'updated_by' => $userId]);
                 $msg = 'Featured state unselected.';
             }
             return redirect()->back()->with('success', $msg);

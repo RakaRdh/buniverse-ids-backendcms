@@ -42,6 +42,9 @@ class AuthController extends Controller
             return redirect()->back()->withInput()->with('error', 'Invalid username or password.');
         }
 
+        // SEC-04: Regenerate session ID upon authentication to prevent session fixation
+        $session->regenerate(true);
+
         $session->set([
             'admin_logged_in' => true,
             'admin_id'        => (int)$user['id'],

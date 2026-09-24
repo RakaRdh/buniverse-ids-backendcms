@@ -151,14 +151,31 @@ class EventSettingsController extends BaseAdminController
             foreach ($uploadMap as $inputName => $dbField) {
                 $file = $this->request->getFile($inputName);
                 if ($file && $file->isValid() && !$file->hasMoved()) {
+                    if (!$this->validate([
+                        $inputName => [
+                            'rules'  => 'is_image[' . $inputName . ']|mime_in[' . $inputName . ',image/jpg,image/jpeg,image/png,image/webp,image/svg+xml]|max_size[' . $inputName . ',4096]',
+                            'errors' => [
+                                'is_image' => 'Logo file must be a valid image.',
+                                'mime_in'  => 'Only JPG, PNG, WebP, and SVG images are allowed.',
+                                'max_size' => 'Logo size cannot exceed 4MB.',
+                            ],
+                        ],
+                    ])) {
+                        return redirect()->back()->withInput()->with('error', $this->validator->getError($inputName));
+                    }
+
                     $newName = $file->getRandomName();
-                    $file->move(FCPATH . 'uploads/events/' . $eventId . '/branding', $newName);
+                    $uploadDir = FCPATH . 'uploads/events/' . $eventId . '/branding';
+                    if (!is_dir($uploadDir)) {
+                        mkdir($uploadDir, 0755, true);
+                    }
+                    $file->move($uploadDir, $newName);
                     $settingData[$dbField] = 'uploads/events/' . $eventId . '/branding/' . $newName;
                 }
             }
 
             if ($existingSetting) {
-                $settingModel->update($existingSetting['id'], $settingData);
+                $settingModel->where('event_id', $eventId)->update($existingSetting['id'], $settingData);
             } else {
                 $settingData['event_id']   = $eventId;
                 $settingData['created_by'] = $userId;
@@ -176,10 +193,28 @@ class EventSettingsController extends BaseAdminController
             return redirect()->back()->with('error', 'No active event.');
         }
 
+        if (!$this->validate([
+            'hero_image_file' => [
+                'rules'  => 'uploaded[hero_image_file]|is_image[hero_image_file]|mime_in[hero_image_file,image/jpg,image/jpeg,image/png,image/webp]|max_size[hero_image_file,10240]',
+                'errors' => [
+                    'uploaded' => 'Please select a hero banner image file to upload.',
+                    'is_image' => 'Uploaded file must be a valid image.',
+                    'mime_in'  => 'Only JPG, JPEG, PNG, and WebP images are allowed.',
+                    'max_size' => 'Image size cannot exceed 10MB.',
+                ],
+            ],
+        ])) {
+            return redirect()->to(base_url('admin/event-settings?tab=hero'))->with('error', $this->validator->getError('hero_image_file'));
+        }
+
         $image = $this->request->getFile('hero_image_file');
         if ($image && $image->isValid() && !$image->hasMoved()) {
             $newName = $image->getRandomName();
-            $image->move(FCPATH . 'uploads/events/' . $eventId . '/hero', $newName);
+            $uploadDir = FCPATH . 'uploads/events/' . $eventId . '/hero';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+            $image->move($uploadDir, $newName);
 
             $heroImageModel = new EventHeroImageModel();
             $count = $heroImageModel->where('event_id', $eventId)->countAllResults();
@@ -202,8 +237,16 @@ class EventSettingsController extends BaseAdminController
 
     public function deleteHeroImage($id)
     {
+        $eventId = $this->activeEvent['id'] ?? null;
         $heroImageModel = new EventHeroImageModel();
-        $heroImageModel->delete($id);
-        return redirect()->to(base_url('admin/event-settings?tab=hero'))->with('success', 'Hero image deleted.');
+        $img = $heroImageModel->where('id', (int)$id)->where('event_id', $eventId)->first();
+        if ($img) {
+            if (!empty($img['image_url']) && file_exists(FCPATH . $img['image_url'])) {
+                @unlink(FCPATH . $img['image_url']);
+            }
+            $heroImageModel->where('event_id', $eventId)->delete($id);
+            return redirect()->to(base_url('admin/event-settings?tab=hero'))->with('success', 'Hero image deleted.');
+        }
+        return redirect()->to(base_url('admin/event-settings?tab=hero'))->with('error', 'Hero image not found in active event.');
     }
 }

@@ -96,6 +96,19 @@ class DecorationController extends BaseAdminController
         $imageUrl = $existing['image_url'] ?? 'assets/img/decoration_white.png';
         $imageFile = $this->request->getFile('image_file');
         if ($imageFile && $imageFile->isValid() && !$imageFile->hasMoved()) {
+            if (!$this->validate([
+                'image_file' => [
+                    'rules'  => 'is_image[image_file]|mime_in[image_file,image/jpg,image/jpeg,image/png,image/webp,image/svg+xml]|max_size[image_file,4096]',
+                    'errors' => [
+                        'is_image' => 'Decoration image must be a valid image file.',
+                        'mime_in'  => 'Only JPG, PNG, WebP, and SVG images are allowed.',
+                        'max_size' => 'Decoration image size cannot exceed 4MB.',
+                    ],
+                ],
+            ])) {
+                return redirect()->back()->withInput()->with('error', $this->validator->getError('image_file'));
+            }
+
             $newName = $imageFile->getRandomName();
             $uploadDir = FCPATH . 'uploads/events/' . $eventId . '/decorations';
             if (!is_dir($uploadDir)) {
@@ -134,7 +147,7 @@ class DecorationController extends BaseAdminController
         ];
 
         if ($existing) {
-            $decorationModel->update($id, $data);
+            $decorationModel->where('event_id', $eventId)->update($id, $data);
             $message = 'Section decoration updated.';
         } else {
             $data['created_by'] = $userId;
@@ -147,14 +160,15 @@ class DecorationController extends BaseAdminController
 
     public function delete($id)
     {
+        $eventId = $this->activeEvent['id'] ?? null;
         $decorationModel = new SectionDecorationModel();
-        $record = $decorationModel->find($id);
+        $record = $decorationModel->where('id', (int)$id)->where('event_id', $eventId)->first();
         if ($record) {
             // Delete uploaded file if stored under uploads/
             if (!empty($record['image_url']) && str_starts_with($record['image_url'], 'uploads/') && file_exists(FCPATH . $record['image_url'])) {
                 @unlink(FCPATH . $record['image_url']);
             }
-            $decorationModel->delete($id);
+            $decorationModel->where('event_id', $eventId)->delete($id);
         }
 
         return redirect()->to(base_url('admin/decorations'))->with('success', 'Decoration removed.');
@@ -162,8 +176,9 @@ class DecorationController extends BaseAdminController
 
     public function toggleActive($id)
     {
+        $eventId = $this->activeEvent['id'] ?? null;
         $decorationModel = new SectionDecorationModel();
-        $record = $decorationModel->find($id);
+        $record = $decorationModel->where('id', (int)$id)->where('event_id', $eventId)->first();
         if ($record) {
             $newStatus = $record['is_active'] ? 0 : 1;
             // If activating a manual position, check for duplicate
@@ -172,7 +187,7 @@ class DecorationController extends BaseAdminController
                     return redirect()->back()->with('error', "Cannot activate: another active decoration exists at position '{$record['position']}'.");
                 }
             }
-            $decorationModel->update($id, ['is_active' => $newStatus]);
+            $decorationModel->where('event_id', $eventId)->update($id, ['is_active' => $newStatus]);
         }
 
         return redirect()->to(base_url('admin/decorations'))->with('success', 'Decoration status updated.');

@@ -45,6 +45,19 @@ class SponsorController extends BaseAdminController
         // Handle image file upload
         $logoFile = $this->request->getFile('logo_file');
         if ($logoFile && $logoFile->isValid() && !$logoFile->hasMoved()) {
+            if (!$this->validate([
+                'logo_file' => [
+                    'rules'  => 'is_image[logo_file]|mime_in[logo_file,image/jpg,image/jpeg,image/png,image/webp,image/svg+xml]|max_size[logo_file,10240]',
+                    'errors' => [
+                        'is_image' => 'Uploaded file must be a valid image.',
+                        'mime_in'  => 'Only JPG, JPEG, PNG, WebP, and SVG files are allowed.',
+                        'max_size' => 'File size cannot exceed 10MB.',
+                    ],
+                ],
+            ])) {
+                return redirect()->back()->withInput()->with('error', $this->validator->getError('logo_file'));
+            }
+
             $newName = $logoFile->getRandomName();
             $uploadDir = FCPATH . 'uploads/events/' . $eventId . '/sponsors';
             if (!is_dir($uploadDir)) {
@@ -69,7 +82,7 @@ class SponsorController extends BaseAdminController
         ];
 
         if ($existing) {
-            $model->update($existing['id'], $data);
+            $model->where('event_id', $eventId)->update($existing['id'], $data);
             $message = 'Sponsors & Partnerships image updated.';
         } else {
             $model->insert($data);
@@ -81,13 +94,16 @@ class SponsorController extends BaseAdminController
 
     public function delete($id = null)
     {
+        $eventId = $this->activeEvent['id'] ?? null;
         $model = new SponsorPartnershipModel();
-        if ($id) {
-            $record = $model->find($id);
-            if ($record && !empty($record['logo_url']) && file_exists(FCPATH . $record['logo_url'])) {
-                @unlink(FCPATH . $record['logo_url']);
+        if ($id && $eventId) {
+            $record = $model->where('id', (int)$id)->where('event_id', $eventId)->first();
+            if ($record) {
+                if (!empty($record['logo_url']) && file_exists(FCPATH . $record['logo_url'])) {
+                    @unlink(FCPATH . $record['logo_url']);
+                }
+                $model->where('event_id', $eventId)->delete($id);
             }
-            $model->delete($id);
         }
         return redirect()->back()->with('success', 'Sponsors & Partnerships image removed.');
     }

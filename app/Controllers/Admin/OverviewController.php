@@ -70,12 +70,25 @@ class OverviewController extends BaseAdminController
         // Handle 4 collage images upload
         $targetDir = FCPATH . 'uploads/events/' . $eventId . '/overview';
         if (!is_dir($targetDir)) {
-            mkdir($targetDir, 0777, true);
+            mkdir($targetDir, 0755, true);
         }
 
         for ($i = 1; $i <= 4; $i++) {
             $file = $this->request->getFile('collage_img_' . $i);
             if ($file && $file->isValid() && !$file->hasMoved()) {
+                if (!$this->validate([
+                    'collage_img_' . $i => [
+                        'rules'  => 'is_image[collage_img_' . $i . ']|mime_in[collage_img_' . $i . ',image/jpg,image/jpeg,image/png,image/webp]|max_size[collage_img_' . $i . ',10240]',
+                        'errors' => [
+                            'is_image' => 'Collage photo ' . $i . ' must be a valid image.',
+                            'mime_in'  => 'Only JPG, JPEG, PNG, and WebP images are allowed.',
+                            'max_size' => 'Collage image size cannot exceed 10MB.',
+                        ],
+                    ],
+                ])) {
+                    return redirect()->back()->withInput()->with('error', $this->validator->getError('collage_img_' . $i));
+                }
+
                 $newName = $file->getRandomName();
                 $file->move($targetDir, $newName);
                 $fullPath = $targetDir . '/' . $newName;
@@ -86,7 +99,7 @@ class OverviewController extends BaseAdminController
 
         $existing = $overviewModel->getByEventId($eventId);
         if ($existing) {
-            $overviewModel->update($existing['id'], $overviewData);
+            $overviewModel->where('event_id', $eventId)->update($existing['id'], $overviewData);
         } else {
             $overviewData['event_id']   = $eventId;
             $overviewData['created_by'] = $userId;

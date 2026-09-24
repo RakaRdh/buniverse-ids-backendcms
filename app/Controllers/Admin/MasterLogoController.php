@@ -93,6 +93,19 @@ class MasterLogoController extends BaseAdminController
         // Color logo
         $logoFile = $this->request->getFile('logo_file');
         if ($logoFile && $logoFile->isValid() && !$logoFile->hasMoved()) {
+            if (!$this->validate([
+                'logo_file' => [
+                    'rules'  => 'is_image[logo_file]|mime_in[logo_file,image/jpg,image/jpeg,image/png,image/webp,image/svg+xml]|max_size[logo_file,4096]',
+                    'errors' => [
+                        'is_image' => 'Logo file must be a valid image.',
+                        'mime_in'  => 'Only JPG, PNG, WebP, and SVG images are allowed.',
+                        'max_size' => 'Logo size cannot exceed 4MB.',
+                    ],
+                ],
+            ])) {
+                return redirect()->back()->withInput()->with('error', $this->validator->getError('logo_file'));
+            }
+
             $newName = $logoFile->getRandomName();
             $logoFile->move($uploadDir, $newName);
             $logoUrl = 'uploads/events/' . $eventId . '/logos/' . $newName;
@@ -101,6 +114,19 @@ class MasterLogoController extends BaseAdminController
         // White logo
         $logoWhiteFile = $this->request->getFile('logo_white_file');
         if ($logoWhiteFile && $logoWhiteFile->isValid() && !$logoWhiteFile->hasMoved()) {
+            if (!$this->validate([
+                'logo_white_file' => [
+                    'rules'  => 'is_image[logo_white_file]|mime_in[logo_white_file,image/jpg,image/jpeg,image/png,image/webp,image/svg+xml]|max_size[logo_white_file,4096]',
+                    'errors' => [
+                        'is_image' => 'White logo file must be a valid image.',
+                        'mime_in'  => 'Only JPG, PNG, WebP, and SVG images are allowed.',
+                        'max_size' => 'Logo size cannot exceed 4MB.',
+                    ],
+                ],
+            ])) {
+                return redirect()->back()->withInput()->with('error', $this->validator->getError('logo_white_file'));
+            }
+
             $newName = $logoWhiteFile->getRandomName();
             $logoWhiteFile->move($uploadDir, $newName);
             $logoWhiteUrl = 'uploads/events/' . $eventId . '/logos/' . $newName;
@@ -119,7 +145,7 @@ class MasterLogoController extends BaseAdminController
         ];
 
         if ($existing) {
-            $logoModel->update($id, $data);
+            $logoModel->where('event_id', $eventId)->update($id, $data);
             $msg = 'Logo updated successfully.';
         } else {
             $logoModel->insert($data);
@@ -131,8 +157,9 @@ class MasterLogoController extends BaseAdminController
 
     public function deleteLogo($id)
     {
+        $eventId = $this->activeEvent['id'] ?? null;
         $logoModel = new EventLogoModel();
-        $record = $logoModel->find($id);
+        $record = $logoModel->where('id', (int)$id)->where('event_id', $eventId)->first();
         if ($record) {
             if (!empty($record['logo_url']) && str_starts_with($record['logo_url'], 'uploads/') && file_exists(FCPATH . $record['logo_url'])) {
                 @unlink(FCPATH . $record['logo_url']);
@@ -140,7 +167,7 @@ class MasterLogoController extends BaseAdminController
             if (!empty($record['logo_white_url']) && str_starts_with($record['logo_white_url'], 'uploads/') && file_exists(FCPATH . $record['logo_white_url'])) {
                 @unlink(FCPATH . $record['logo_white_url']);
             }
-            $logoModel->delete($id);
+            $logoModel->where('event_id', $eventId)->delete($id);
         }
 
         return redirect()->to(base_url('admin/master-logos'))->with('success', 'Logo removed from repository.');

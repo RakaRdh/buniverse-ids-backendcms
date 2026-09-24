@@ -57,9 +57,22 @@ class SpeakerController extends BaseAdminController
             'updated_by' => $userId,
         ];
 
-        // Upload photo
+        // Upload photo validation
         $photo = $this->request->getFile('photo_file');
         if ($photo && $photo->isValid() && !$photo->hasMoved()) {
+            if (!$this->validate([
+                'photo_file' => [
+                    'rules'  => 'is_image[photo_file]|mime_in[photo_file,image/jpg,image/jpeg,image/png,image/webp]|max_size[photo_file,4096]',
+                    'errors' => [
+                        'is_image' => 'Uploaded file must be a valid image.',
+                        'mime_in'  => 'Only JPG, PNG, and WebP images are allowed.',
+                        'max_size' => 'Image size cannot exceed 4MB.',
+                    ],
+                ],
+            ])) {
+                return redirect()->back()->withInput()->with('error', $this->validator->getError('photo_file'));
+            }
+
             $newName = $photo->getRandomName();
             $targetDir = FCPATH . 'uploads/events/' . $eventId . '/speakers';
             if (!is_dir($targetDir)) {
@@ -77,8 +90,9 @@ class SpeakerController extends BaseAdminController
 
     public function edit($id)
     {
+        $eventId = $this->activeEvent['id'] ?? null;
         $speakerModel = new SpeakerModel();
-        $speaker = $speakerModel->find($id);
+        $speaker = $speakerModel->where('id', (int)$id)->where('event_id', $eventId)->first();
 
         if (!$speaker) {
             return redirect()->to(base_url('admin/speakers'))->with('error', 'Speaker not found.');
@@ -93,8 +107,9 @@ class SpeakerController extends BaseAdminController
 
     public function update($id)
     {
+        $eventId = $this->activeEvent['id'] ?? null;
         $speakerModel = new SpeakerModel();
-        $speaker = $speakerModel->find($id);
+        $speaker = $speakerModel->where('id', (int)$id)->where('event_id', $eventId)->first();
         if (!$speaker) {
             return redirect()->to(base_url('admin/speakers'))->with('error', 'Speaker not found.');
         }
@@ -122,6 +137,19 @@ class SpeakerController extends BaseAdminController
         // Upload photo (if uploaded, it overrides remove_photo)
         $photo = $this->request->getFile('photo_file');
         if ($photo && $photo->isValid() && !$photo->hasMoved()) {
+            if (!$this->validate([
+                'photo_file' => [
+                    'rules'  => 'is_image[photo_file]|mime_in[photo_file,image/jpg,image/jpeg,image/png,image/webp]|max_size[photo_file,4096]',
+                    'errors' => [
+                        'is_image' => 'Uploaded file must be a valid image.',
+                        'mime_in'  => 'Only JPG, PNG, and WebP images are allowed.',
+                        'max_size' => 'Image size cannot exceed 4MB.',
+                    ],
+                ],
+            ])) {
+                return redirect()->back()->withInput()->with('error', $this->validator->getError('photo_file'));
+            }
+
             if (!empty($speaker['photo_url']) && file_exists(FCPATH . $speaker['photo_url'])) {
                 @unlink(FCPATH . $speaker['photo_url']);
             }
@@ -136,12 +164,13 @@ class SpeakerController extends BaseAdminController
             $data['photo_url'] = 'uploads/events/' . $speaker['event_id'] . '/speakers/' . $newName;
         }
 
-        $speakerModel->update($id, $data);
+        $speakerModel->where('event_id', $eventId)->update($id, $data);
         return redirect()->to(base_url('admin/speakers#speaker-' . $id))->with('success', 'Speaker updated successfully.');
     }
 
     public function delete($id)
     {
+        $eventId = $this->activeEvent['id'] ?? null;
         $db = \Config\Database::connect();
         $assignedCount = $db->table('session_speakers')->where('speaker_id', $id)->countAllResults();
 
@@ -150,8 +179,16 @@ class SpeakerController extends BaseAdminController
         }
 
         $speakerModel = new SpeakerModel();
-        $speakerModel->delete($id);
-        return redirect()->to(base_url('admin/speakers'))->with('success', 'Speaker deleted successfully.');
+        $speaker = $speakerModel->where('id', (int)$id)->where('event_id', $eventId)->first();
+        if ($speaker) {
+            if (!empty($speaker['photo_url']) && file_exists(FCPATH . $speaker['photo_url'])) {
+                @unlink(FCPATH . $speaker['photo_url']);
+            }
+            $speakerModel->where('event_id', $eventId)->delete($id);
+            return redirect()->to(base_url('admin/speakers'))->with('success', 'Speaker deleted successfully.');
+        }
+
+        return redirect()->to(base_url('admin/speakers'))->with('error', 'Speaker not found in active event.');
     }
 
     public function reorder()
@@ -200,6 +237,14 @@ class SpeakerController extends BaseAdminController
         // Optional photo
         $photo = $this->request->getFile('photo_file');
         if ($photo && $photo->isValid() && !$photo->hasMoved()) {
+            if (!$this->validate([
+                'photo_file' => [
+                    'rules' => 'is_image[photo_file]|mime_in[photo_file,image/jpg,image/jpeg,image/png,image/webp]|max_size[photo_file,4096]',
+                ],
+            ])) {
+                return $this->response->setStatusCode(422)->setJSON(['success' => false, 'message' => $this->validator->getError('photo_file')]);
+            }
+
             $newName = $photo->getRandomName();
             $targetDir = FCPATH . 'uploads/events/' . $eventId . '/speakers';
             if (!is_dir($targetDir)) {

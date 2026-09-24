@@ -505,9 +505,20 @@ class ScheduleController extends BaseAdminController
 
     public function deleteSession($id)
     {
+        $eventId = $this->activeEvent['id'] ?? null;
         $sessionModel = new ScheduleSessionModel();
         $session = $sessionModel->find($id);
-        $dayId = $session['schedule_day_id'] ?? null;
+        if (!$session) {
+            return redirect()->to(base_url('admin/schedules'))->with('error', 'Session not found.');
+        }
+
+        $dayModel = new ScheduleDayModel();
+        $day = $dayModel->where('id', $session['schedule_day_id'])->where('event_id', $eventId)->first();
+        if (!$day) {
+            return redirect()->to(base_url('admin/schedules'))->with('error', 'Session does not belong to active event.');
+        }
+
+        $dayId = $session['schedule_day_id'];
 
         // If parent session, delete all children too
         $children = $sessionModel->where('parent_session_id', $id)->findAll();
