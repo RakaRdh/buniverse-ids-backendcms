@@ -55,6 +55,16 @@
                 <div class="help-text">Square ratio portrait photo recommended (PNG/JPG).</div>
             </div>
 
+            <div class="form-group" style="background: rgba(255, 255, 255, 0.03); padding: 14px 16px; border-radius: var(--radius-card); border: 1px solid var(--line);">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 0;">
+                    <input type="checkbox" name="is_active" value="1" <?= (!isset($speaker['is_active']) || !empty($speaker['is_active'])) ? 'checked' : '' ?> style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent-gold);">
+                    <div>
+                        <strong style="color: var(--text-strong); font-size: 14px;">Status Aktif (Tampilkan di Frontend)</strong>
+                        <div style="font-size: 12px; color: var(--text-muted); font-weight: normal; margin-top: 2px;">Jika dinonaktifkan, pembicara ini tidak akan muncul di tab Speakers maupun jadwal sesi di Frontend.</div>
+                    </div>
+                </label>
+            </div>
+
             <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--color-border-light); display: flex; gap: 10px;">
                 <button type="submit" class="btn btn-primary"><?= $speaker ? 'Update Speaker' : 'Create Speaker' ?></button>
                 <a href="<?= base_url('admin/speakers') ?>" class="btn btn-outline">Cancel</a>

@@ -33,7 +33,7 @@ class ScheduleSessionModel extends Model
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
 
-    public function getSessionsByDay(int $scheduleDayId)
+    public function getSessionsByDay(int $scheduleDayId, bool $activeOnly = false)
     {
         $db = \Config\Database::connect();
 
@@ -48,7 +48,7 @@ class ScheduleSessionModel extends Model
 
         foreach ($sessions as &$session) {
             // Check if special session has rooms & items via new hierarchy tables
-            $session['session_rooms'] = $this->getSessionRoomsWithItems((int)$session['id']);
+            $session['session_rooms'] = $this->getSessionRoomsWithItems((int)$session['id'], $activeOnly);
 
             // Also check old children for backwards compatibility if any
             $children = $this->select('schedule_sessions.*, schedule_rooms.name as room_name')
@@ -58,12 +58,12 @@ class ScheduleSessionModel extends Model
                 ->findAll();
 
             foreach ($children as &$child) {
-                $child['speakers']   = $this->getSessionSpeakers($child['id']);
+                $child['speakers']   = $this->getSessionSpeakers($child['id'], $activeOnly);
                 $child['moderators'] = $this->getSessionModerators($child['id']);
                 $child['pengantar']  = $this->getSessionPengantar($child['id']);
             }
             $session['children']   = $children;
-            $session['speakers']   = $this->getSessionSpeakers($session['id']);
+            $session['speakers']   = $this->getSessionSpeakers($session['id'], $activeOnly);
             $session['moderators'] = $this->getSessionModerators($session['id']);
             $session['pengantar']  = $this->getSessionPengantar($session['id']);
         }
@@ -71,7 +71,7 @@ class ScheduleSessionModel extends Model
         return $sessions;
     }
 
-    public function getSessionRoomsWithItems(int $sessionId)
+    public function getSessionRoomsWithItems(int $sessionId, bool $activeOnly = false)
     {
         $db = \Config\Database::connect();
 
@@ -97,11 +97,14 @@ class ScheduleSessionModel extends Model
                     ->get()->getResultArray();
 
                 // Item speakers
-                $item['speakers'] = $db->table('session_item_speakers')
+                $itemSpeakerBuilder = $db->table('session_item_speakers')
                     ->select('session_item_speakers.*, speakers.slug, speakers.name, speakers.role_text, speakers.photo_url')
                     ->join('speakers', 'speakers.id = session_item_speakers.speaker_id')
-                    ->where('session_item_speakers.item_id', $item['id'])
-                    ->orderBy('session_item_speakers.sort_order', 'ASC')
+                    ->where('session_item_speakers.item_id', $item['id']);
+                if ($activeOnly) {
+                    $itemSpeakerBuilder->where('speakers.is_active', 1);
+                }
+                $item['speakers'] = $itemSpeakerBuilder->orderBy('session_item_speakers.sort_order', 'ASC')
                     ->get()->getResultArray();
             }
 
@@ -111,14 +114,17 @@ class ScheduleSessionModel extends Model
         return $sessionRooms;
     }
 
-    public function getSessionSpeakers(int $sessionId)
+    public function getSessionSpeakers(int $sessionId, bool $activeOnly = false)
     {
         $db = \Config\Database::connect();
-        return $db->table('session_speakers')
+        $builder = $db->table('session_speakers')
             ->select('session_speakers.*, speakers.slug, speakers.name, speakers.role_text, speakers.photo_url')
             ->join('speakers', 'speakers.id = session_speakers.speaker_id')
-            ->where('session_speakers.session_id', $sessionId)
-            ->orderBy('session_speakers.sort_order', 'ASC')
+            ->where('session_speakers.session_id', $sessionId);
+        if ($activeOnly) {
+            $builder->where('speakers.is_active', 1);
+        }
+        return $builder->orderBy('session_speakers.sort_order', 'ASC')
             ->get()->getResultArray();
     }
 

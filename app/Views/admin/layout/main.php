@@ -102,6 +102,10 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                         <span>Moderators</span>
                     </a>
+                    <a href="<?= base_url('admin/qna') ?>" class="nav-item <?= ($activeMenu ?? '') === 'qna' ? 'active' : '' ?>">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                        <span>Q&A Questions</span>
+                    </a>
 
                     <div class="nav-section-label">Media & partners</div>
                     <a href="<?= base_url('admin/livestreams') ?>" class="nav-item <?= ($activeMenu ?? '') === 'livestreams' ? 'active' : '' ?>">

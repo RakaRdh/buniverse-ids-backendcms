@@ -65,6 +65,7 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     $routes->post('speakers/quick-save', 'Admin\SpeakerController::quickSave');
     $routes->get('speakers/edit/(:num)', 'Admin\SpeakerController::edit/$1');
     $routes->post('speakers/update/(:num)', 'Admin\SpeakerController::update/$1');
+    $routes->post('speakers/toggle/(:num)', 'Admin\SpeakerController::toggle/$1');
     $routes->post('speakers/delete/(:num)', 'Admin\SpeakerController::delete/$1');
     $routes->post('speakers/reorder', 'Admin\SpeakerController::reorder');
 
@@ -166,6 +167,10 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
         $routes->post('delete/(:num)', 'Admin\UserController::delete/$1');
     });
 
+    // Q&A Questions
+    $routes->get('qna', 'Admin\QnaController::index');
+    $routes->post('qna/delete/(:num)', 'Admin\QnaController::delete/$1');
+
     // Profile & Password Change (All logged in admins)
     $routes->get('profile', 'Admin\ProfileController::index');
     $routes->post('profile/update-password', 'Admin\ProfileController::updatePassword');
@@ -176,4 +181,9 @@ $routes->group('api/v1', function ($routes) {
     $routes->get('event/active', 'Api\EventApiController::active');
     $routes->get('event/(:num)', 'Api\EventApiController::show/$1');
     $routes->post('tickets/click', 'Api\EventApiController::logTicketClick');
+
+    // Q&A API
+    $routes->post('qna', 'Api\QnaApiController::create');
+    $routes->get('qna', 'Api\QnaApiController::list');
+    $routes->get('qna/sessions', 'Api\QnaApiController::sessions');
 });

@@ -416,7 +416,7 @@ class EventApiController extends ResourceController
         $days = $dayModel->getByEvent($event['id']);
         foreach ($days as $day) {
             $dayKey = 'day_' . $day['day_number'];
-            $daySessions = $sessionModel->getSessionsByDay((int)$day['id']);
+            $daySessions = $sessionModel->getSessionsByDay((int)$day['id'], true);
 
             $formattedSessions = [];
             foreach ($daySessions as $sess) {

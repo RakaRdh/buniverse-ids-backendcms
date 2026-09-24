@@ -28,13 +28,14 @@
                     <th style="width: 70px;">Photo</th>
                     <th style="width: 280px;">Name</th>
                     <th>Role / Title</th>
-                    <th style="text-align: right; width: 140px;">Actions</th>
+                    <th style="width: 100px; text-align: center;">Status</th>
+                    <th style="text-align: right; width: 190px;">Actions</th>
                 </tr>
             </thead>
             <tbody id="sortableSpeakers">
                 <?php if (!empty($speakers)): ?>
                     <?php foreach ($speakers as $spk): ?>
-                        <tr id="speaker-<?= $spk['id'] ?>" data-id="<?= $spk['id'] ?>" class="draggable-speaker-row" style="cursor: move; scroll-margin-top: 80px;">
+                        <tr id="speaker-<?= $spk['id'] ?>" data-id="<?= $spk['id'] ?>" class="draggable-speaker-row" style="cursor: move; scroll-margin-top: 80px; <?= empty($spk['is_active']) ? 'opacity: 0.65;' : '' ?>">
                             <td style="text-align: center; color: var(--text-muted); cursor: grab;" class="drag-handle" title="Drag to reorder">
                                 <span style="font-size: 18px; line-height: 1;">&#9776;</span>
                             </td>
@@ -49,8 +50,21 @@
                             </td>
                             <td><strong style="color: var(--text-strong); font-size: 14px;"><?= esc($spk['name']) ?></strong></td>
                             <td style="color: var(--text-body); font-size: 13px; line-height: 1.5; white-space: pre-line;"><?= esc($spk['role_text'] ?: '—') ?></td>
+                            <td style="text-align: center;">
+                                <?php if (!empty($spk['is_active'])): ?>
+                                    <span class="badge" style="background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); font-size: 11px; padding: 3px 8px; border-radius: 4px; font-weight: 600;">Aktif</span>
+                                <?php else: ?>
+                                    <span class="badge" style="background: rgba(148, 163, 184, 0.15); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.3); font-size: 11px; padding: 3px 8px; border-radius: 4px; font-weight: 600;">Off</span>
+                                <?php endif; ?>
+                            </td>
                             <td style="text-align: right;">
-                                <div style="display: inline-flex; gap: 6px;">
+                                <div style="display: inline-flex; gap: 6px; align-items: center;">
+                                    <form action="<?= base_url('admin/speakers/toggle/' . $spk['id']) ?>" method="POST" style="display:inline;">
+                                        <?= csrf_field() ?>
+                                        <button type="submit" class="btn btn-sm btn-icon" title="<?= !empty($spk['is_active']) ? 'Nonaktifkan dari Frontend' : 'Aktifkan di Frontend' ?>" style="color: <?= !empty($spk['is_active']) ? '#fbbf24' : '#94a3b8' ?>; border: 1px solid var(--line); padding: 5px 8px; border-radius: 4px;">
+                                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
+                                        </button>
+                                    </form>
                                     <a href="<?= base_url('admin/speakers/edit/' . $spk['id']) ?>" class="btn btn-outline btn-sm">Edit</a>
                                     <form action="<?= base_url('admin/speakers/delete/' . $spk['id']) ?>" method="POST" onsubmit="return confirm('Delete this speaker?');" style="display:inline;">
                                         <?= csrf_field() ?>
@@ -62,7 +76,7 @@
                     <?php endforeach; ?>
                 <?php else: ?>
                     <tr>
-                        <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                        <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">
                             No speakers found for this event. Click "+ Add New Speaker" to create one.
                         </td>
                     </tr>
@@ -92,33 +106,61 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (id) order.push(id);
             });
 
+            // Extract CSRF details from layout meta tags
+            const csrfMetaName = document.querySelector('meta[name="csrf-token-name"]')?.getAttribute('content') || '<?= csrf_token() ?>';
+            const csrfMetaHash = document.querySelector('meta[name="csrf-hash"]');
+            const csrfMetaHeader = document.querySelector('meta[name="csrf-header"]')?.getAttribute('content') || 'X-CSRF-TOKEN';
+            const currentHash = csrfMetaHash ? csrfMetaHash.getAttribute('content') : '<?= csrf_hash() ?>';
+
             // Post reordered array to backend
             const formData = new FormData();
+            if (csrfMetaName && currentHash) {
+                formData.append(csrfMetaName, currentHash);
+            }
             order.forEach((id, idx) => {
                 formData.append('order[' + idx + ']', id);
             });
 
+            if (statusMsg) {
+                statusMsg.style.display = 'inline-block';
+                statusMsg.style.color = '#e5a900';
+                statusMsg.textContent = 'Saving order...';
+            }
+
             fetch('<?= base_url('admin/speakers/reorder') ?>', {
                 method: 'POST',
                 headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
+                    'X-Requested-With': 'XMLHttpRequest',
+                    [csrfMetaHeader]: currentHash
                 },
                 body: formData
             })
             .then(res => res.json())
             .then(data => {
                 if (data && data.status === 'success') {
+                    if (data.csrf_hash && csrfMetaHash) {
+                        csrfMetaHash.setAttribute('content', data.csrf_hash);
+                    }
                     if (statusMsg) {
-                        statusMsg.style.display = 'inline-block';
-                        statusMsg.textContent = 'Order saved!';
+                        statusMsg.style.color = '#22c55e';
+                        statusMsg.textContent = 'Order Saved!';
                         setTimeout(() => {
                             statusMsg.style.display = 'none';
                         }, 2500);
+                    }
+                } else {
+                    if (statusMsg) {
+                        statusMsg.style.color = '#ef4444';
+                        statusMsg.textContent = (data && data.message) ? data.message : 'Failed to save order';
                     }
                 }
             })
             .catch(err => {
                 console.error('Reorder error:', err);
+                if (statusMsg) {
+                    statusMsg.style.color = '#ef4444';
+                    statusMsg.textContent = 'Network error saving order';
+                }
             });
         }
     });

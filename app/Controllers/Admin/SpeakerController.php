@@ -45,6 +45,8 @@ class SpeakerController extends BaseAdminController
         $slug = url_title($name, '-', true);
         $userId = $this->currentAdmin['id'] ?? session()->get('admin_id') ?? session()->get('admin_user')['id'] ?? 1;
 
+        $isActive = $this->request->getPost('is_active') !== null ? (int)$this->request->getPost('is_active') : 1;
+
         $data = [
             'event_id'   => $eventId,
             'name'       => $name,
@@ -52,7 +54,7 @@ class SpeakerController extends BaseAdminController
             'role_text'  => $this->request->getPost('role_text'),
             'bio'        => null,
             'sort_order' => ($count + 1),
-            'is_active'  => 1,
+            'is_active'  => $isActive,
             'created_by' => $userId,
             'updated_by' => $userId,
         ];
@@ -118,11 +120,13 @@ class SpeakerController extends BaseAdminController
         $slug = url_title($name, '-', true);
         $userId = $this->currentAdmin['id'] ?? session()->get('admin_id') ?? session()->get('admin_user')['id'] ?? 1;
 
+        $isActive = $this->request->getPost('is_active') !== null ? (int)$this->request->getPost('is_active') : 1;
+
         $data = [
             'name'       => $name,
             'slug'       => $slug,
             'role_text'  => $this->request->getPost('role_text'),
-            'is_active'  => 1,
+            'is_active'  => $isActive,
             'updated_by' => $userId,
         ];
 
@@ -191,16 +195,50 @@ class SpeakerController extends BaseAdminController
         return redirect()->to(base_url('admin/speakers'))->with('error', 'Speaker not found in active event.');
     }
 
+    public function toggle(int $id)
+    {
+        $eventId = $this->activeEvent['id'] ?? null;
+        if (!$eventId) {
+            return redirect()->back()->with('error', 'No active event.');
+        }
+
+        $speakerModel = new SpeakerModel();
+        $existing = $speakerModel->where('event_id', $eventId)->find($id);
+        if (!$existing) {
+            return redirect()->back()->with('error', 'Speaker not found.');
+        }
+
+        $newStatus = empty($existing['is_active']) ? 1 : 0;
+        $userId = $this->currentAdmin['id'] ?? session()->get('admin_id') ?? session()->get('admin_user')['id'] ?? 1;
+
+        $speakerModel->where('event_id', $eventId)->update($id, [
+            'is_active'  => $newStatus,
+            'updated_by' => $userId,
+        ]);
+
+        return redirect()->to(base_url('admin/speakers#speaker-' . $id))->with('success', 'Speaker "' . $existing['name'] . '" status updated to ' . ($newStatus ? 'Active' : 'Inactive') . '.');
+    }
+
     public function reorder()
     {
+        $eventId = $this->activeEvent['id'] ?? null;
         $order = $this->request->getPost('order');
-        if (is_array($order)) {
+        if (is_array($order) && !empty($order)) {
             $speakerModel = new SpeakerModel();
             foreach ($order as $sort => $id) {
-                $speakerModel->update($id, ['sort_order' => $sort + 1]);
+                if ($eventId) {
+                    $speakerModel->where('event_id', $eventId)->update((int)$id, ['sort_order' => (int)$sort + 1]);
+                } else {
+                    $speakerModel->update((int)$id, ['sort_order' => (int)$sort + 1]);
+                }
             }
         }
-        return $this->response->setJSON(['status' => 'success']);
+        return $this->response->setJSON([
+            'status'    => 'success',
+            'csrf_name' => csrf_token(),
+            'csrf_hash' => csrf_hash(),
+            'message'   => 'Order updated successfully.'
+        ]);
     }
 
     public function quickSave()
