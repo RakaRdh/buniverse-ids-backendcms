@@ -28,7 +28,7 @@
             <tbody id="pengantarTableBody">
                 <?php if (!empty($pengantar)): ?>
                     <?php foreach ($pengantar as $p): ?>
-                        <tr class="pengantar-row-item">
+                        <tr id="pengantar-<?= $p['id'] ?>" class="pengantar-row-item" style="scroll-margin-top: 80px;">
                             <td style="padding: 12px 16px">
                                 <?php if (!empty($p['photo_url'])): ?>
                                     <img src="<?= base_url($p['photo_url']) ?>" alt="<?= esc($p['name']) ?>" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-color);">

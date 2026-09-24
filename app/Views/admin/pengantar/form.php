@@ -1,9 +1,15 @@
+<?php
+$backUrl = base_url('admin/pengantar');
+if (!empty($pengantar['id'])) {
+    $backUrl .= '#pengantar-' . $pengantar['id'];
+}
+?>
 <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
     <div>
         <h1 class="page-title"><?= $pengantar ? 'Edit Pengantar' : 'Add New Pengantar' ?></h1>
         <p class="page-subtitle"><?= $pengantar ? 'Update pengantar profile information' : 'Register a new session pengantar' ?></p>
     </div>
-    <a href="<?= base_url('admin/pengantar') ?>" class="btn btn-outline">&larr; Back to Pengantar</a>
+    <a href="<?= $backUrl ?>" class="btn btn-outline">&larr; Back to Pengantar</a>
 </div>
 
 <div class="cms-card" style="max-width: 720px;">

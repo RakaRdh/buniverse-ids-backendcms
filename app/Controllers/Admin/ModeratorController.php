@@ -130,7 +130,7 @@ class ModeratorController extends BaseAdminController
         }
 
         $moderatorModel->update($id, $data);
-        return redirect()->to(base_url('admin/moderators'))->with('success', 'Moderator updated successfully.');
+        return redirect()->to(base_url('admin/moderators#moderator-' . $id))->with('success', 'Moderator updated successfully.');
     }
 
     public function delete($id)

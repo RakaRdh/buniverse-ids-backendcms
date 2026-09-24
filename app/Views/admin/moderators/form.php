@@ -1,9 +1,15 @@
+<?php
+$backUrl = base_url('admin/moderators');
+if (!empty($moderator['id'])) {
+    $backUrl .= '#moderator-' . $moderator['id'];
+}
+?>
 <div class="page-header">
     <div>
         <h1 class="page-title"><?= $moderator ? 'Edit Moderator' : 'Add New Moderator' ?></h1>
         <p class="page-subtitle"><?= $moderator ? 'Update moderator profile information' : 'Register a new session moderator / discussion facilitator' ?></p>
     </div>
-    <a href="<?= base_url('admin/moderators') ?>" class="btn btn-outline">&larr; Back to Moderators</a>
+    <a href="<?= $backUrl ?>" class="btn btn-outline">&larr; Back to Moderators</a>
 </div>
 
 <div class="cms-card" style="max-width: 800px;">

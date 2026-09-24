@@ -34,7 +34,7 @@
             <tbody id="sortableSpeakers">
                 <?php if (!empty($speakers)): ?>
                     <?php foreach ($speakers as $spk): ?>
-                        <tr data-id="<?= $spk['id'] ?>" class="draggable-speaker-row" style="cursor: move;">
+                        <tr id="speaker-<?= $spk['id'] ?>" data-id="<?= $spk['id'] ?>" class="draggable-speaker-row" style="cursor: move; scroll-margin-top: 80px;">
                             <td style="text-align: center; color: var(--text-muted); cursor: grab;" class="drag-handle" title="Drag to reorder">
                                 <span style="font-size: 18px; line-height: 1;">&#9776;</span>
                             </td>

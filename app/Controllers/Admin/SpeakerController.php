@@ -137,7 +137,7 @@ class SpeakerController extends BaseAdminController
         }
 
         $speakerModel->update($id, $data);
-        return redirect()->to(base_url('admin/speakers'))->with('success', 'Speaker updated successfully.');
+        return redirect()->to(base_url('admin/speakers#speaker-' . $id))->with('success', 'Speaker updated successfully.');
     }
 
     public function delete($id)

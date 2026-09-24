@@ -3,7 +3,13 @@
         <h1 class="page-title"><?= $speaker ? 'Edit Speaker' : 'Add New Speaker' ?></h1>
         <p class="page-subtitle"><?= $speaker ? 'Update speaker profile details' : 'Register a new confirmed speaker for the summit' ?></p>
     </div>
-    <a href="<?= base_url('admin/speakers') ?>" class="btn btn-outline">&larr; Back to Speakers</a>
+    <?php
+    $backUrl = base_url('admin/speakers');
+    if (!empty($speaker['id'])) {
+        $backUrl .= '#speaker-' . $speaker['id'];
+    }
+    ?>
+    <a href="<?= $backUrl ?>" class="btn btn-outline">&larr; Back to Speakers</a>
 </div>
 
 <div class="cms-card" style="max-width: 800px;">

@@ -143,7 +143,7 @@ class PengantarController extends BaseAdminController
         }
 
         $pengantarModel->update($id, $data);
-        return redirect()->to(base_url('admin/pengantar'))->with('success', 'Pengantar updated successfully.');
+        return redirect()->to(base_url('admin/pengantar#pengantar-' . $id))->with('success', 'Pengantar updated successfully.');
     }
 
     public function delete($id)

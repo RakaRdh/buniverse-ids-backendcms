@@ -290,8 +290,34 @@
                 });
             });
         }
+
+        // Auto-scroll and highlight target row when URL has hash anchor (e.g. #speaker-12, #moderator-5, #pengantar-3, #session-4)
+        if (window.location.hash) {
+            try {
+                const targetEl = document.querySelector(window.location.hash);
+                if (targetEl) {
+                    setTimeout(() => {
+                        targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        targetEl.classList.add('row-anchor-highlight');
+                        setTimeout(() => {
+                            targetEl.classList.remove('row-anchor-highlight');
+                        }, 2500);
+                    }, 150);
+                }
+            } catch (e) {}
+        }
     });
     </script>
+    <style>
+    @keyframes anchorGlow {
+        0% { background-color: rgba(212, 175, 55, 0.25); }
+        70% { background-color: rgba(212, 175, 55, 0.12); }
+        100% { background-color: transparent; }
+    }
+    .row-anchor-highlight {
+        animation: anchorGlow 2.5s ease-out forwards !important;
+    }
+    </style>
 </body>
 </html>
 
