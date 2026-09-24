@@ -61,7 +61,13 @@ class SpeakerController extends BaseAdminController
         $photo = $this->request->getFile('photo_file');
         if ($photo && $photo->isValid() && !$photo->hasMoved()) {
             $newName = $photo->getRandomName();
-            $photo->move(FCPATH . 'uploads/events/' . $eventId . '/speakers', $newName);
+            $targetDir = FCPATH . 'uploads/events/' . $eventId . '/speakers';
+            if (!is_dir($targetDir)) {
+                mkdir($targetDir, 0755, true);
+            }
+            $photo->move($targetDir, $newName);
+            $fullPath = $targetDir . '/' . $newName;
+            \App\Libraries\ImageOptimizer::optimize($fullPath, 800, 800, 85);
             $data['photo_url'] = 'uploads/events/' . $eventId . '/speakers/' . $newName;
         }
 
@@ -120,7 +126,13 @@ class SpeakerController extends BaseAdminController
                 @unlink(FCPATH . $speaker['photo_url']);
             }
             $newName = $photo->getRandomName();
-            $photo->move(FCPATH . 'uploads/events/' . $speaker['event_id'] . '/speakers', $newName);
+            $targetDir = FCPATH . 'uploads/events/' . $speaker['event_id'] . '/speakers';
+            if (!is_dir($targetDir)) {
+                mkdir($targetDir, 0755, true);
+            }
+            $photo->move($targetDir, $newName);
+            $fullPath = $targetDir . '/' . $newName;
+            \App\Libraries\ImageOptimizer::optimize($fullPath, 800, 800, 85);
             $data['photo_url'] = 'uploads/events/' . $speaker['event_id'] . '/speakers/' . $newName;
         }
 
@@ -189,7 +201,13 @@ class SpeakerController extends BaseAdminController
         $photo = $this->request->getFile('photo_file');
         if ($photo && $photo->isValid() && !$photo->hasMoved()) {
             $newName = $photo->getRandomName();
-            $photo->move(FCPATH . 'uploads/events/' . $eventId . '/speakers', $newName);
+            $targetDir = FCPATH . 'uploads/events/' . $eventId . '/speakers';
+            if (!is_dir($targetDir)) {
+                mkdir($targetDir, 0755, true);
+            }
+            $photo->move($targetDir, $newName);
+            $fullPath = $targetDir . '/' . $newName;
+            \App\Libraries\ImageOptimizer::optimize($fullPath, 800, 800, 85);
             $data['photo_url'] = 'uploads/events/' . $eventId . '/speakers/' . $newName;
         }
 

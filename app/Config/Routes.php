@@ -77,6 +77,19 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     $routes->post('moderators/delete/(:num)', 'Admin\ModeratorController::delete/$1');
     $routes->post('moderators/reorder', 'Admin\ModeratorController::reorder');
 
+    // Pengantar
+    $routes->get('pengantar', 'Admin\PengantarController::index');
+    $routes->get('pengantar/new', 'Admin\PengantarController::new');
+    $routes->post('pengantar/save', 'Admin\PengantarController::save');
+    $routes->post('pengantar/quick-save', 'Admin\PengantarController::quickSave');
+    $routes->get('pengantar/edit/(:num)', 'Admin\PengantarController::edit/$1');
+    $routes->post('pengantar/update/(:num)', 'Admin\PengantarController::update/$1');
+    $routes->post('pengantar/delete/(:num)', 'Admin\PengantarController::delete/$1');
+
+    // Event Locations & Floor Plan
+    $routes->get('locations', 'Admin\LocationController::index');
+    $routes->post('locations/update', 'Admin\LocationController::update');
+
     // Rooms
     $routes->get('rooms', 'Admin\RoomController::index');
     $routes->post('rooms/save', 'Admin\RoomController::save');
@@ -105,6 +118,7 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     $routes->post('highlights/update/(:num)', 'Admin\HighlightController::update/$1');
     $routes->post('highlights/toggle/(:num)', 'Admin\HighlightController::toggle/$1');
     $routes->post('highlights/delete/(:num)', 'Admin\HighlightController::delete/$1');
+    $routes->post('highlights/inactive-all', 'Admin\HighlightController::inactiveAll');
 
     // Sponsors & Partnerships (Single Image Upload)
     $routes->get('sponsors', 'Admin\SponsorController::index');

@@ -8,12 +8,15 @@ use App\Models\SectionDecorationModel;
 class DecorationController extends BaseAdminController
 {
     protected array $sections = [
-        'home'     => 'Hero / Home',
-        'about-us' => 'About Us / Overview',
-        'schedule' => 'Schedule',
-        'gallery'  => 'Gallery',
-        'news'     => 'Related News',
-        'sponsor'  => 'Sponsors & Partnerships',
+        'home'       => 'Hero / Home',
+        'about-us'   => 'About Us / Overview',
+        'livestream' => 'Live Streaming',
+        'schedule'   => 'Schedule',
+        'gallery'    => 'Gallery',
+        'news'       => 'Related News',
+        'highlights' => 'Highlights',
+        'sponsor'    => 'Sponsors & Partnerships',
+        'location'   => 'Locations & Floor Plan',
     ];
 
     public function index()

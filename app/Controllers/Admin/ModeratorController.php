@@ -57,7 +57,13 @@ class ModeratorController extends BaseAdminController
         $photo = $this->request->getFile('photo_file');
         if ($photo && $photo->isValid() && !$photo->hasMoved()) {
             $newName = $photo->getRandomName();
-            $photo->move(FCPATH . 'uploads/events/' . $eventId . '/moderators', $newName);
+            $targetDir = FCPATH . 'uploads/events/' . $eventId . '/moderators';
+            if (!is_dir($targetDir)) {
+                mkdir($targetDir, 0755, true);
+            }
+            $photo->move($targetDir, $newName);
+            $fullPath = $targetDir . '/' . $newName;
+            \App\Libraries\ImageOptimizer::optimize($fullPath, 800, 800, 85);
             $data['photo_url'] = 'uploads/events/' . $eventId . '/moderators/' . $newName;
         }
 
@@ -113,7 +119,13 @@ class ModeratorController extends BaseAdminController
                 @unlink(FCPATH . $moderator['photo_url']);
             }
             $newName = $photo->getRandomName();
-            $photo->move(FCPATH . 'uploads/events/' . $moderator['event_id'] . '/moderators', $newName);
+            $targetDir = FCPATH . 'uploads/events/' . $moderator['event_id'] . '/moderators';
+            if (!is_dir($targetDir)) {
+                mkdir($targetDir, 0755, true);
+            }
+            $photo->move($targetDir, $newName);
+            $fullPath = $targetDir . '/' . $newName;
+            \App\Libraries\ImageOptimizer::optimize($fullPath, 800, 800, 85);
             $data['photo_url'] = 'uploads/events/' . $moderator['event_id'] . '/moderators/' . $newName;
         }
 
@@ -179,7 +191,13 @@ class ModeratorController extends BaseAdminController
         $photo = $this->request->getFile('photo_file');
         if ($photo && $photo->isValid() && !$photo->hasMoved()) {
             $newName = $photo->getRandomName();
-            $photo->move(FCPATH . 'uploads/events/' . $eventId . '/moderators', $newName);
+            $targetDir = FCPATH . 'uploads/events/' . $eventId . '/moderators';
+            if (!is_dir($targetDir)) {
+                mkdir($targetDir, 0755, true);
+            }
+            $photo->move($targetDir, $newName);
+            $fullPath = $targetDir . '/' . $newName;
+            \App\Libraries\ImageOptimizer::optimize($fullPath, 800, 800, 85);
             $data['photo_url'] = 'uploads/events/' . $eventId . '/moderators/' . $newName;
         }
 

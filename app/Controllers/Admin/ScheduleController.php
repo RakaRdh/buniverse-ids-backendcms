@@ -74,12 +74,14 @@ class ScheduleController extends BaseAdminController
         $roomModel      = new ScheduleRoomModel();
         $speakerModel   = new SpeakerModel();
         $moderatorModel = new ModeratorModel();
+        $pengantarModel = new \App\Models\PengantarModel();
 
         $this->data['session']    = null;
         $this->data['days']       = $dayModel->getByEvent($eventId);
         $this->data['rooms']      = $roomModel->getByEvent($eventId);
         $this->data['speakers']   = $speakerModel->getByEvent($eventId);
         $this->data['moderators'] = $moderatorModel->getByEvent($eventId);
+        $this->data['pengantar']  = $pengantarModel->getByEvent($eventId);
         $this->data['dayId']      = $this->request->getGet('day_id');
         $this->data['pageTitle']  = 'Create Schedule Session';
         $this->data['activeMenu'] = 'schedules';
@@ -99,6 +101,7 @@ class ScheduleController extends BaseAdminController
         $roomModel      = new ScheduleRoomModel();
         $speakerModel   = new SpeakerModel();
         $moderatorModel = new ModeratorModel();
+        $pengantarModel = new \App\Models\PengantarModel();
 
         $session = $sessionModel->find((int)$id);
         if (!$session) {
@@ -138,12 +141,14 @@ class ScheduleController extends BaseAdminController
         $session['session_rooms'] = $sessionRooms;
         $session['speakers']      = $sessionModel->getSessionSpeakers($session['id']);
         $session['moderators']    = $sessionModel->getSessionModerators($session['id']);
+        $session['pengantar']     = $sessionModel->getSessionPengantar($session['id']);
 
         $this->data['session']    = $session;
         $this->data['days']       = $dayModel->getByEvent($eventId);
         $this->data['rooms']      = $roomModel->getByEvent($eventId);
         $this->data['speakers']   = $speakerModel->getByEvent($eventId);
         $this->data['moderators'] = $moderatorModel->getByEvent($eventId);
+        $this->data['pengantar']  = $pengantarModel->getByEvent($eventId);
         $this->data['dayId']      = $session['schedule_day_id'];
         $this->data['pageTitle']  = 'Edit Schedule Session';
         $this->data['activeMenu'] = 'schedules';
@@ -294,6 +299,21 @@ class ScheduleController extends BaseAdminController
                 }
             }
 
+            // Assign pengantar
+            $pengantar = $this->request->getPost('pengantar');
+            if (is_array($pengantar)) {
+                foreach ($pengantar as $sort => $pId) {
+                    if (!empty($pId)) {
+                        $db->table('session_pengantar')->insert([
+                            'session_id'   => $sessionId,
+                            'pengantar_id' => (int)$pId,
+                            'sort_order'   => $sort + 1,
+                            'created_at'   => date('Y-m-d H:i:s'),
+                        ]);
+                    }
+                }
+            }
+
             return redirect()->to(base_url('admin/schedules?day_id=' . $dayId))->with('success', 'Plenary session created successfully.');
         }
     }
@@ -429,9 +449,10 @@ class ScheduleController extends BaseAdminController
                 'updated_by'      => $userId,
             ]);
 
-            // Clear old speakers & moderators
+            // Clear old speakers & moderators & pengantar
             $db->table('session_speakers')->where('session_id', $id)->delete();
             $db->table('session_moderators')->where('session_id', $id)->delete();
+            $db->table('session_pengantar')->where('session_id', $id)->delete();
 
             // Re-assign speakers
             $speakers = $this->request->getPost('speakers');
@@ -458,6 +479,21 @@ class ScheduleController extends BaseAdminController
                             'moderator_id' => (int)$modId,
                             'sort_order'   => $sort + 1,
                             'created_by'   => $userId,
+                        ]);
+                    }
+                }
+            }
+
+            // Re-assign pengantar
+            $pengantar = $this->request->getPost('pengantar');
+            if (is_array($pengantar)) {
+                foreach ($pengantar as $sort => $pId) {
+                    if (!empty($pId)) {
+                        $db->table('session_pengantar')->insert([
+                            'session_id'   => $id,
+                            'pengantar_id' => (int)$pId,
+                            'sort_order'   => $sort + 1,
+                            'created_at'   => date('Y-m-d H:i:s'),
                         ]);
                     }
                 }

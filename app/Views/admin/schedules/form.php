@@ -25,20 +25,26 @@ $selectedDayId = $session['schedule_day_id'] ?? $dayId ?? ($days[0]['id'] ?? '')
 $startTimeVal = !empty($session['start_time']) ? substr($session['start_time'], 0, 5) : '09:00';
 $endTimeVal   = !empty($session['end_time']) ? substr($session['end_time'], 0, 5) : '10:30';
 
-// Current speakers & moderators for plenary
+// Current speakers, moderators & pengantar for plenary
 $currentSpeakers = !empty($session['speakers']) ? array_map(function($s) {
     return (int)($s['speaker_id'] ?? $s['id'] ?? 0);
 }, $session['speakers']) : [];
 $currentModerators = !empty($session['moderators']) ? array_map(function($m) {
     return (int)($m['moderator_id'] ?? $m['id'] ?? 0);
 }, $session['moderators']) : [];
-$currentSpeakers = array_values(array_filter($currentSpeakers));
+$currentPengantar = !empty($session['pengantar']) ? array_map(function($p) {
+    return (int)($p['pengantar_id'] ?? $p['id'] ?? 0);
+}, $session['pengantar']) : [];
+
+$currentSpeakers   = array_values(array_filter($currentSpeakers));
 $currentModerators = array_values(array_filter($currentModerators));
+$currentPengantar  = array_values(array_filter($currentPengantar));
 
 // Candidate lookup JSON
-$speakersList = is_array($speakers ?? null) ? $speakers : [];
+$speakersList   = is_array($speakers ?? null) ? $speakers : [];
 $moderatorsList = is_array($moderators ?? null) ? $moderators : [];
-$roomsList = is_array($rooms ?? null) ? $rooms : [];
+$pengantarList  = is_array($pengantar ?? null) ? $pengantar : [];
+$roomsList      = is_array($rooms ?? null) ? $rooms : [];
 
 $speakerListJson = json_encode(array_map(function($s) {
     return ['id' => $s['id'], 'name' => $s['name'], 'role' => $s['role_text'] ?? ''];
@@ -47,6 +53,10 @@ $speakerListJson = json_encode(array_map(function($s) {
 $moderatorListJson = json_encode(array_map(function($m) {
     return ['id' => $m['id'], 'name' => $m['name'], 'role' => $m['role_text'] ?? ''];
 }, $moderatorsList));
+
+$pengantarListJson = json_encode(array_map(function($p) {
+    return ['id' => $p['id'], 'name' => $p['name'], 'role' => $p['role_text'] ?? ''];
+}, $pengantarList));
 
 $roomsListJson = json_encode(array_map(function($r) {
     return ['id' => $r['id'], 'name' => $r['name']];
@@ -139,7 +149,23 @@ $roomsListJson = json_encode(array_map(function($r) {
                         </div>
                         <div class="autocomplete-dropdown" id="plenaryModDropdown"></div>
                     </div>
-                    <div class="help-text">Search moderator name. Click or press enter to add. Use ◀/▶ to reorder.</div>
+                    <div class="help-text">Search moderator name. Drag and drop badge untuk ubah urutan.</div>
+                </div>
+
+                <!-- Plenary Pengantar Autocomplete Chips -->
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <label class="form-label" style="margin-bottom: 0;">Pengantar (Optional)</label>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="openQuickAddModal('pengantar', 'plenaryPengantarBox')" style="padding: 2px 8px; font-size: 11.5px;">+ Quick Add Pengantar</button>
+                    </div>
+                    <div class="autocomplete-chips-container" id="plenaryPengantarContainer">
+                        <div class="autocomplete-chips-box" id="plenaryPengantarBox" onclick="focusChipInput('plenaryPengantarInput')">
+                            <!-- Chips will render here -->
+                            <input type="text" id="plenaryPengantarInput" class="autocomplete-chips-input" placeholder="Type to search and add pengantar...">
+                        </div>
+                        <div class="autocomplete-dropdown" id="plenaryPengantarDropdown"></div>
+                    </div>
+                    <div class="help-text">Search pengantar name. Drag and drop badge untuk ubah urutan. Jika diisi, styling jadwal sesi akan menampilkan label MOD, Pengantar, dan Speaker.</div>
                 </div>
 
                 <!-- Plenary Speakers Autocomplete Chips -->
@@ -155,7 +181,7 @@ $roomsListJson = json_encode(array_map(function($r) {
                         </div>
                         <div class="autocomplete-dropdown" id="plenarySpkDropdown"></div>
                     </div>
-                    <div class="help-text">Search speaker name. Click or press enter to add. Use ◀/▶ to reorder.</div>
+                    <div class="help-text">Search speaker name. Drag and drop badge untuk ubah urutan.</div>
                 </div>
             </div>
 
@@ -240,7 +266,7 @@ $roomsListJson = json_encode(array_map(function($r) {
             </p>
             <div style="display:flex; justify-content:flex-end; gap:10px;">
                 <button type="button" onclick="closeExitConfirmModal()" class="btn btn-outline btn-sm">Stay on Form</button>
-                <button type="button" id="btnConfirmLeave" class="btn btn-danger btn-sm" style="background:var(--danger); color:#fff; border:none;">Leave Page</button>
+                <button type="button" id="btnConfirmLeave" class="btn btn-danger btn-sm">Leave Page</button>
             </div>
         </div>
     </div>
@@ -250,11 +276,13 @@ $roomsListJson = json_encode(array_map(function($r) {
 // Candidate Data
 const allSpeakers = <?= $speakerListJson ?>;
 const allModerators = <?= $moderatorListJson ?>;
+const allPengantar = <?= $pengantarListJson ?>;
 const allRooms = <?= $roomsListJson ?>;
 
 // Existing plenary selections
 const initialPlenarySpeakers = <?= json_encode($currentSpeakers) ?>;
 const initialPlenaryModerators = <?= json_encode($currentModerators) ?>;
+const initialPlenaryPengantar = <?= json_encode($currentPengantar) ?>;
 
 // Existing special session rooms if edit mode
 const initialSessionRooms = <?= json_encode(!empty($session['session_rooms']) ? array_map(function($sr) {
@@ -329,15 +357,8 @@ function setupAutocompleteChips(config) {
         }
     };
 
-    function moveChip(index, direction) {
-        const targetIndex = index + direction;
-        if (targetIndex < 0 || targetIndex >= selectedIds.length) return;
-        const temp = selectedIds[index];
-        selectedIds[index] = selectedIds[targetIndex];
-        selectedIds[targetIndex] = temp;
-        renderChips();
-        markDirty();
-    }
+    // Drag & Drop tracking
+    let draggedIndex = null;
 
     function renderChips() {
         box.querySelectorAll('.autocomplete-chip, input[type="hidden"]').forEach(el => el.remove());
@@ -348,12 +369,21 @@ function setupAutocompleteChips(config) {
 
             const chip = document.createElement('span');
             chip.className = 'autocomplete-chip';
-            chip.title = (item.role ? item.role : item.name);
+            chip.title = (item.role ? item.role : item.name) + ' (Drag to reorder)';
+            chip.setAttribute('draggable', 'true');
+            chip.dataset.idx = idx;
+            chip.style.cursor = 'grab';
+
             chip.innerHTML = `
-                <span>${escapeHtml(item.name)}</span>
+                <span style="display:inline-flex; align-items:center; gap:4px; pointer-events:none;">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" style="opacity:0.6; flex-shrink:0;">
+                        <circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/>
+                        <circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/>
+                        <circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/>
+                    </svg>
+                    <span>${escapeHtml(item.name)}</span>
+                </span>
                 <span class="chip-actions">
-                    ${idx > 0 ? `<button type="button" class="chip-btn chip-move-left" title="Move earlier" data-idx="${idx}">&lsaquo;</button>` : ''}
-                    ${idx < selectedIds.length - 1 ? `<button type="button" class="chip-btn chip-move-right" title="Move later" data-idx="${idx}">&rsaquo;</button>` : ''}
                     <button type="button" class="remove-chip" data-id="${item.id}" title="Remove">&times;</button>
                 </span>
             `;
@@ -363,21 +393,69 @@ function setupAutocompleteChips(config) {
             hiddenInput.name = inputName;
             hiddenInput.value = item.id;
 
-            const moveLeftBtn = chip.querySelector('.chip-move-left');
-            if (moveLeftBtn) {
-                moveLeftBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    moveChip(idx, -1);
-                });
-            }
+            // HTML5 Drag and Drop events
+            chip.addEventListener('dragstart', (e) => {
+                draggedIndex = idx;
+                chip.style.opacity = '0.4';
+                chip.style.cursor = 'grabbing';
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', idx);
+            });
 
-            const moveRightBtn = chip.querySelector('.chip-move-right');
-            if (moveRightBtn) {
-                moveRightBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    moveChip(idx, 1);
+            chip.addEventListener('dragend', () => {
+                chip.style.opacity = '1';
+                chip.style.cursor = 'grab';
+                box.querySelectorAll('.autocomplete-chip').forEach(c => {
+                    c.style.borderLeft = '';
+                    c.style.borderRight = '';
                 });
-            }
+            });
+
+            chip.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                const rect = chip.getBoundingClientRect();
+                const midX = rect.left + rect.width / 2;
+                if (e.clientX < midX) {
+                    chip.style.borderLeft = '2px solid var(--gold)';
+                    chip.style.borderRight = '';
+                } else {
+                    chip.style.borderRight = '2px solid var(--gold)';
+                    chip.style.borderLeft = '';
+                }
+            });
+
+            chip.addEventListener('dragleave', () => {
+                chip.style.borderLeft = '';
+                chip.style.borderRight = '';
+            });
+
+            chip.addEventListener('drop', (e) => {
+                e.preventDefault();
+                chip.style.borderLeft = '';
+                chip.style.borderRight = '';
+                if (draggedIndex === null || draggedIndex === idx) return;
+
+                const rect = chip.getBoundingClientRect();
+                const midX = rect.left + rect.width / 2;
+                let targetIdx = idx;
+                if (e.clientX >= midX && draggedIndex < idx) {
+                    targetIdx = idx;
+                } else if (e.clientX >= midX && draggedIndex > idx) {
+                    targetIdx = idx + 1;
+                }
+
+                const movedId = selectedIds.splice(draggedIndex, 1)[0];
+                if (targetIdx > selectedIds.length) {
+                    selectedIds.push(movedId);
+                } else {
+                    selectedIds.splice(targetIdx > draggedIndex ? targetIdx - 1 : targetIdx, 0, movedId);
+                }
+
+                draggedIndex = null;
+                renderChips();
+                markDirty();
+            });
 
             chip.querySelector('.remove-chip').addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -650,6 +728,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     setupAutocompleteChips({
+        boxId: 'plenaryPengantarBox',
+        inputId: 'plenaryPengantarInput',
+        dropdownId: 'plenaryPengantarDropdown',
+        inputName: 'pengantar[]',
+        items: allPengantar,
+        initialIds: initialPlenaryPengantar,
+    });
+
+    setupAutocompleteChips({
         boxId: 'plenarySpkBox',
         inputId: 'plenarySpkInput',
         dropdownId: 'plenarySpkDropdown',
@@ -742,7 +829,13 @@ function openQuickAddModal(type, targetBoxId) {
 
     typeInp.value = type;
     targetBoxInp.value = targetBoxId;
-    title.textContent = (type === 'speaker') ? 'Quick Add New Speaker' : 'Quick Add New Moderator';
+    if (type === 'speaker') {
+        title.textContent = 'Quick Add New Speaker';
+    } else if (type === 'pengantar') {
+        title.textContent = 'Quick Add New Pengantar';
+    } else {
+        title.textContent = 'Quick Add New Moderator';
+    }
     errorDiv.style.display = 'none';
     errorDiv.textContent = '';
     document.getElementById('quickAddForm').reset();
@@ -776,9 +869,12 @@ function handleQuickAddSubmit(e) {
         return;
     }
 
-    const endpoint = (type === 'speaker') 
-        ? '<?= base_url('admin/speakers/quick-save') ?>' 
-        : '<?= base_url('admin/moderators/quick-save') ?>';
+    let endpoint = '<?= base_url('admin/moderators/quick-save') ?>';
+    if (type === 'speaker') {
+        endpoint = '<?= base_url('admin/speakers/quick-save') ?>';
+    } else if (type === 'pengantar') {
+        endpoint = '<?= base_url('admin/pengantar/quick-save') ?>';
+    }
 
     const formData = new FormData();
     formData.append('name', name);
@@ -804,9 +900,11 @@ function handleQuickAddSubmit(e) {
         submitBtn.textContent = 'Save & Insert';
 
         if (data && data.success) {
-            const newRecord = data.speaker || data.moderator;
+            const newRecord = data.speaker || data.moderator || data.pengantar;
             if (type === 'speaker') {
                 allSpeakers.push(newRecord);
+            } else if (type === 'pengantar') {
+                allPengantar.push(newRecord);
             } else {
                 allModerators.push(newRecord);
             }

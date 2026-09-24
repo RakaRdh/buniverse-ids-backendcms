@@ -81,7 +81,7 @@
 
                         <!-- Draggable & Interactive Disc Element Marker -->
                         <div id="dragMarker" style="position:absolute; left:50%; top:50%; transform:translate(-50%, -50%); cursor:grab; z-index:20; touch-action:none; user-select:none; filter:drop-shadow(0 0 16px rgba(217,119,6,0.6));">
-                            <img id="markerImg" src="<?= base_url('assets/img/disc.png') ?>" alt="" style="width:110px; height:auto; display:block; pointer-events:none;">
+                            <img id="markerImg" src="<?= base_url('assets/img/decoration_white.png') ?>" alt="" style="width:110px; height:auto; display:block; pointer-events:none;">
                             <div style="position:absolute; inset:0; border:2px dashed var(--gold); border-radius:50%; pointer-events:none;"></div>
                             <div style="position:absolute; bottom:-20px; left:50%; transform:translateX(-50%); background:var(--gold); color:#000; font-size:10px; font-weight:800; padding:1px 6px; border-radius:4px; white-space:nowrap; pointer-events:none;">DRAG ME</div>
                         </div>
@@ -130,11 +130,11 @@
                             <label class="form-label" style="font-weight:600; color:var(--text-strong); font-size:13px;">Disc Image Asset</label>
                             <div style="display:flex; gap:10px; align-items:center;">
                                 <div style="width:44px; height:44px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;">
-                                    <img id="formPreviewThumb" src="<?= base_url('assets/img/disc.png') ?>" alt="disc" style="max-width:36px; max-height:36px; object-fit:contain;">
+                                    <img id="formPreviewThumb" src="<?= base_url('assets/img/decoration_white.png') ?>" alt="disc" style="max-width:36px; max-height:36px; object-fit:contain;">
                                 </div>
                                 <div style="flex:1;">
                                     <input type="file" name="image_file" class="form-control" accept="image/*" onchange="previewUploadImage(this)" style="font-size:12px;">
-                                    <small style="color:var(--text-muted); font-size:11px;">Default: <code>disc.png</code></small>
+                                    <small style="color:var(--text-muted); font-size:11px;">Default: <code>decoration_white.png</code></small>
                                 </div>
                             </div>
                         </div>
@@ -378,16 +378,19 @@
 
 <!-- Interactive Studio JavaScript -->
 <script>
-const defaultDiscUrl = "<?= base_url('assets/img/disc.png') ?>";
+const defaultDiscUrl = "<?= base_url('assets/img/decoration_white.png') ?>";
 const feBaseUrl = "<?= esc($frontendUrl) ?>";
 
 const sectionLabels = {
     'home': 'Hero / Home (#home)',
     'about-us': 'About Us / Overview (#about-us)',
+    'livestream': 'Live Streaming (#livestream)',
     'schedule': 'Schedule (#schedule)',
     'gallery': 'Gallery (#gallery)',
     'news': 'Related News (#news)',
-    'sponsor': 'Sponsors & Partnerships (#sponsor)'
+    'highlights': 'Highlights (#highlights)',
+    'sponsor': 'Sponsors & Partnerships (#sponsor)',
+    'location': 'Locations & Floor Plan (#location)'
 };
 
 let currentX = 50.0;
@@ -436,12 +439,41 @@ function changeActiveSection(secKey) {
     // Update simulated text
     document.getElementById('simulatedSectionTitle').innerText = (sectionLabels[secKey] || secKey).split('(')[0].trim();
 
-    // Update iframe source
+    // Update iframe source and send sync request
     const iframe = document.getElementById('fePreviewIframe');
     if (iframe) {
         iframe.src = feBaseUrl + '/#' + secKey;
+        
+        // After iframe loads, request section dimensions and position
+        iframe.onload = function() {
+            setTimeout(() => {
+                iframe.contentWindow.postMessage({
+                    type: 'cms_request_section_info',
+                    sectionKey: secKey
+                }, '*');
+            }, 300);
+        };
     }
 }
+
+// Receive section bounding dimensions from frontend iframe
+window.addEventListener('message', function(e) {
+    if (!e.data || e.data.type !== 'cms_section_info_response') return;
+    const { sectionKey, top, height } = e.data;
+    const iframe = document.getElementById('fePreviewIframe');
+    if (iframe && typeof top === 'number' && typeof height === 'number') {
+        const scale = 0.48; // Current visual scale in canvas
+        // Scroll iframe visual offset so the top of target section aligns with canvas top
+        iframe.style.top = `-${top * scale}px`;
+        iframe.style.height = `${Math.max(900, top + height + 200)}px`;
+
+        // Proportionally adapt canvas height to match section aspect ratio (capped between 380px and 580px for optimal UX)
+        const targetCanvasHeight = Math.round(Math.min(580, Math.max(380, height * scale)));
+        if (canvasContainer) {
+            canvasContainer.style.height = `${targetCanvasHeight}px`;
+        }
+    }
+});
 
 function updateMarkerStyles() {
     const size = parseInt(document.getElementById('formSizePx').value) || 220;

@@ -29,11 +29,38 @@ class HighlightController extends BaseAdminController
         $highlightModel = new EventHighlightModel();
         $highlights = $highlightModel->getByEventId($eventId, false);
 
-        $this->data['highlights'] = $highlights;
-        $this->data['pageTitle']  = 'Event Highlights Studio';
-        $this->data['activeMenu'] = 'highlights';
+        $editId = $this->request->getGet('edit_id');
+        $editHighlight = null;
+        if ($editId) {
+            $editHighlight = $highlightModel->where('event_id', $eventId)->find((int)$editId);
+        }
+
+        $this->data['highlights']    = $highlights;
+        $this->data['editHighlight'] = $editHighlight;
+        $this->data['pageTitle']     = 'Event Highlights Studio';
+        $this->data['activeMenu']    = 'highlights';
 
         return $this->render('admin/highlights/index', $this->data);
+    }
+
+    public function inactiveAll()
+    {
+        $eventId = $this->activeEvent['id'] ?? null;
+        if (!$eventId) {
+            return redirect()->back()->with('error', 'No active event.');
+        }
+
+        $userId = $this->currentAdmin['id'] ?? session()->get('admin_id') ?? 1;
+
+        $db = \Config\Database::connect();
+        $db->table('event_highlights')
+            ->where('event_id', $eventId)
+            ->update([
+                'is_active'  => 0,
+                'updated_by' => $userId,
+            ]);
+
+        return redirect()->to(base_url('admin/highlights'))->with('success', 'Semua highlights berhasil dinonaktifkan (Inactive All).');
     }
 
     public function save()

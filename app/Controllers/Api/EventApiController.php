@@ -444,6 +444,20 @@ class EventApiController extends ResourceController
                     ];
                 }
 
+                // Pengantar
+                $sessionItem['pengantar'] = [];
+                $sessionPengantar = $sessionModel->getSessionPengantar((int)$sess['id']);
+                foreach ($sessionPengantar as $peng) {
+                    $pSlug = $peng['slug'] ?? url_title($peng['name'], '-', true);
+                    $sessionItem['pengantar'][] = [
+                        'id'    => (int)$peng['pengantar_id'],
+                        'slug'  => $pSlug,
+                        'name'  => $peng['name'],
+                        'role'  => $peng['role_text'] ?? '',
+                        'photo' => $makeUrl($peng['photo_url'] ?? ''),
+                    ];
+                }
+
                 $sessionItem['speakers'] = [];
                 $sessionItem['speaker_ids'] = [];
                 foreach ($sess['speakers'] as $spk) {
@@ -561,7 +575,7 @@ class EventApiController extends ResourceController
             $schedule[$dayKey] = [
                 'day_number' => (int)$day['day_number'],
                 'label'      => $day['label'],
-                'date'       => $rawDayDate ? date('d F Y', strtotime($rawDayDate)) : '',
+                'date'       => $rawDayDate ? date('F j, Y', strtotime($rawDayDate)) : '',
                 'sessions'   => $formattedSessions,
             ];
         }
@@ -684,6 +698,17 @@ class EventApiController extends ResourceController
             ];
         }
 
+        // 13. Event Locations & Floor Plan
+        $locationModel = new \App\Models\EventLocationModel();
+        $locRow = $locationModel->getByEventId($event['id']) ?? [];
+        $locations = [
+            'is_active'        => (!isset($locRow['is_active']) || !empty($locRow['is_active'])),
+            'hotel_name'       => $locRow['hotel_name'] ?? 'Raffles Hotel Jakarta',
+            'hotel_address'    => $locRow['hotel_address'] ?? 'Ciputra World, Jl. Prof. DR. Satrio, Kuningan, Karet Kuningan, Kecamatan Setiabudi, Kota Jakarta Selatan, Daerah Khusus Ibukota Jakarta 12940',
+            'gmaps_iframe'     => $locRow['gmaps_iframe'] ?? '',
+            'layout_image_url' => $makeUrl($locRow['layout_image_url'] ?? ''),
+        ];
+
         return $this->respond([
             'status' => 'success',
             'data'   => [
@@ -703,6 +728,7 @@ class EventApiController extends ResourceController
                 'moderators'          => $moderators,
                 'schedule'            => $schedule,
                 'gallery'             => $gallery,
+                'locations'           => $locations,
                 'sponsors'            => $sponsors,
                 'sponsor_partnership' => $sponsorPartnership,
                 'section_decorations' => $decorations,

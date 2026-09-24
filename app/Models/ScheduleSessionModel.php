@@ -60,10 +60,12 @@ class ScheduleSessionModel extends Model
             foreach ($children as &$child) {
                 $child['speakers']   = $this->getSessionSpeakers($child['id']);
                 $child['moderators'] = $this->getSessionModerators($child['id']);
+                $child['pengantar']  = $this->getSessionPengantar($child['id']);
             }
             $session['children']   = $children;
             $session['speakers']   = $this->getSessionSpeakers($session['id']);
             $session['moderators'] = $this->getSessionModerators($session['id']);
+            $session['pengantar']  = $this->getSessionPengantar($session['id']);
         }
 
         return $sessions;
@@ -128,6 +130,17 @@ class ScheduleSessionModel extends Model
             ->join('moderators', 'moderators.id = session_moderators.moderator_id')
             ->where('session_moderators.session_id', $sessionId)
             ->orderBy('session_moderators.sort_order', 'ASC')
+            ->get()->getResultArray();
+    }
+
+    public function getSessionPengantar(int $sessionId)
+    {
+        $db = \Config\Database::connect();
+        return $db->table('session_pengantar')
+            ->select('session_pengantar.*, pengantar.slug, pengantar.name, pengantar.role_text, pengantar.photo_url')
+            ->join('pengantar', 'pengantar.id = session_pengantar.pengantar_id')
+            ->where('session_pengantar.session_id', $sessionId)
+            ->orderBy('session_pengantar.sort_order', 'ASC')
             ->get()->getResultArray();
     }
 

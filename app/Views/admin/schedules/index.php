@@ -173,8 +173,13 @@
                                     </div>
                                 <?php endif; ?>
 
-                                <!-- Moderator & Speakers -->
+                                <!-- Pengantar, Moderator & Speakers -->
                                 <div style="display: flex; gap: 20px; margin-top: 10px; flex-wrap: wrap;">
+                                    <?php if (!empty($s['pengantar'])): ?>
+                                        <div style="font-size: 12px; color: var(--text-body);">
+                                            <strong>Pengantar:</strong> <?= implode(', ', array_column($s['pengantar'], 'name')) ?>
+                                        </div>
+                                    <?php endif; ?>
                                     <?php if (!empty($s['moderators'])): ?>
                                         <div style="font-size: 12px; color: var(--text-body);">
                                             <strong>Moderator:</strong> <?= implode(', ', array_column($s['moderators'], 'name')) ?>

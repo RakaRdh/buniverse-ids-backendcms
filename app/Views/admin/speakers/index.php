@@ -38,7 +38,7 @@
                             <td style="text-align: center; color: var(--text-muted); cursor: grab;" class="drag-handle" title="Drag to reorder">
                                 <span style="font-size: 18px; line-height: 1;">&#9776;</span>
                             </td>
-                            <td>
+                            <td style="padding: 12px 16px">
                                 <?php if (!empty($spk['photo_url'])): ?>
                                     <img src="<?= base_url(esc($spk['photo_url'])) ?>" alt="<?= esc($spk['name']) ?>" style="width: 64px; height: 85px; border-radius: var(--radius-card); object-fit: cover; background: var(--primary-1-7); border: 1.5px solid var(--line); box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
                                 <?php else: ?>

@@ -32,7 +32,13 @@ class GalleryController extends BaseAdminController
         $image = $this->request->getFile('image_file');
         if ($image && $image->isValid() && !$image->hasMoved()) {
             $newName = $image->getRandomName();
-            $image->move(FCPATH . 'uploads/events/' . $eventId . '/gallery', $newName);
+            $targetDir = FCPATH . 'uploads/events/' . $eventId . '/gallery';
+            if (!is_dir($targetDir)) {
+                mkdir($targetDir, 0755, true);
+            }
+            $image->move($targetDir, $newName);
+            $fullPath = $targetDir . '/' . $newName;
+            \App\Libraries\ImageOptimizer::optimize($fullPath, 1600, 1000, 85);
 
             $galleryModel = new GalleryImageModel();
             $isFeatured = $this->request->getPost('is_featured') ? 1 : 0;

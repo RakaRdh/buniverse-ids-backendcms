@@ -46,10 +46,24 @@ class OverviewController extends BaseAdminController
             ]);
         }
 
+        // Sanitizer helper: allow <span> and inline styling, strip script/dangerous handlers
+        $sanitizeSafeHtml = function ($input) {
+            if (empty($input)) return '';
+            // Remove script tags and their content
+            $clean = preg_replace('#<script(.*?)>(.*?)</script>#is', '', $input);
+            // Remove on* event handlers (e.g. onerror, onload, onclick)
+            $clean = preg_replace('#\s*on\w+\s*=\s*(["\']).*?\1#is', '', $clean);
+            $clean = preg_replace('#\s*on\w+\s*=\s*[^>\s]+#is', '', $clean);
+            // Remove javascript: pseudo-protocols
+            $clean = preg_replace('#javascript\s*:#is', '', $clean);
+            // Allow only safe tags: span, strong, em, b, i, u, br, p
+            return strip_tags($clean, '<span><strong><em><b><i><u><br><p>');
+        };
+
         $overviewData = [
-            'heading'    => $this->request->getPost('heading'),
-            'intro_text' => $this->request->getPost('intro_text'),
-            'body_text'  => $this->request->getPost('body_text'),
+            'heading'    => trim(strip_tags((string)$this->request->getPost('heading'))),
+            'intro_text' => $sanitizeSafeHtml((string)$this->request->getPost('intro_text')),
+            'body_text'  => $sanitizeSafeHtml((string)$this->request->getPost('body_text')),
             'updated_by' => $userId,
         ];
 
@@ -64,6 +78,8 @@ class OverviewController extends BaseAdminController
             if ($file && $file->isValid() && !$file->hasMoved()) {
                 $newName = $file->getRandomName();
                 $file->move($targetDir, $newName);
+                $fullPath = $targetDir . '/' . $newName;
+                \App\Libraries\ImageOptimizer::optimize($fullPath, 1200, 1400, 85);
                 $overviewData['collage_img_' . $i] = 'uploads/events/' . $eventId . '/overview/' . $newName;
             }
         }

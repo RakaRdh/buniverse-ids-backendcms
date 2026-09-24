@@ -8,12 +8,15 @@ use App\Models\CustomPlacementModel;
 class CustomPlacementController extends BaseAdminController
 {
     protected array $sections = [
-        'home'     => 'Hero / Home',
-        'about-us' => 'About Us / Overview',
-        'schedule' => 'Schedule',
-        'gallery'  => 'Gallery',
-        'news'     => 'Related News',
-        'sponsor'  => 'Sponsors & Partnerships',
+        'home'       => 'Hero / Home',
+        'about-us'   => 'About Us / Overview',
+        'livestream' => 'Live Streaming',
+        'schedule'   => 'Schedule',
+        'gallery'    => 'Gallery',
+        'news'       => 'Related News',
+        'highlights' => 'Highlights',
+        'sponsor'    => 'Sponsors & Partnerships',
+        'location'   => 'Locations & Floor Plan',
     ];
 
     public function index()
@@ -31,7 +34,7 @@ class CustomPlacementController extends BaseAdminController
         $this->data['placements']    = $placements;
         $this->data['sections']      = $this->sections;
         $this->data['palette']       = $themeModel->getPaletteForPicker($eventId);
-        $this->data['defaultImage']  = 'assets/img/disc.png';
+        $this->data['defaultImage']  = 'assets/img/decoration_white.png';
         $this->data['frontendUrl']   = 'http://localhost:8080';
         $this->data['pageTitle']     = 'Custom Placement (Freeform Coordinates)';
         $this->data['activeMenu']    = 'custom-placements';
@@ -61,7 +64,8 @@ class CustomPlacementController extends BaseAdminController
         $deviceVisibility   = $this->request->getPost('device_visibility') ?: 'all';
         $showOnMobile       = ($deviceVisibility !== 'desktop_only') ? 1 : 0;
         $isActive           = $this->request->getPost('is_active') !== null ? (int)$this->request->getPost('is_active') : 1;
-        $zIndex             = (int)$this->request->getPost('z_index') ?: 1;
+        $zIndexPost         = $this->request->getPost('z_index');
+        $zIndex             = ($zIndexPost !== null && $zIndexPost !== '') ? (int)$zIndexPost : 1;
         $userId             = $this->currentAdmin['id'] ?? session()->get('admin_id') ?? session()->get('admin_user')['id'] ?? 1;
 
         if (!array_key_exists($sectionKey, $this->sections)) {
@@ -69,7 +73,7 @@ class CustomPlacementController extends BaseAdminController
         }
 
         // Image handling
-        $imageUrl = $existing['image_url'] ?? 'assets/img/disc.png';
+        $imageUrl = $existing['image_url'] ?? 'assets/img/decoration_white.png';
         $imageFile = $this->request->getFile('image_file');
         if ($imageFile && $imageFile->isValid() && !$imageFile->hasMoved()) {
             $newName = $imageFile->getRandomName();
