@@ -155,6 +155,8 @@ class DecorationController extends BaseAdminController
             $message = 'Section decoration created.';
         }
 
+        $this->purgeFrontendCache();
+
         return redirect()->to(base_url('admin/decorations'))->with('success', $message);
     }
 
@@ -169,6 +171,7 @@ class DecorationController extends BaseAdminController
                 @unlink(FCPATH . $record['image_url']);
             }
             $decorationModel->where('event_id', $eventId)->delete($id);
+            $this->purgeFrontendCache();
         }
 
         return redirect()->to(base_url('admin/decorations'))->with('success', 'Decoration removed.');
@@ -188,6 +191,7 @@ class DecorationController extends BaseAdminController
                 }
             }
             $decorationModel->where('event_id', $eventId)->update($id, ['is_active' => $newStatus]);
+            $this->purgeFrontendCache();
         }
 
         return redirect()->to(base_url('admin/decorations'))->with('success', 'Decoration status updated.');

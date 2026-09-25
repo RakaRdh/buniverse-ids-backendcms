@@ -59,4 +59,26 @@ abstract class BaseAdminController extends Controller
         $mergedData['content'] = view($view, $mergedData);
         return view('admin/layout/main', $mergedData);
     }
+
+    /**
+     * Invalidate Frontend live cache so CMS changes appear immediately
+     */
+    protected function purgeFrontendCache(): void
+    {
+        $frontendUrls = [
+            'http://localhost:8080/api/clear-cache',
+            'http://127.0.0.1:8080/api/clear-cache',
+            'http://[::1]:8080/api/clear-cache',
+        ];
+
+        foreach ($frontendUrls as $url) {
+            try {
+                $client = \Config\Services::curlrequest(['timeout' => 0.8]);
+                $client->get($url, ['http_errors' => false]);
+                break;
+            } catch (\Throwable $e) {
+                // Continue fallback
+            }
+        }
+    }
 }

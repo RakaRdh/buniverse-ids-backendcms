@@ -137,6 +137,8 @@ class CustomPlacementController extends BaseAdminController
             $message = 'Custom placement created successfully.';
         }
 
+        $this->purgeFrontendCache();
+
         return redirect()->to(base_url('admin/custom-placements'))->with('success', $message);
     }
 
@@ -160,6 +162,8 @@ class CustomPlacementController extends BaseAdminController
             'updated_by' => $this->currentAdmin['id'] ?? session()->get('admin_id') ?? 1,
         ]);
 
+        $this->purgeFrontendCache();
+
         return redirect()->to(base_url('admin/custom-placements'))->with('success', 'Status updated.');
     }
 
@@ -178,6 +182,7 @@ class CustomPlacementController extends BaseAdminController
                 @unlink(FCPATH . $item['image_url']);
             }
             $placementModel->where('event_id', $eventId)->delete($id);
+            $this->purgeFrontendCache();
             return redirect()->to(base_url('admin/custom-placements'))->with('success', 'Custom placement deleted.');
         }
 

@@ -23,9 +23,18 @@ class QnaController extends BaseAdminController
         $filterDay     = $this->request->getGet('day_id') ? (int)$this->request->getGet('day_id') : null;
         $filterSession = $this->request->getGet('session_id') ? (int)$this->request->getGet('session_id') : null;
 
+        $sessionBuilder = $sessionModel
+            ->select('schedule_sessions.*')
+            ->join('schedule_days', 'schedule_days.id = schedule_sessions.schedule_day_id')
+            ->where('schedule_days.event_id', $eventId);
+
+        if (!empty($filterDay)) {
+            $sessionBuilder->where('schedule_sessions.schedule_day_id', $filterDay);
+        }
+
         $this->data['questions']     = $qnaModel->getQuestions($eventId, $filterDay, $filterSession);
         $this->data['days']          = $dayModel->getByEvent($eventId);
-        $this->data['sessions']      = $sessionModel->where('event_id', $eventId)->orWhere('schedule_day_id IN (SELECT id FROM schedule_days WHERE event_id = ' . (int)$eventId . ')')->orderBy('start_time', 'ASC')->findAll();
+        $this->data['sessions']      = $sessionBuilder->orderBy('schedule_sessions.start_time', 'ASC')->findAll();
         $this->data['filterDay']     = $filterDay;
         $this->data['filterSession'] = $filterSession;
         $this->data['pageTitle']     = 'Q&A Questions';

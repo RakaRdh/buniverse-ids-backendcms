@@ -50,6 +50,8 @@ class ColorSchemaController extends BaseAdminController
             }
         }
 
+        $this->purgeFrontendCache();
+
         return redirect()->to(base_url('admin/color-schema'))->with('success', 'Color schema and theme variables updated successfully.');
     }
 }

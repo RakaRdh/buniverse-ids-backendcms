@@ -287,9 +287,11 @@ const initialPlenaryPengantar = <?= json_encode($currentPengantar) ?>;
 // Existing special session rooms if edit mode
 const initialSessionRooms = <?= json_encode(!empty($session['session_rooms']) ? array_map(function($sr) {
     return [
+        'id'      => (int)($sr['id'] ?? 0),
         'room_id' => $sr['room_id'],
         'items'   => array_map(function($it) {
             return [
+                'id'          => (int)($it['id'] ?? 0),
                 'title'       => $it['title'],
                 'subtitle'    => $it['subtitle'] ?? '',
                 'moderators'  => array_values(array_filter(array_map(function($m) {
@@ -572,6 +574,7 @@ function addRoomCard(roomData = null) {
     `).join('');
 
     card.innerHTML = `
+        <input type="hidden" name="rooms[${rIdx}][id]" value="${roomData && roomData.id ? roomData.id : ''}">
         <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; margin-bottom: 14px; border-bottom: 1px solid var(--line);">
             <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
                 <label style="font-weight: 700; color: var(--primary-1-7); font-size: 13.5px; display: flex; align-items: center; gap: 6px; white-space: nowrap;">
@@ -641,6 +644,7 @@ function addItemToRoom(rIdx, itemData = null) {
     itemRow.style.padding = '14px';
 
     itemRow.innerHTML = `
+        <input type="hidden" name="rooms[${rIdx}][items][${itIdx}][id]" value="${itemData && itemData.id ? itemData.id : ''}">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
             <span style="font-size: 12px; font-weight: 700; color: var(--text-strong); display: flex; align-items: center; gap: 5px;">
                 <span style="color: var(--primary-1-6);">&bull;</span> Item Content #${itIdx + 1}

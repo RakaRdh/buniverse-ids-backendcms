@@ -26,10 +26,11 @@
                 <tr>
                     <th style="width: 40px; text-align: center;">#</th>
                     <th style="width: 70px;">Photo</th>
-                    <th style="width: 280px;">Name</th>
-                    <th>Role / Title</th>
-                    <th style="width: 100px; text-align: center;">Status</th>
-                    <th style="text-align: right; width: 190px;">Actions</th>
+                    <th style="width: 220px;">Name</th>
+                    <th style="width: 220px;">Role / Title</th>
+                    <th>Assigned Session(s)</th>
+                    <th style="width: 90px; text-align: center;">Status</th>
+                    <th style="text-align: right; width: 170px;">Actions</th>
                 </tr>
             </thead>
             <tbody id="sortableSpeakers">
@@ -50,6 +51,31 @@
                             </td>
                             <td><strong style="color: var(--text-strong); font-size: 14px;"><?= esc($spk['name']) ?></strong></td>
                             <td style="color: var(--text-body); font-size: 13px; line-height: 1.5; white-space: pre-line;"><?= esc($spk['role_text'] ?: '—') ?></td>
+                            <td style="font-size: 12.5px; line-height: 1.45;">
+                                <?php $assigned = $speakerSessions[$spk['id']] ?? []; ?>
+                                <?php if (!empty($assigned)): ?>
+                                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                                        <?php foreach ($assigned as $as): ?>
+                                            <div style="display: inline-flex; align-items: baseline; flex-wrap: wrap; gap: 6px; background: rgba(1, 10, 45, 0.4); padding: 4px 8px; border-radius: 6px; border: 1px solid var(--line);">
+                                                <span style="font-size: 10px; font-weight: 700; color: #38bdf8; background: rgba(56, 189, 248, 0.15); padding: 1px 5px; border-radius: 3px; white-space: nowrap;">
+                                                    <?= esc($as['day_text'] ?: 'Session') ?>
+                                                </span>
+                                                <span style="color: var(--text-strong); font-weight: 600;">
+                                                    <?= esc($as['session_title']) ?>
+                                                    <?php if (!empty($as['item_title'])): ?>
+                                                        <span style="color: var(--text-muted); font-weight: 400;"> • <?= esc($as['item_title']) ?></span>
+                                                    <?php endif; ?>
+                                                    <?php if (!empty($as['room_name'])): ?>
+                                                        <span style="color: #c99400; font-size: 11px;"> (<?= esc($as['room_name']) ?>)</span>
+                                                    <?php endif; ?>
+                                                </span>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                <?php else: ?>
+                                    <span style="color: var(--text-muted); font-style: italic; font-size: 12px;">— Belum di-assign ke sesi</span>
+                                <?php endif; ?>
+                            </td>
                             <td style="text-align: center;">
                                 <?php if (!empty($spk['is_active'])): ?>
                                     <span class="badge" style="background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); font-size: 11px; padding: 3px 8px; border-radius: 4px; font-weight: 600;">Aktif</span>
@@ -76,7 +102,7 @@
                     <?php endforeach; ?>
                 <?php else: ?>
                     <tr>
-                        <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                        <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 30px;">
                             No speakers found for this event. Click "+ Add New Speaker" to create one.
                         </td>
                     </tr>

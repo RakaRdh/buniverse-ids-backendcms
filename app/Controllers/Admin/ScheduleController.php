@@ -346,19 +346,12 @@ class ScheduleController extends BaseAdminController
                 'updated_by'      => $userId,
             ]);
 
-            // Clear old session_rooms and their items (CASCADE will clear items, moderators, speakers)
-            $oldRooms = $db->table('schedule_session_rooms')->where('session_id', $id)->get()->getResultArray();
-            foreach ($oldRooms as $or) {
-                $oldItems = $db->table('schedule_session_items')->where('session_room_id', $or['id'])->get()->getResultArray();
-                foreach ($oldItems as $oi) {
-                    $db->table('session_item_moderators')->where('item_id', $oi['id'])->delete();
-                    $db->table('session_item_speakers')->where('item_id', $oi['id'])->delete();
-                }
-                $db->table('schedule_session_items')->where('session_room_id', $or['id'])->delete();
-            }
-            $db->table('schedule_session_rooms')->where('session_id', $id)->delete();
+            // Clean any plenary speakers/moderators if this session was previously plenary
+            $db->table('session_speakers')->where('session_id', $id)->delete();
+            $db->table('session_moderators')->where('session_id', $id)->delete();
+            $db->table('session_pengantar')->where('session_id', $id)->delete();
 
-            // Also clean any legacy children in schedule_sessions
+            // Also clean legacy children if any
             $oldChildren = $sessionModel->where('parent_session_id', $id)->findAll();
             foreach ($oldChildren as $oc) {
                 $db->table('session_speakers')->where('session_id', $oc['id'])->delete();
@@ -366,7 +359,27 @@ class ScheduleController extends BaseAdminController
                 $sessionModel->delete($oc['id']);
             }
 
-            // Insert new session_rooms and items
+            // Existing session_rooms
+            $existingRooms = $db->table('schedule_session_rooms')->where('session_id', $id)->get()->getResultArray();
+            $existingRoomMap = [];
+            foreach ($existingRooms as $er) {
+                $existingRoomMap[(int)$er['id']] = $er;
+            }
+            $existingRoomIds = array_keys($existingRoomMap);
+
+            // Existing session_items
+            $existingItems = !empty($existingRoomIds)
+                ? $db->table('schedule_session_items')->whereIn('session_room_id', $existingRoomIds)->get()->getResultArray()
+                : [];
+            $existingItemMap = [];
+            foreach ($existingItems as $ei) {
+                $existingItemMap[(int)$ei['id']] = $ei;
+            }
+
+            $processedRoomIds = [];
+            $processedItemIds = [];
+
+            // In-place Update or Insert new session_rooms and items
             $roomsData = $this->request->getPost('rooms');
             if (is_array($roomsData)) {
                 $roomSort = 1;
@@ -376,14 +389,27 @@ class ScheduleController extends BaseAdminController
                         continue;
                     }
 
-                    $db->table('schedule_session_rooms')->insert([
-                        'session_id' => $id,
-                        'room_id'    => $roomId,
-                        'sort_order' => $roomSort++,
-                        'created_at' => date('Y-m-d H:i:s'),
-                        'updated_at' => date('Y-m-d H:i:s'),
-                    ]);
-                    $sessionRoomId = $db->insertID();
+                    $roomFormId = !empty($rData['id']) ? (int)$rData['id'] : 0;
+                    if ($roomFormId && isset($existingRoomMap[$roomFormId])) {
+                        // In-place UPDATE room
+                        $db->table('schedule_session_rooms')->where('id', $roomFormId)->update([
+                            'room_id'    => $roomId,
+                            'sort_order' => $roomSort++,
+                            'updated_at' => date('Y-m-d H:i:s'),
+                        ]);
+                        $sessionRoomId = $roomFormId;
+                    } else {
+                        // INSERT new room
+                        $db->table('schedule_session_rooms')->insert([
+                            'session_id' => $id,
+                            'room_id'    => $roomId,
+                            'sort_order' => $roomSort++,
+                            'created_at' => date('Y-m-d H:i:s'),
+                            'updated_at' => date('Y-m-d H:i:s'),
+                        ]);
+                        $sessionRoomId = (int)$db->insertID();
+                    }
+                    $processedRoomIds[] = $sessionRoomId;
 
                     if (!empty($rData['items']) && is_array($rData['items'])) {
                         $itemSort = 1;
@@ -392,17 +418,33 @@ class ScheduleController extends BaseAdminController
                                 continue;
                             }
 
-                            $db->table('schedule_session_items')->insert([
-                                'session_room_id' => $sessionRoomId,
-                                'title'           => $it['title'],
-                                'subtitle'        => !empty($it['subtitle']) ? $it['subtitle'] : null,
-                                'sort_order'      => $itemSort++,
-                                'created_at'      => date('Y-m-d H:i:s'),
-                                'updated_at'      => date('Y-m-d H:i:s'),
-                            ]);
-                            $itemId = $db->insertID();
+                            $itemFormId = !empty($it['id']) ? (int)$it['id'] : 0;
+                            if ($itemFormId && isset($existingItemMap[$itemFormId])) {
+                                // In-place UPDATE item (maintains same item id for QnA and external links)
+                                $db->table('schedule_session_items')->where('id', $itemFormId)->update([
+                                    'session_room_id' => $sessionRoomId,
+                                    'title'           => $it['title'],
+                                    'subtitle'        => !empty($it['subtitle']) ? $it['subtitle'] : null,
+                                    'sort_order'      => $itemSort++,
+                                    'updated_at'      => date('Y-m-d H:i:s'),
+                                ]);
+                                $itemId = $itemFormId;
+                            } else {
+                                // INSERT new item
+                                $db->table('schedule_session_items')->insert([
+                                    'session_room_id' => $sessionRoomId,
+                                    'title'           => $it['title'],
+                                    'subtitle'        => !empty($it['subtitle']) ? $it['subtitle'] : null,
+                                    'sort_order'      => $itemSort++,
+                                    'created_at'      => date('Y-m-d H:i:s'),
+                                    'updated_at'      => date('Y-m-d H:i:s'),
+                                ]);
+                                $itemId = (int)$db->insertID();
+                            }
+                            $processedItemIds[] = $itemId;
 
-                            // Moderator
+                            // Refresh moderators for this item
+                            $db->table('session_item_moderators')->where('item_id', $itemId)->delete();
                             if (!empty($it['moderator_id'])) {
                                 $modIds = is_array($it['moderator_id']) ? $it['moderator_id'] : [$it['moderator_id']];
                                 foreach ($modIds as $mId) {
@@ -415,7 +457,8 @@ class ScheduleController extends BaseAdminController
                                 }
                             }
 
-                            // Speakers
+                            // Refresh speakers for this item
+                            $db->table('session_item_speakers')->where('item_id', $itemId)->delete();
                             if (!empty($it['speakers']) && is_array($it['speakers'])) {
                                 $spkOrder = 1;
                                 foreach ($it['speakers'] as $sId) {
@@ -433,6 +476,21 @@ class ScheduleController extends BaseAdminController
                 }
             }
 
+            // Delete removed items
+            $allExistingItemIds = array_keys($existingItemMap);
+            $itemsToDelete = array_diff($allExistingItemIds, $processedItemIds);
+            if (!empty($itemsToDelete)) {
+                $db->table('session_item_moderators')->whereIn('item_id', $itemsToDelete)->delete();
+                $db->table('session_item_speakers')->whereIn('item_id', $itemsToDelete)->delete();
+                $db->table('schedule_session_items')->whereIn('id', $itemsToDelete)->delete();
+            }
+
+            // Delete removed rooms
+            $roomsToDelete = array_diff($existingRoomIds, $processedRoomIds);
+            if (!empty($roomsToDelete)) {
+                $db->table('schedule_session_rooms')->whereIn('id', $roomsToDelete)->delete();
+            }
+
             return redirect()->to(base_url('admin/schedules?day_id=' . $dayId . '#session-' . $id))->with('success', 'Special session updated successfully.');
         } else {
             // Plenary update
@@ -448,6 +506,18 @@ class ScheduleController extends BaseAdminController
                 'session_type'    => 'plenary',
                 'updated_by'      => $userId,
             ]);
+
+            // Clear old session_rooms and items if changing from special_session to plenary
+            $oldRooms = $db->table('schedule_session_rooms')->where('session_id', $id)->get()->getResultArray();
+            foreach ($oldRooms as $or) {
+                $oldItems = $db->table('schedule_session_items')->where('session_room_id', $or['id'])->get()->getResultArray();
+                foreach ($oldItems as $oi) {
+                    $db->table('session_item_moderators')->where('item_id', $oi['id'])->delete();
+                    $db->table('session_item_speakers')->where('item_id', $oi['id'])->delete();
+                }
+                $db->table('schedule_session_items')->where('session_room_id', $or['id'])->delete();
+            }
+            $db->table('schedule_session_rooms')->where('session_id', $id)->delete();
 
             // Clear old speakers & moderators & pengantar
             $db->table('session_speakers')->where('session_id', $id)->delete();

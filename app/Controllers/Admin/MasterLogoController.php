@@ -152,6 +152,8 @@ class MasterLogoController extends BaseAdminController
             $msg = 'Logo added to repository.';
         }
 
+        $this->purgeFrontendCache();
+
         return redirect()->to(base_url('admin/master-logos'))->with('success', $msg);
     }
 
@@ -168,6 +170,7 @@ class MasterLogoController extends BaseAdminController
                 @unlink(FCPATH . $record['logo_white_url']);
             }
             $logoModel->where('event_id', $eventId)->delete($id);
+            $this->purgeFrontendCache();
         }
 
         return redirect()->to(base_url('admin/master-logos'))->with('success', 'Logo removed from repository.');
@@ -194,6 +197,8 @@ class MasterLogoController extends BaseAdminController
 
             $placementModel->upsertPlacement($eventId, $slotKey, $logoId, $variant, $targetUrl, $isActive);
         }
+
+        $this->purgeFrontendCache();
 
         return redirect()->to(base_url('admin/master-logos'))->with('success', 'Section logo placements updated.');
     }

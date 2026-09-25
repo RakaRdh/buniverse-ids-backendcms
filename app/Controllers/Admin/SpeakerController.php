@@ -15,9 +15,10 @@ class SpeakerController extends BaseAdminController
         }
 
         $speakerModel = new SpeakerModel();
-        $this->data['speakers']   = $speakerModel->where('event_id', $eventId)->orderBy('sort_order', 'ASC')->findAll();
-        $this->data['pageTitle']  = 'Summit Speakers';
-        $this->data['activeMenu'] = 'speakers';
+        $this->data['speakers']        = $speakerModel->where('event_id', $eventId)->orderBy('sort_order', 'ASC')->findAll();
+        $this->data['speakerSessions'] = $speakerModel->getAssignedSessionsByEvent((int)$eventId);
+        $this->data['pageTitle']       = 'Summit Speakers';
+        $this->data['activeMenu']      = 'speakers';
 
         return $this->render('admin/speakers/index', $this->data);
     }
