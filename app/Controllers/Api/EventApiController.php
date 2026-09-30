@@ -425,7 +425,7 @@ class EventApiController extends ResourceController
                     'title'        => $sess['title'],
                     'subtitle'     => $sess['subtitle'] ?? '',
                     'description'  => $sess['description'] ?? '',
-                    'time'         => substr($sess['start_time'], 0, 5) . ' - ' . substr($sess['end_time'], 0, 5) . ' WIB',
+                    'time'         => format_schedule_time(null, $sess['start_time'], $sess['end_time']),
                     'start_time'   => substr($sess['start_time'], 0, 5),
                     'end_time'     => substr($sess['end_time'], 0, 5),
                     'session_type' => $sess['session_type'],
@@ -437,7 +437,7 @@ class EventApiController extends ResourceController
                 if (!empty($sess['moderators'])) {
                     $m = $sess['moderators'][0];
                     $sessionItem['moderator'] = [
-                        'label' => 'MOD:',
+                        'label' => 'Moderator:',
                         'name'  => $m['name'],
                         'role'  => $m['role_text'] ?? '',
                         'photo' => $makeUrl($m['photo_url'] ?? ''),
@@ -495,7 +495,7 @@ class EventApiController extends ResourceController
                             if (!empty($it['moderators'])) {
                                 $cm = $it['moderators'][0];
                                 $subItem['moderator'] = [
-                                    'label' => 'MOD:',
+                                    'label' => 'Moderator:',
                                     'name'  => $cm['name'],
                                     'role'  => $cm['role_text'] ?? '',
                                     'photo' => $makeUrl($cm['photo_url'] ?? ''),
@@ -544,7 +544,7 @@ class EventApiController extends ResourceController
                         if (!empty($child['moderators'])) {
                             $cm = $child['moderators'][0];
                             $subItem['moderator'] = [
-                                'label' => 'MOD:',
+                                'label' => 'Moderator:',
                                 'name'  => $cm['name'],
                                 'role'  => $cm['role_text'] ?? '',
                                 'photo' => $makeUrl($cm['photo_url'] ?? ''),

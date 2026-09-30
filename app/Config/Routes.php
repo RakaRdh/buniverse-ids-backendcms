@@ -19,6 +19,12 @@ $routes->group('auth', function ($routes) {
 
 // Admin Protected Routes (Session Auth)
 $routes->group('admin', ['filter' => 'auth'], function ($routes) {
+    $routes->get('events', 'Admin\EventController::index');
+    $routes->get('events/manage/(:num)', 'Admin\EventController::manage/$1');
+    $routes->post('events/save', 'Admin\EventController::save');
+    $routes->post('events/update/(:num)', 'Admin\EventController::update/$1');
+    $routes->post('events/delete/(:num)', 'Admin\EventController::delete/$1');
+
     $routes->get('dashboard', 'Admin\DashboardController::index');
     $routes->post('events/switch', 'Admin\EventSwitchController::switch');
 

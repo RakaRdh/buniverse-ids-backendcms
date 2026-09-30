@@ -20,8 +20,8 @@ class AuthController extends Controller
     public function processLogin()
     {
         $session = session();
-        $login = trim((string)$this->request->getPost('login'));
-        $password = (string)$this->request->getPost('password');
+        $login = trim((string) $this->request->getPost('login'));
+        $password = (string) $this->request->getPost('password');
 
         if (empty($login) || empty($password)) {
             return redirect()->back()->withInput()->with('error', 'Please enter your username and password.');
@@ -34,7 +34,7 @@ class AuthController extends Controller
             return redirect()->back()->withInput()->with('error', 'Invalid username or password.');
         }
 
-        if ((int)$user['is_active'] !== 1) {
+        if ((int) $user['is_active'] !== 1) {
             return redirect()->back()->withInput()->with('error', 'Your account has been deactivated.');
         }
 
@@ -47,17 +47,17 @@ class AuthController extends Controller
 
         $session->set([
             'admin_logged_in' => true,
-            'admin_id'        => (int)$user['id'],
-            'admin_name'      => $user['name'],
-            'admin_username'  => $user['username'] ?? '',
-            'admin_email'     => $user['email'],
-            'admin_role'      => $user['role'] ?? 'superadmin',
-            'admin_user'      => [
-                'id'       => (int)$user['id'],
-                'name'     => $user['name'],
+            'admin_id' => (int) $user['id'],
+            'admin_name' => $user['name'],
+            'admin_username' => $user['username'] ?? '',
+            'admin_email' => $user['email'],
+            'admin_role' => $user['role'] ?? 'superadmin',
+            'admin_user' => [
+                'id' => (int) $user['id'],
+                'name' => $user['name'],
                 'username' => $user['username'] ?? '',
-                'email'    => $user['email'],
-                'role'     => $user['role'] ?? 'superadmin',
+                'email' => $user['email'],
+                'role' => $user['role'] ?? 'superadmin',
             ],
         ]);
 

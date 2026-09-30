@@ -49,9 +49,9 @@
                 <?php foreach ($sessions as $s): ?>
                     <div id="session-<?= $s['id'] ?>" style="padding: 18px 20px; border-bottom: 1px solid var(--line); display: flex; gap: 24px; align-items: flex-start; scroll-margin-top: 80px; <?= ($s['session_type'] ?? '') === 'break' ? 'background: var(--bg-subtle);' : '' ?>">
                         <!-- Time & Room Badge Column (Fixed width so all rows align perfectly) -->
-                        <div style="width: 200px; min-width: 200px; max-width: 200px; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px;">
-                            <div style="display: flex; width: 100%; box-sizing: border-box; align-items: center; justify-content: center; background: var(--primary-1-1); color: var(--primary-1-10); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 6px 10px; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; text-align: center; white-space: nowrap;">
-                                <?= substr($s['start_time'], 0, 5) ?> - <?= substr($s['end_time'], 0, 5) ?> WIB
+                        <div style="width: 220px; min-width: 220px; max-width: 220px; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px;">
+                            <div style="display: flex; width: 100%; box-sizing: border-box; align-items: center; justify-content: center; background: var(--primary-1-1); color: var(--primary-1-10); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 6px 10px; font-size: 12.5px; font-weight: 700; font-variant-numeric: tabular-nums; text-align: center; white-space: nowrap;">
+                                <?= format_schedule_time(null, $s['start_time'], $s['end_time']) ?>
                             </div>
                             <!-- Room Badge -->
                             <div style="display: flex; width: 100%; box-sizing: border-box; align-items: center; justify-content: center; gap: 5px; background: var(--bg-surface); color: var(--primary-1-7); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 5px 10px; font-size: 11px; font-weight: 600; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
