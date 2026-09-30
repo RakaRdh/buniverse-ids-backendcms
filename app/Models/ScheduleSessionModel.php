@@ -42,8 +42,8 @@ class ScheduleSessionModel extends Model
             ->join('schedule_rooms', 'schedule_rooms.id = schedule_sessions.room_id', 'left')
             ->where('schedule_sessions.schedule_day_id', $scheduleDayId)
             ->where('schedule_sessions.parent_session_id', null)
-            ->orderBy('schedule_sessions.start_time', 'ASC')
             ->orderBy('schedule_sessions.sort_order', 'ASC')
+            ->orderBy('schedule_sessions.start_time', 'ASC')
             ->findAll();
 
         foreach ($sessions as &$session) {

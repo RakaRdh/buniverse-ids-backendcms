@@ -40,14 +40,31 @@
 
 <!-- Sessions List for Selected Day -->
 <div class="cms-card">
-    <div class="card-title-bar">
-        <span class="card-title-text">Sessions Itinerary (<?= count($sessions) ?> time blocks)</span>
+    <div class="card-title-bar" style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span class="card-title-text">Sessions Itinerary (<?= count($sessions) ?> time blocks)</span>
+            <span id="reorderStatus" style="font-size: 12px; font-weight: 600; display: none;"></span>
+        </div>
+        <?php if (!empty($sessions)): ?>
+            <span style="font-size: 11.5px; color: var(--text-muted); display: flex; align-items: center; gap: 4px;">
+                <svg class="icon" style="width: 13px; height: 13px;" viewBox="0 0 24 24"><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg>
+                Drag handle to reorder
+            </span>
+        <?php endif; ?>
     </div>
     <div class="cms-card-body" style="padding: 0;">
         <?php if (!empty($sessions)): ?>
-            <div style="display: flex; flex-direction: column;">
+            <div id="sortableSessions" style="display: flex; flex-direction: column;">
                 <?php foreach ($sessions as $s): ?>
-                    <div id="session-<?= $s['id'] ?>" style="padding: 18px 20px; border-bottom: 1px solid var(--line); display: flex; gap: 24px; align-items: flex-start; scroll-margin-top: 80px; <?= ($s['session_type'] ?? '') === 'break' ? 'background: var(--bg-subtle);' : '' ?>">
+                    <div id="session-<?= $s['id'] ?>" data-id="<?= $s['id'] ?>" style="padding: 18px 20px; border-bottom: 1px solid var(--line); display: flex; gap: 16px; align-items: flex-start; scroll-margin-top: 80px; <?= ($s['session_type'] ?? '') === 'break' ? 'background: var(--bg-subtle);' : '' ?>">
+                        <!-- Drag Handle Icon -->
+                        <div class="drag-handle" style="cursor: grab; padding: 6px 2px; color: var(--text-muted); display: flex; align-items: center; justify-content: center; flex-shrink: 0; user-select: none;" title="Drag to reorder">
+                            <svg class="icon" style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="19" r="1"></circle>
+                                <circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="19" r="1"></circle>
+                            </svg>
+                        </div>
+
                         <!-- Time & Room Badge Column (Fixed width so all rows align perfectly) -->
                         <div style="width: 200px; min-width: 200px; max-width: 200px; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px;">
                             <div style="display: flex; width: 100%; box-sizing: border-box; align-items: center; justify-content: center; background: var(--primary-1-1); color: var(--primary-1-10); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 6px 10px; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; text-align: center; white-space: nowrap;">
@@ -240,3 +257,89 @@
         </form>
     </div>
 </div>
+
+<!-- SortableJS library for smooth drag-and-drop -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const sessionContainer = document.getElementById('sortableSessions');
+    const statusMsg = document.getElementById('reorderStatus');
+    const selectedDayId = '<?= (int)($selectedDayId ?? 0) ?>';
+
+    if (!sessionContainer || typeof Sortable === 'undefined' || !selectedDayId) return;
+
+    Sortable.create(sessionContainer, {
+        animation: 150,
+        handle: '.drag-handle',
+        ghostClass: 'sortable-ghost',
+        onEnd: function() {
+            const rows = sessionContainer.querySelectorAll('div[data-id]');
+            const order = [];
+            rows.forEach(r => {
+                const id = r.getAttribute('data-id');
+                if (id) order.push(id);
+            });
+
+            if (order.length === 0) return;
+
+            // Extract CSRF details from layout meta tags
+            const csrfMetaName = document.querySelector('meta[name="csrf-token-name"]')?.getAttribute('content') || '<?= csrf_token() ?>';
+            const csrfMetaHash = document.querySelector('meta[name="csrf-hash"]');
+            const csrfMetaHeader = document.querySelector('meta[name="csrf-header"]')?.getAttribute('content') || 'X-CSRF-TOKEN';
+            const currentHash = csrfMetaHash ? csrfMetaHash.getAttribute('content') : '<?= csrf_hash() ?>';
+
+            // Post reordered array to backend
+            const formData = new FormData();
+            if (csrfMetaName && currentHash) {
+                formData.append(csrfMetaName, currentHash);
+            }
+            formData.append('day_id', selectedDayId);
+            order.forEach((id, idx) => {
+                formData.append('order[' + idx + ']', id);
+            });
+
+            if (statusMsg) {
+                statusMsg.style.display = 'inline-block';
+                statusMsg.style.color = '#e5a900';
+                statusMsg.textContent = 'Saving order...';
+            }
+
+            fetch('<?= base_url('admin/schedules/reorder') ?>', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    [csrfMetaHeader]: currentHash
+                },
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.status === 'success') {
+                    if (data.csrf_hash && csrfMetaHash) {
+                        csrfMetaHash.setAttribute('content', data.csrf_hash);
+                    }
+                    if (statusMsg) {
+                        statusMsg.style.color = '#22c55e';
+                        statusMsg.textContent = 'Order Saved!';
+                        setTimeout(() => {
+                            statusMsg.style.display = 'none';
+                        }, 2500);
+                    }
+                } else {
+                    if (statusMsg) {
+                        statusMsg.style.color = '#ef4444';
+                        statusMsg.textContent = (data && data.message) ? data.message : 'Failed to save order';
+                    }
+                }
+            })
+            .catch(err => {
+                console.error('Schedule reorder error:', err);
+                if (statusMsg) {
+                    statusMsg.style.color = '#ef4444';
+                    statusMsg.textContent = 'Network error saving order';
+                }
+            });
+        }
+    });
+});
+</script>

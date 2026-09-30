@@ -599,4 +599,58 @@ class ScheduleController extends BaseAdminController
         $sessionModel->delete($id);
         return redirect()->to(base_url('admin/schedules?day_id=' . $dayId))->with('success', 'Session deleted.');
     }
+
+    public function reorder()
+    {
+        $eventId = $this->activeEvent['id'] ?? null;
+        if (!$eventId) {
+            return $this->response->setStatusCode(400)->setJSON([
+                'status'  => 'error',
+                'message' => 'No active event found.'
+            ]);
+        }
+
+        $order = $this->request->getPost('order');
+        $dayId = (int)$this->request->getPost('day_id');
+
+        if (is_array($order) && !empty($order) && $dayId > 0) {
+            $sessionModel = new ScheduleSessionModel();
+            $dayModel     = new ScheduleDayModel();
+
+            // Validate that the schedule day belongs to active event
+            $day = $dayModel->where('id', $dayId)->where('event_id', $eventId)->first();
+            if (!$day) {
+                return $this->response->setStatusCode(400)->setJSON([
+                    'status'  => 'error',
+                    'message' => 'Invalid schedule day for current event.'
+                ]);
+            }
+
+            $db = \Config\Database::connect();
+            $db->transStart();
+
+            foreach ($order as $sort => $sessionId) {
+                $sessionModel->where('id', (int)$sessionId)
+                             ->where('schedule_day_id', $dayId)
+                             ->set(['sort_order' => (int)$sort + 1])
+                             ->update();
+            }
+
+            $db->transComplete();
+
+            if ($db->transStatus() === false) {
+                return $this->response->setStatusCode(500)->setJSON([
+                    'status'  => 'error',
+                    'message' => 'Failed to save session order to database.'
+                ]);
+            }
+        }
+
+        return $this->response->setJSON([
+            'status'    => 'success',
+            'csrf_name' => csrf_token(),
+            'csrf_hash' => csrf_hash(),
+            'message'   => 'Session order updated successfully.'
+        ]);
+    }
 }

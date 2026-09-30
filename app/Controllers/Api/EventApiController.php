@@ -437,7 +437,7 @@ class EventApiController extends ResourceController
                 if (!empty($sess['moderators'])) {
                     $m = $sess['moderators'][0];
                     $sessionItem['moderator'] = [
-                        'label' => 'MOD:',
+                        'label' => 'Moderator:',
                         'name'  => $m['name'],
                         'role'  => $m['role_text'] ?? '',
                         'photo' => $makeUrl($m['photo_url'] ?? ''),
@@ -495,7 +495,7 @@ class EventApiController extends ResourceController
                             if (!empty($it['moderators'])) {
                                 $cm = $it['moderators'][0];
                                 $subItem['moderator'] = [
-                                    'label' => 'MOD:',
+                                    'label' => 'Moderator:',
                                     'name'  => $cm['name'],
                                     'role'  => $cm['role_text'] ?? '',
                                     'photo' => $makeUrl($cm['photo_url'] ?? ''),
@@ -544,7 +544,7 @@ class EventApiController extends ResourceController
                         if (!empty($child['moderators'])) {
                             $cm = $child['moderators'][0];
                             $subItem['moderator'] = [
-                                'label' => 'MOD:',
+                                'label' => 'Moderator:',
                                 'name'  => $cm['name'],
                                 'role'  => $cm['role_text'] ?? '',
                                 'photo' => $makeUrl($cm['photo_url'] ?? ''),

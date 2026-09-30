@@ -107,6 +107,7 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     $routes->get('schedules/session/edit/(:num)', 'Admin\ScheduleController::editSession/$1');
     $routes->post('schedules/session/update/(:num)', 'Admin\ScheduleController::updateSession/$1');
     $routes->post('schedules/session/delete/(:num)', 'Admin\ScheduleController::deleteSession/$1');
+    $routes->post('schedules/reorder', 'Admin\ScheduleController::reorder');
 
     // Gallery
     $routes->get('gallery', 'Admin\GalleryController::index');

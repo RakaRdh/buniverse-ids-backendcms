@@ -15,7 +15,10 @@ class SpeakerController extends BaseAdminController
         }
 
         $speakerModel = new SpeakerModel();
-        $this->data['speakers']        = $speakerModel->where('event_id', $eventId)->orderBy('sort_order', 'ASC')->findAll();
+        $this->data['speakers']        = $speakerModel->where('event_id', $eventId)
+            ->orderBy('is_active', 'DESC')
+            ->orderBy('sort_order', 'ASC')
+            ->findAll();
         $this->data['speakerSessions'] = $speakerModel->getAssignedSessionsByEvent((int)$eventId);
         $this->data['pageTitle']       = 'Summit Speakers';
         $this->data['activeMenu']      = 'speakers';
@@ -169,7 +172,24 @@ class SpeakerController extends BaseAdminController
             $data['photo_url'] = 'uploads/events/' . $speaker['event_id'] . '/speakers/' . $newName;
         }
 
+        if ($isActive === 0 && !empty($speaker['is_active'])) {
+            $maxSort = $speakerModel->where('event_id', $eventId)->selectMax('sort_order')->first();
+            $data['sort_order'] = ((int)($maxSort['sort_order'] ?? 0)) + 999;
+        }
+
         $speakerModel->where('event_id', $eventId)->update($id, $data);
+
+        // Re-sequence seluruh speaker agar sort_order 1..N rapi
+        $allSpeakers = $speakerModel->where('event_id', $eventId)
+            ->orderBy('is_active', 'DESC')
+            ->orderBy('sort_order', 'ASC')
+            ->orderBy('id', 'ASC')
+            ->findAll();
+
+        foreach ($allSpeakers as $idx => $sp) {
+            $speakerModel->where('event_id', $eventId)->update($sp['id'], ['sort_order' => $idx + 1]);
+        }
+
         return redirect()->to(base_url('admin/speakers#speaker-' . $id))->with('success', 'Speaker updated successfully.');
     }
 
@@ -212,10 +232,29 @@ class SpeakerController extends BaseAdminController
         $newStatus = empty($existing['is_active']) ? 1 : 0;
         $userId = $this->currentAdmin['id'] ?? session()->get('admin_id') ?? session()->get('admin_user')['id'] ?? 1;
 
-        $speakerModel->where('event_id', $eventId)->update($id, [
+        $updateData = [
             'is_active'  => $newStatus,
             'updated_by' => $userId,
-        ]);
+        ];
+
+        // Jika dinonaktifkan (Off/0), berikan sort_order paling besar (paling bawah)
+        if ($newStatus === 0) {
+            $maxSort = $speakerModel->where('event_id', $eventId)->selectMax('sort_order')->first();
+            $updateData['sort_order'] = ((int)($maxSort['sort_order'] ?? 0)) + 999;
+        }
+
+        $speakerModel->where('event_id', $eventId)->update($id, $updateData);
+
+        // Re-sequence seluruh speaker agar sort_order 1..N rapi (aktif di atas, nonaktif di bawah)
+        $allSpeakers = $speakerModel->where('event_id', $eventId)
+            ->orderBy('is_active', 'DESC')
+            ->orderBy('sort_order', 'ASC')
+            ->orderBy('id', 'ASC')
+            ->findAll();
+
+        foreach ($allSpeakers as $idx => $sp) {
+            $speakerModel->where('event_id', $eventId)->update($sp['id'], ['sort_order' => $idx + 1]);
+        }
 
         return redirect()->to(base_url('admin/speakers#speaker-' . $id))->with('success', 'Speaker "' . $existing['name'] . '" status updated to ' . ($newStatus ? 'Active' : 'Inactive') . '.');
     }
