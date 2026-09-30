@@ -11,18 +11,20 @@
     </div>
 </div>
 
-<!-- Full-Width Sticky Live Navbar Preview at Top -->
+<?php /* Full-Width Sticky Live Navbar Preview at Top */ ?>
 <div class="cms-card" style="margin-bottom: 24px; border: 1px solid rgba(56, 189, 248, 0.25); background: linear-gradient(180deg, rgba(7, 44, 64, 0.7) 0%, rgba(1, 10, 45, 0.95) 100%); overflow: hidden;">
-    <!-- <div class="card-title-bar" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: rgba(0, 0, 0, 0.3);">
+    <?php /*
+    <div class="card-title-bar" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: rgba(0, 0, 0, 0.3);">
         <span class="card-title-text" style="font-size: 13px; letter-spacing: 0.5px; color: #38bdf8; display: flex; align-items: center; gap: 8px;">
             <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #22c55e;"></span>
             LIVE NAVBAR PREVIEW (TOP FIXED BANNER)
         </span>
         <span style="font-size: 11.5px; color: var(--text-muted);">Real-time synchronized header replica</span>
-    </div> -->
+    </div>
+    */ ?>
     <div style="padding: 16px 24px; background: rgba(1, 10, 45, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
         <div style="display: flex; align-items: center; justify-content: space-between; gap: 24px; max-width: 1360px; margin: 0 auto;">
-            <!-- Brand Logos Lockup -->
+            <?php /* Brand Logos Lockup */ ?>
             <?php 
                 $placementsMap = [];
                 if (!empty($placements)) {
@@ -66,7 +68,7 @@
                 <?php endif; ?>
             </div>
 
-            <!-- Navigation Links & CTA -->
+            <?php /* Navigation Links & CTA */ ?>
             <div style="display: flex; align-items: center; gap: 24px;">
                 <div id="navPreviewMenuLinks" style="display: flex; align-items: center; gap: 20px; font-size: 14px; font-weight: 500; color: #ffffff;">
                     <span style="color: #38bdf8; font-weight: 600;">Home</span>
@@ -90,10 +92,10 @@
 
     <div class="form-grid-2" style="gap: 24px; align-items: start;">
         
-        <!-- Column 1: Branding Logos & Navigation Links -->
+        <?php /* Column 1: Branding Logos & Navigation Links */ ?>
         <div style="display: flex; flex-direction: column; gap: 24px;">
             
-            <!-- Card 1: Brand Logos Centralized Notice & Target URLs -->
+            <?php /* Card 1: Brand Logos Centralized Notice & Target URLs */ ?>
             <div class="cms-card" style="margin-bottom: 0;">
                 <div class="card-title-bar" style="display: flex; justify-content: space-between; align-items: center;">
                     <span class="card-title-text">Brand Logos Management</span>
@@ -114,7 +116,7 @@
                         </div>
                     </div>
 
-                    <!-- Target URLs only -->
+                    <?php /* Target URLs only */ ?>
                     <div class="form-group" style="margin-bottom: 16px;">
                         <label class="form-label" style="font-size: 12px; font-weight: 600;">Logo 1 Target URL (Klik Logo Utama)</label>
                         <input type="text" name="logo_a_target_url" class="form-control" value="<?= esc($settings['logo_a_target_url'] ?? '#home') ?>" placeholder="#home or https://...">
@@ -129,7 +131,7 @@
                 </div>
             </div>
 
-            <!-- Card 2: Navigation Links -->
+            <?php /* Card 2: Navigation Links */ ?>
             <div class="cms-card" style="margin-bottom: 0;">
                 <div class="card-title-bar" style="display: flex; justify-content: space-between; align-items: center;">
                     <span class="card-title-text">Navbar Menu Links</span>
@@ -166,10 +168,10 @@
 
         </div>
 
-        <!-- Column 2: CTA Button & Section Colors & Floating Bar -->
+        <?php /* Column 2: CTA Button & Section Colors & Floating Bar */ ?>
         <div style="display: flex; flex-direction: column; gap: 24px;">
 
-            <!-- Card 3: CTA Button & Styling -->
+            <?php /* Card 3: CTA Button & Styling */ ?>
             <div class="cms-card" style="margin-bottom: 0;">
                 <div class="card-title-bar" style="display: flex; justify-content: space-between; align-items: center;">
                     <span class="card-title-text">CTA Ticket Button & Styling</span>
@@ -179,7 +181,7 @@
                     </label>
                 </div>
                 <div class="cms-card-body" style="padding: 20px;">
-                    <!-- CTA Label & URL -->
+                    <?php /* CTA Label & URL */ ?>
                     <div class="form-grid-2" style="gap: 14px; margin-bottom: 20px;">
                         <div class="form-group" style="margin-bottom: 0;">
                             <label class="form-label" style="font-weight: 600;">Button Text / Label</label>
@@ -247,7 +249,7 @@
                 </div>
             </div>
 
-            <!-- Card 4: Floating Bottom Bar Settings -->
+            <?php /* Card 4: Floating Bottom Bar Settings */ ?>
             <div class="cms-card" style="margin-bottom: 0; border: 1px solid rgba(217, 119, 6, 0.25);">
                 <div class="card-title-bar" style="display: flex; justify-content: space-between; align-items: center;">
                     <span class="card-title-text" style="color: var(--gold); display: flex; align-items: center; gap: 8px;">

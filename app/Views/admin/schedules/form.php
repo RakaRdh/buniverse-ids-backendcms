@@ -71,7 +71,7 @@ $roomsListJson = json_encode(array_map(function($r) {
         <form action="<?= $formAction ?>" method="POST">
             <?= csrf_field() ?>
 
-            <!-- Session Type Switcher: Plenary vs Special Session -->
+            <?php /* Session Type Switcher: Plenary vs Special Session */ ?>
             <div style="background: var(--bg-subtle); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 16px; margin-bottom: 24px;">
                 <label class="form-label" style="margin-bottom: 10px;">Select Session Track Type:</label>
                 <div style="display: flex; gap: 32px;">
@@ -86,7 +86,7 @@ $roomsListJson = json_encode(array_map(function($r) {
                 </div>
             </div>
 
-            <!-- Common Timing & Day -->
+            <?php /* Common Timing & Day */ ?>
             <div class="form-grid-3" style="margin-bottom: 20px;">
                 <div class="form-group">
                     <label class="form-label">Event Day *</label>
@@ -110,7 +110,7 @@ $roomsListJson = json_encode(array_map(function($r) {
                 </div>
             </div>
 
-            <!-- ================= PLENARY SESSION CONTAINER ================= -->
+            <?php /* ================= PLENARY SESSION CONTAINER ================= */ ?>
             <div id="plenaryContainer" style="<?= $isSpecial ? 'display:none;' : '' ?>">
                 <div class="form-grid" style="margin-bottom: 14px;">
                     <div class="form-group">
@@ -136,7 +136,7 @@ $roomsListJson = json_encode(array_map(function($r) {
                     <textarea name="subtitle" class="form-control" rows="3" placeholder="Session overview, keynote topics..."><?= esc($session['subtitle'] ?? $session['description'] ?? '') ?></textarea>
                 </div>
 
-                <!-- Plenary Moderator Autocomplete Chips -->
+                <?php /* Plenary Moderator Autocomplete Chips */ ?>
                 <div class="form-group">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                         <label class="form-label" style="margin-bottom: 0;">Moderators</label>
@@ -144,7 +144,7 @@ $roomsListJson = json_encode(array_map(function($r) {
                     </div>
                     <div class="autocomplete-chips-container" id="plenaryModContainer">
                         <div class="autocomplete-chips-box" id="plenaryModBox" onclick="focusChipInput('plenaryModInput')">
-                            <!-- Chips will render here -->
+                            <?php /* Chips will render here */ ?>
                             <input type="text" id="plenaryModInput" class="autocomplete-chips-input" placeholder="Type to search and add moderator...">
                         </div>
                         <div class="autocomplete-dropdown" id="plenaryModDropdown"></div>
@@ -152,7 +152,7 @@ $roomsListJson = json_encode(array_map(function($r) {
                     <div class="help-text">Search moderator name. Drag and drop badge untuk ubah urutan.</div>
                 </div>
 
-                <!-- Plenary Pengantar Autocomplete Chips -->
+                <?php /* Plenary Pengantar Autocomplete Chips */ ?>
                 <div class="form-group">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                         <label class="form-label" style="margin-bottom: 0;">Pengantar (Optional)</label>
@@ -160,7 +160,7 @@ $roomsListJson = json_encode(array_map(function($r) {
                     </div>
                     <div class="autocomplete-chips-container" id="plenaryPengantarContainer">
                         <div class="autocomplete-chips-box" id="plenaryPengantarBox" onclick="focusChipInput('plenaryPengantarInput')">
-                            <!-- Chips will render here -->
+                            <?php /* Chips will render here */ ?>
                             <input type="text" id="plenaryPengantarInput" class="autocomplete-chips-input" placeholder="Type to search and add pengantar...">
                         </div>
                         <div class="autocomplete-dropdown" id="plenaryPengantarDropdown"></div>
@@ -168,7 +168,7 @@ $roomsListJson = json_encode(array_map(function($r) {
                     <div class="help-text">Search pengantar name. Drag and drop badge untuk ubah urutan. Jika diisi, styling jadwal sesi akan menampilkan label MOD, Pengantar, dan Speaker.</div>
                 </div>
 
-                <!-- Plenary Speakers Autocomplete Chips -->
+                <?php /* Plenary Speakers Autocomplete Chips */ ?>
                 <div class="form-group">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                         <label class="form-label" style="margin-bottom: 0;">Speakers</label>
@@ -176,7 +176,7 @@ $roomsListJson = json_encode(array_map(function($r) {
                     </div>
                     <div class="autocomplete-chips-container" id="plenarySpkContainer">
                         <div class="autocomplete-chips-box" id="plenarySpkBox" onclick="focusChipInput('plenarySpkInput')">
-                            <!-- Chips will render here -->
+                            <?php /* Chips will render here */ ?>
                             <input type="text" id="plenarySpkInput" class="autocomplete-chips-input" placeholder="Type to search and add speaker...">
                         </div>
                         <div class="autocomplete-dropdown" id="plenarySpkDropdown"></div>
@@ -185,7 +185,7 @@ $roomsListJson = json_encode(array_map(function($r) {
                 </div>
             </div>
 
-            <!-- ================= SPECIAL SESSION CONTAINER (Session -> Room -> Items) ================= -->
+            <?php /* ================= SPECIAL SESSION CONTAINER (Session -> Room -> Items) ================= */ ?>
             <div id="specialSessionContainer" style="<?= !$isSpecial ? 'display:none;' : '' ?>">
                 <div class="form-group" style="margin-bottom: 20px;">
                     <label class="form-label">Special Session Group Title *</label>
@@ -204,11 +204,11 @@ $roomsListJson = json_encode(array_map(function($r) {
                 </div>
 
                 <div id="roomsContainer" style="display: flex; flex-direction: column; gap: 18px;">
-                    <!-- Dynamic Room Cards Rendered via JS -->
+                    <?php /* Dynamic Room Cards Rendered via JS */ ?>
                 </div>
             </div>
 
-            <!-- Action Buttons -->
+            <?php /* Action Buttons */ ?>
             <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line); display: flex; gap: 10px;">
                 <button type="submit" class="btn btn-primary" id="btnSubmitSession"><?= $isEdit ? 'Update Session' : 'Save Session Schedule' ?></button>
                 <a href="<?= $backUrl ?>" class="btn btn-outline" id="btnCancelSession">Cancel</a>
@@ -217,7 +217,7 @@ $roomsListJson = json_encode(array_map(function($r) {
     </div>
 </div>
 
-<!-- ================= QUICK-ADD SPEAKER / MODERATOR MODAL ================= -->
+<?php /* ================= QUICK-ADD SPEAKER / MODERATOR MODAL ================= */ ?>
 <div id="quickAddModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1050; align-items:center; justify-content:center; backdrop-filter:blur(3px);">
     <div style="background:var(--bg-surface); border:1px solid var(--line); border-radius:var(--radius-card); width:95%; max-width:480px; box-shadow:0 12px 36px rgba(0,0,0,0.5); overflow:hidden;">
         <div style="padding:16px 20px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;">
@@ -253,7 +253,7 @@ $roomsListJson = json_encode(array_map(function($r) {
     </div>
 </div>
 
-<!-- ================= DIRTY FORM EXIT CONFIRMATION MODAL ================= -->
+<?php /* ================= DIRTY FORM EXIT CONFIRMATION MODAL ================= */ ?>
 <div id="exitConfirmModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1060; align-items:center; justify-content:center; backdrop-filter:blur(3px);">
     <div style="background:var(--bg-surface); border:1px solid var(--line); border-radius:var(--radius-card); width:95%; max-width:440px; box-shadow:0 12px 36px rgba(0,0,0,0.5); overflow:hidden;">
         <div style="padding:16px 20px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;">

@@ -11,19 +11,21 @@
     </div>
 </div>
 
-<!-- Full-Width Live Footer Preview at Top (Faithful 3-Column Frontend Replica) -->
+<?php /* Full-Width Live Footer Preview at Top (Faithful 3-Column Frontend Replica) */ ?>
 <div class="cms-card" style="margin-bottom: 24px; border: 1px solid rgba(56, 189, 248, 0.25); background: #052431; overflow: hidden;">
-    <!-- <div class="card-title-bar" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: rgba(0, 0, 0, 0.3);">
+    <?php /*
+    <div class="card-title-bar" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: rgba(0, 0, 0, 0.3);">
         <span class="card-title-text" style="font-size: 13px; letter-spacing: 0.5px; color: #38bdf8; display: flex; align-items: center; gap: 8px;">
             <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #22c55e;"></span>
             LIVE FOOTER PREVIEW (3-COLUMN FRONTEND REPLICA)
         </span>
         <span style="font-size: 11.5px; color: var(--text-muted);">Real-time layout preview</span>
-    </div> -->
+    </div>
+    */ ?>
     <div id="footer_preview_box" style="padding: 36px 32px 32px 32px; background: #052431; transition: background 0.3s ease;">
         <div id="footer_preview_inner" style="display: flex; align-items: center; justify-content: space-between; gap: 24px; max-width: 1360px; margin: 0 auto; border-top: 1px solid rgba(255, 255, 255, 0.12); padding-top: 24px; flex-wrap: wrap;">
             
-            <!-- Left: Logo & Social Circles -->
+            <?php /* Left: Logo & Social Circles */ ?>
             <div style="flex: 1; min-width: 220px; display: flex; flex-direction: column; align-items: flex-start; gap: 16px;">
                 <?php 
                     $placementsMap = [];
@@ -61,12 +63,12 @@
                 </div>
             </div>
 
-            <!-- Center: Copyright -->
+            <?php /* Center: Copyright */ ?>
             <div id="footer_preview_copy" style="flex: 1.5; text-align: center; color: #ffffff; font-size: 13px; font-weight: 500; min-width: 260px; letter-spacing: 0.2px;">
                 &copy; Copyright <?= date('Y') ?>. <?= esc($settings['copyright_text'] ?? 'Investor Daily Summit.') ?>
             </div>
 
-            <!-- Right: Contact Us (Matching Frontend Perfectly) -->
+            <?php /* Right: Contact Us (Matching Frontend Perfectly) */ ?>
             <div style="flex: 1; min-width: 220px; display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
                 <div style="font-size: 16px; font-weight: 700; color: #ffffff; width: 100%; max-width: 220px; text-align: left; letter-spacing: 0.3px;">Contact Us:</div>
                 <div style="display: inline-flex; align-items: center; gap: 14px; width: 100%; max-width: 220px;">
@@ -91,10 +93,10 @@
 
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start;">
 
-        <!-- Column 1: Logo, Copyright & Social Links -->
+        <?php /* Column 1: Logo, Copyright & Social Links */ ?>
         <div style="display: flex; flex-direction: column; gap: 24px;">
 
-            <!-- Card 1: Footer Brand Notice & Copyright -->
+            <?php /* Card 1: Footer Brand Notice & Copyright */ ?>
             <div class="cms-card" style="margin-bottom: 0;">
                 <div class="card-title-bar" style="display: flex; justify-content: space-between; align-items: center;">
                     <span class="card-title-text">Footer Brand & Copyright</span>

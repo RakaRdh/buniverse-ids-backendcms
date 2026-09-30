@@ -114,7 +114,7 @@
     </div>
 </div>
 
-<!-- Modal: Add / Edit Decoration -->
+<?php /* Modal: Add / Edit Decoration */ ?>
 <div id="decorationModal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.75); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(4px); padding:20px;">
     <div style="background:var(--bg-surface); width:540px; max-width:95vw; max-height:90vh; overflow-y:auto; border-radius:var(--radius-lg); padding:24px; border:1px solid var(--line); box-shadow:0 20px 40px rgba(0,0,0,0.5);">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid var(--line); padding-bottom:12px;">
@@ -149,7 +149,7 @@
                 </div>
             </div>
 
-            <!-- Manual Position Selector -->
+            <?php /* Manual Position Selector */ ?>
             <div id="manualFields" class="form-group" style="margin-bottom:14px; padding:12px; background:rgba(0,0,0,0.25); border-radius:var(--radius-md); border:1px solid rgba(255,255,255,0.06);">
                 <label class="form-label" style="font-weight:600; color:var(--text-strong);">Position on Section Edge *</label>
                 <select name="position" id="decPosition" class="form-control">
@@ -162,7 +162,7 @@
                 </select>
             </div>
 
-            <!-- Auto Layout Config -->
+            <?php /* Auto Layout Config */ ?>
             <div id="autoFields" style="display:none; margin-bottom:14px; padding:12px; background:rgba(0,0,0,0.25); border-radius:var(--radius-md); border:1px solid rgba(255,255,255,0.06);">
                 <div class="row">
                     <div class="col-md-6 form-group">
@@ -196,7 +196,7 @@
                 </div>
             </div>
 
-            <!-- Edge Offset / Tuck Settings -->
+            <?php /* Edge Offset / Tuck Settings */ ?>
             <div class="form-group" style="margin-bottom:14px; padding:12px; background:rgba(0,0,0,0.25); border-radius:var(--radius-md); border:1px solid rgba(255,255,255,0.06);">
                 <label class="form-label" style="font-weight:600; color:var(--text-strong); display:block; margin-bottom:6px;">Edge Tuck / Offset</label>
                 <div style="display:flex; gap:16px;">
@@ -218,7 +218,7 @@
                 </div>
             </div>
 
-            <!-- Image Selection -->
+            <?php /* Image Selection */ ?>
             <div class="form-group" style="margin-bottom:14px;">
                 <label class="form-label" style="font-weight:600; color:var(--text-strong);">Decoration Image</label>
                 <div style="display:flex; gap:12px; align-items:center;">
@@ -232,7 +232,7 @@
                 </div>
             </div>
 
-            <!-- Dynamic Color Tinting via Mask-Image -->
+            <?php /* Dynamic Color Tinting via Mask-Image */ ?>
             <div class="form-group" style="margin-bottom:14px; padding:12px; background:rgba(0,0,0,0.25); border-radius:var(--radius-md); border:1px solid rgba(255,255,255,0.06);">
                 <label class="form-label" style="font-weight:600; color:var(--text-strong); display:flex; justify-content:space-between;">
                     <span>Color Tinting (CSS mask-image)</span>
@@ -243,7 +243,7 @@
                     <input type="text" name="tint_color" id="decTintColor" class="form-control" placeholder="e.g. #ff5733" oninput="if(this.value.startsWith('#') && this.value.length===7) document.getElementById('decTintColorPicker').value = this.value">
                     <button type="button" class="btn btn-sm btn-secondary" onclick="document.getElementById('decTintColor').value=''; document.getElementById('decPaletteSelect').value='';">Clear</button>
                 </div>
-                <!-- Palette Dropdown -->
+                <?php /* Palette Dropdown */ ?>
                 <?php if (!empty($palette)): ?>
                     <div style="margin-top: 8px;">
                         <select id="decPaletteSelect" class="form-control" style="font-size: 12px;" onchange="if(this.value){ document.getElementById('decTintColor').value=this.value; if(this.value.startsWith('#')&&this.value.length===7) document.getElementById('decTintColorPicker').value=this.value; }">
@@ -259,7 +259,7 @@
                 </small>
             </div>
 
-            <!-- Size & Opacity -->
+            <?php /* Size & Opacity */ ?>
             <div class="row" style="margin-bottom:14px;">
                 <div class="col-md-6 form-group">
                     <label class="form-label" style="font-weight:600; color:var(--text-strong);">Size (Width px)</label>
@@ -273,7 +273,7 @@
                 </div>
             </div>
 
-            <!-- Rotation Settings -->
+            <?php /* Rotation Settings */ ?>
             <div class="row" style="margin-bottom:14px;">
                 <div class="col-md-6 form-group">
                     <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:600; color:var(--text-strong); margin-bottom:8px;">
@@ -290,7 +290,7 @@
                 </div>
             </div>
 
-            <!-- 3D Perspective Tilt Settings -->
+            <?php /* 3D Perspective Tilt Settings */ ?>
             <div class="form-group" style="margin-bottom:16px; padding:12px; background:rgba(0,0,0,0.15); border-radius:var(--radius-md); border:1px solid rgba(255,255,255,0.06);">
                 <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:600; color:var(--text-strong); margin-bottom:8px;">
                     <input type="checkbox" name="perspective_enabled" id="decPerspectiveEnabled" value="1" onchange="togglePerspectiveFields(this.checked)">
@@ -319,7 +319,7 @@
                 </div>
             </div>
 
-            <!-- Device Visibility & Status -->
+            <?php /* Device Visibility & Status */ ?>
             <div class="row" style="margin-bottom:20px; align-items:flex-end;">
                 <div class="col-md-7 form-group" style="margin-bottom:0;">
                     <label class="form-label" style="font-weight:600; color:var(--text-strong); font-size:12.5px;">Device Visibility</label>

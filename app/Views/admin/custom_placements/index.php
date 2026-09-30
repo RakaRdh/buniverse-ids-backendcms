@@ -1,6 +1,6 @@
 <div class="page-container" style="max-width:1400px; margin:0 auto; padding:24px 20px;">
     
-    <!-- Page Header -->
+    <?php /* Page Header */ ?>
     <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
         <div>
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
@@ -20,7 +20,7 @@
         </div>
     </div>
 
-    <!-- Interactive Visual Editor Section -->
+    <?php /* Interactive Visual Editor Section */ ?>
     <div class="cms-card" style="margin-bottom:32px;">
         <div class="card-title-bar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
             <div style="display:flex; align-items:center; gap:12px;">
@@ -33,7 +33,7 @@
                 </div>
             </div>
 
-            <!-- Section Selector for Preview Canvas -->
+            <?php /* Section Selector for Preview Canvas */ ?>
             <div style="display:flex; align-items:center; gap:8px;">
                 <label style="font-size:12px; color:var(--text-muted); font-weight:600;">Target Section:</label>
                 <select id="previewSectionSelect" onchange="changeActiveSection(this.value)" class="form-control" style="width:auto; min-width:200px; padding:6px 12px; font-size:13px; font-weight:600;">
@@ -47,39 +47,39 @@
         <div class="cms-card-body" style="padding:20px;">
             <div class="row" style="display:flex; flex-wrap:wrap; margin:-12px;">
                 
-                <!-- Left: Interactive Canvas -->
+                <?php /* Left: Interactive Canvas */ ?>
                 <div class="col-lg-7" style="flex:1 1 560px; min-width:320px; padding:12px;">
                     <div style="position:relative; width:100%; height:440px; background:var(--bg-page, #01061a); border-radius:var(--radius-md); border:1px solid rgba(255,255,255,0.1); overflow:hidden; box-shadow:inset 0 2px 10px rgba(0,0,0,0.6);" id="canvasContainer">
                         
-                        <!-- Grid overlay for visual guideline -->
+                        <?php /* Grid overlay for visual guideline */ ?>
                         <div style="position:absolute; inset:0; pointer-events:none; background-image:radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px); background-size:24px 24px; z-index:1;"></div>
                         
-                        <!-- Section Badge in Canvas -->
+                        <?php /* Section Badge in Canvas */ ?>
                         <div style="position:absolute; top:12px; left:12px; z-index:10; pointer-events:none; background:rgba(15,23,42,0.85); border:1px solid rgba(255,255,255,0.15); border-radius:6px; padding:4px 10px; font-size:11px; font-weight:700; color:var(--gold); backdrop-filter:blur(6px); display:flex; align-items:center; gap:6px;">
                             <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#22c55e;"></span>
                             <span id="canvasSectionLabel">Gallery (#gallery)</span>
                         </div>
 
-                        <!-- Live Coordinate HUD -->
+                        <?php /* Live Coordinate HUD */ ?>
                         <div style="position:absolute; top:12px; right:12px; z-index:10; pointer-events:none; background:rgba(15,23,42,0.85); border:1px solid rgba(217,119,6,0.3); border-radius:6px; padding:4px 10px; font-size:12px; font-weight:700; color:#fff; backdrop-filter:blur(6px); font-family:monospace;">
                             X: <span id="hudX" style="color:var(--gold);">50.0%</span> | Y: <span id="hudY" style="color:var(--gold);">50.0%</span>
                         </div>
 
-                        <!-- Realistic Simulated Frontend Section Background -->
+                        <?php /* Realistic Simulated Frontend Section Background */ ?>
                         <div id="simulatedSectionBg" style="position:absolute; inset:0; padding:48px 24px; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; pointer-events:none; z-index:2; opacity:0.35;">
                             <div id="simulatedSectionTitle" style="font-size:26px; font-weight:800; color:#fff; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px;">GALLERY MOMENTS</div>
                             <div style="width:60px; height:3px; background:var(--gold); margin-bottom:16px;"></div>
                             <p id="simulatedSectionDesc" style="color:#94a3b8; font-size:13px; max-width:440px;">Interactive canvas representation for freeform decorative placement positioning.</p>
                         </div>
 
-                        <!-- Scaled Frontend Iframe (True-View 1.0 Opacity) -->
+                        <?php /* Scaled Frontend Iframe (True-View 1.0 Opacity) */ ?>
                         <iframe id="fePreviewIframe" src="<?= esc($frontendUrl) ?>/#gallery" style="position:absolute; top:0; left:0; width:1440px; height:900px; transform-origin:0 0; transform:scale(0.48); border:none; pointer-events:none; z-index:3; opacity:1.0;" onerror="this.style.display='none'"></iframe>
 
-                        <!-- Crosshair guide lines -->
+                        <?php /* Crosshair guide lines */ ?>
                         <div id="crosshairH" style="position:absolute; left:0; right:0; top:50%; height:1px; background:rgba(217,119,6,0.3); pointer-events:none; z-index:5;"></div>
                         <div id="crosshairV" style="position:absolute; top:0; bottom:0; left:50%; width:1px; background:rgba(217,119,6,0.3); pointer-events:none; z-index:5;"></div>
 
-                        <!-- Draggable & Interactive Disc Element Marker -->
+                        <?php /* Draggable & Interactive Disc Element Marker */ ?>
                         <div id="dragMarker" style="position:absolute; left:50%; top:50%; transform:translate(-50%, -50%); cursor:grab; z-index:20; touch-action:none; user-select:none; filter:drop-shadow(0 0 16px rgba(217,119,6,0.6));">
                             <img id="markerImg" src="<?= base_url('assets/img/decoration_white.png') ?>" alt="" style="width:110px; height:auto; display:block; pointer-events:none;">
                             <div style="position:absolute; inset:0; border:2px dashed var(--gold); border-radius:50%; pointer-events:none;"></div>
@@ -92,7 +92,7 @@
                     </div>
                 </div>
 
-                <!-- Right: Property Controls Form -->
+                <?php /* Right: Property Controls Form */ ?>
                 <div class="col-lg-5" style="flex:1 1 380px; min-width:300px; padding:12px;">
                     <form action="<?= base_url('admin/custom-placements/save') ?>" method="POST" enctype="multipart/form-data" id="placementForm">
                         <?= csrf_field() ?>
@@ -105,7 +105,7 @@
                             <small style="color:var(--text-muted); font-size:11px;">Optional identifier for CMS reference</small>
                         </div>
 
-                        <!-- Coordinate Inputs (Synchronized with Canvas) -->
+                        <?php /* Coordinate Inputs (Synchronized with Canvas) */ ?>
                         <div class="row" style="margin-bottom:12px;">
                             <div class="col-md-6 form-group">
                                 <label class="form-label" style="font-weight:700; color:var(--gold); font-size:12px;">Horizontal Position X (%)</label>
@@ -125,7 +125,7 @@
                             </div>
                         </div>
 
-                        <!-- Image File / Custom Image -->
+                        <?php /* Image File / Custom Image */ ?>
                         <div class="form-group" style="margin-bottom:12px;">
                             <label class="form-label" style="font-weight:600; color:var(--text-strong); font-size:13px;">Disc Image Asset</label>
                             <div style="display:flex; gap:10px; align-items:center;">
@@ -139,14 +139,14 @@
                             </div>
                         </div>
 
-                        <!-- Dynamic Color Tinting via Mask-Image -->
+                        <?php /* Dynamic Color Tinting via Mask-Image */ ?>
                         <div class="form-group" style="margin-bottom:12px; padding:10px 12px; background:rgba(0,0,0,0.2); border-radius:var(--radius-md); border:1px solid rgba(255,255,255,0.06);">
                             <label class="form-label" style="font-weight:600; color:var(--text-strong); font-size:12px; display:flex; justify-content:space-between;">
                                 <span>Color Tinting (CSS mask)</span>
                                 <span style="font-size:10px; color:var(--gold);">Optional</span>
                             </label>
 
-                            <!-- Theme Palette Quick Pick -->
+                            <?php /* Theme Palette Quick Pick */ ?>
                             <?php if (!empty($palette)): ?>
                                 <div style="margin-bottom:8px;">
                                     <label style="font-size:11px; color:var(--text-muted); margin-bottom:4px; display:block;">Pilih dari Palette Tema:</label>
@@ -177,7 +177,7 @@
                             </small>
                         </div>
 
-                        <!-- Size & Opacity -->
+                        <?php /* Size & Opacity */ ?>
                         <div class="row" style="margin-bottom:12px;">
                             <div class="col-md-6 form-group">
                                 <label class="form-label" style="font-weight:600; color:var(--text-strong); font-size:12px;">Size (Width px)</label>
@@ -191,7 +191,7 @@
                             </div>
                         </div>
 
-                        <!-- Rotation & Layering -->
+                        <?php /* Rotation & Layering */ ?>
                         <div style="padding:10px 12px; background:rgba(0,0,0,0.2); border-radius:var(--radius-md); border:1px solid rgba(255,255,255,0.06); margin-bottom:12px;">
                             <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:600; color:var(--text-strong); font-size:12px;">
                                 <input type="checkbox" name="is_rotated" id="formIsRotated" value="1" onchange="toggleFormRotation(this.checked)">
@@ -205,7 +205,7 @@
                             </div>
                         </div>
 
-                        <!-- 3D Perspective Tilt Settings -->
+                        <?php /* 3D Perspective Tilt Settings */ ?>
                         <div style="padding:10px 12px; background:rgba(0,0,0,0.2); border-radius:var(--radius-md); border:1px solid rgba(255,255,255,0.06); margin-bottom:12px;">
                             <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:600; color:var(--text-strong); font-size:12px;">
                                 <input type="checkbox" name="perspective_enabled" id="formPerspectiveEnabled" value="1" onchange="toggleFormPerspective(this.checked)">
@@ -235,7 +235,7 @@
                             </div>
                         </div>
 
-                        <!-- Device Visibility & Status -->
+                        <?php /* Device Visibility & Status */ ?>
                         <div class="row" style="margin-bottom:16px; align-items:flex-end;">
                             <div class="col-md-7 form-group" style="margin-bottom:0;">
                                 <label class="form-label" style="font-weight:600; color:var(--text-strong); font-size:12px;">Device Visibility</label>
