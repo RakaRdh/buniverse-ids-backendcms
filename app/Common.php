@@ -14,11 +14,11 @@
  * @see: https://codeigniter.com/user_guide/extending/common.html
  */if (!function_exists('format_schedule_time')) {
     /**
-     * Format a schedule time string or range into standard 12-hour AM/PM WIB format.
+     * Format a schedule time string or range into standard 12-hour AM/PM format.
      * Examples:
-     *   "13:00 - 14:14 WIB" -> "01:00 PM - 02:14 PM WIB"
-     *   "08:30 AM - 09:30 AM" -> "08:30 AM - 09:30 AM WIB"
-     *   "13:30 PM - 14:00 PM" -> "01:30 PM - 02:00 PM WIB"
+     *   "13:00 - 14:14" -> "01:00 PM - 02:14 PM"
+     *   "08:30 AM - 09:30 AM" -> "08:30 AM - 09:30 AM"
+     *   "13:30 PM - 14:00 PM" -> "01:30 PM - 02:00 PM"
      *
      * @param string|null $timeStr
      * @param string|null $startTime
@@ -45,7 +45,7 @@
             $st = $formatSingle($startTime);
             $et = $formatSingle($endTime);
             if ($st && $et) {
-                return "{$st} - {$et} WIB";
+                return "{$st} - {$et}";
             }
         }
 
@@ -54,17 +54,17 @@
         }
 
         $cleanStr = trim(preg_replace('/\bWIB\b/i', '', $timeStr));
-
+        
         if (str_contains($cleanStr, '-')) {
             $parts = explode('-', $cleanStr, 2);
             $p1 = $formatSingle(trim($parts[0]));
             $p2 = $formatSingle(trim($parts[1]));
             if ($p1 && $p2) {
-                return "{$p1} - {$p2} WIB";
+                return "{$p1} - {$p2}";
             }
         }
 
         $single = $formatSingle($cleanStr);
-        return $single ? "{$single} WIB" : $timeStr;
+        return $single ? "{$single}" : $timeStr;
     }
 }

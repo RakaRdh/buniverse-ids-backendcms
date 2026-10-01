@@ -30,10 +30,28 @@ class DashboardController extends BaseAdminController
         $recentSessions = [];
 
         if ($eventId) {
-            $stats['total_speakers']   = $db->table('speakers')->where('event_id', $eventId)->countAllResults();
-            $stats['total_moderators'] = $db->table('moderators')->where('event_id', $eventId)->countAllResults();
-            $stats['total_gallery']    = $db->table('gallery_images')->where('event_id', $eventId)->countAllResults();
-            $stats['ticket_clicks']    = $db->table('ticket_click_logs')->where('event_id', $eventId)->countAllResults();
+            // SET TANGGAL MULAI TRACKING DI SINI
+            $startDateStr = '2026-10-01';
+
+            $stats['total_speakers']   = $db->table('speakers')
+                ->where('event_id', $eventId)
+                ->where('is_active', 1)
+                ->countAllResults();
+
+            $stats['total_moderators'] = $db->table('moderators')
+                ->where('event_id', $eventId)
+                ->where('is_active', 1)
+                ->countAllResults();
+                
+            $stats['total_gallery']    = $db->table('gallery_images')
+                ->where('event_id', $eventId)
+                ->countAllResults();
+
+            // Filter klik tiket hanya dari tanggal mulai ke atas
+            $stats['ticket_clicks']    = $db->table('ticket_click_logs')
+                ->where('event_id', $eventId)
+                ->where('clicked_at >=', $startDateStr . ' 00:00:00')
+                ->countAllResults();
 
             // Count sessions linked through schedule_day_id
             $stats['total_sessions'] = $db->table('schedule_sessions')
@@ -47,10 +65,11 @@ class DashboardController extends BaseAdminController
                 ->where('sponsor_tiers.event_id', $eventId)
                 ->countAllResults();
 
-            // Daily ticket click trend from earliest click (or 14 days ago) up to event end date
+            // Daily ticket click trend mulai dari startDateStr
             $clickRows = $db->table('ticket_click_logs')
                 ->select("DATE(clicked_at) as click_date, COUNT(*) as count")
                 ->where('event_id', $eventId)
+                ->where('clicked_at >=', $startDateStr . ' 00:00:00')
                 ->groupBy("DATE(clicked_at)")
                 ->orderBy("click_date", "ASC")
                 ->get()
@@ -61,15 +80,9 @@ class DashboardController extends BaseAdminController
                 $clicksByDate[$cr['click_date']] = (int)$cr['count'];
             }
 
-            // Determine date range: from earliest click or 14 days ago up to event date
+            // Determine date range up to event date
             $eventStart = !empty($this->activeEvent['event_date_start']) ? $this->activeEvent['event_date_start'] : date('Y-m-d', strtotime('+30 days'));
             $eventEnd   = !empty($this->activeEvent['event_date_end']) ? $this->activeEvent['event_date_end'] : $eventStart;
-            
-            $startDateStr = !empty($clickRows) ? $clickRows[0]['click_date'] : date('Y-m-d', strtotime('-14 days'));
-            // If startDate is after today, clamp to 14 days ago
-            if ($startDateStr > date('Y-m-d')) {
-                $startDateStr = date('Y-m-d', strtotime('-14 days'));
-            }
 
             $current = strtotime($startDateStr);
             $eventEndTime = strtotime($eventEnd);
