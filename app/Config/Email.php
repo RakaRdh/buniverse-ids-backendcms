@@ -123,4 +123,22 @@ class Email extends BaseConfig
      * Enable notify message from server
      */
     public bool $DSN = false;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $host = env('SMTP_HOST') ?: getenv('SMTP_HOST');
+        if (!empty($host)) {
+            $this->protocol   = 'smtp';
+            $this->SMTPHost   = (string) $host;
+            $this->SMTPPort   = (int) (env('SMTP_PORT') ?: (getenv('SMTP_PORT') ?: 465));
+            $this->SMTPUser   = (string) (env('SMTP_USER') ?: getenv('SMTP_USER'));
+            $this->SMTPPass   = (string) (env('SMTP_PASS') ?: getenv('SMTP_PASS'));
+            $this->SMTPCrypto = (string) (env('SMTP_CRYPTO') ?: (getenv('SMTP_CRYPTO') ?: 'ssl'));
+            $this->fromEmail  = (string) (env('SMTP_FROM') ?: (getenv('SMTP_FROM') ?: 'no-reply@investordailysummit.com'));
+            $this->fromName   = (string) (env('SMTP_FROM_NAME') ?: (getenv('SMTP_FROM_NAME') ?: 'IDS Executive CMS'));
+            $this->mailType   = 'html';
+        }
+    }
 }

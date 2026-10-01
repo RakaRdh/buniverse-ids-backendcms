@@ -13,6 +13,9 @@ $routes->get('/', function () {
 $routes->group('auth', function ($routes) {
     $routes->get('login', 'AuthController::login');
     $routes->post('login', 'AuthController::processLogin');
+    $routes->get('verify-code', 'AuthController::verifyCode');
+    $routes->post('verify-code', 'AuthController::processVerifyCode');
+    $routes->post('resend-code', 'AuthController::resendCode');
     $routes->post('logout', 'AuthController::logout');
     $routes->get('logout', 'AuthController::logout');
 });
