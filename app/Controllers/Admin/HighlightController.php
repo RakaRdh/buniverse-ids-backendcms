@@ -10,7 +10,7 @@ class HighlightController extends BaseAdminController
     private function extractVideoId(string $url): string
     {
         $url = trim($url);
-        if (preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $url, $m)) {
+        if (preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?|live)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $url, $m)) {
             return $m[1];
         }
         if (strlen($url) === 11 && !str_contains($url, '/')) {

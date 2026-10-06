@@ -177,7 +177,7 @@
 function extractYouTubeId(url) {
     if (!url) return '';
     url = url.trim();
-    var regExp = /(?:youtube(?:-nocookie)?\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i;
+    var regExp = /(?:youtube(?:-nocookie)?\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|live)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i;
     var match = url.match(regExp);
     if (match && match[1]) {
         return match[1];

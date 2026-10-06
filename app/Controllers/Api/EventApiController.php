@@ -346,7 +346,7 @@ class EventApiController extends ResourceController
         if (!empty($livestreamRow)) {
             $livestream = [
                 'title'       => $livestreamRow['title'] ?? 'Investor Daily Summit Live Broadcast',
-                'youtube_url' => $livestreamRow['youtube_url'] ?? 'https://www.youtube.com/watch?v=rFZHOHl-L8A',
+                'youtube_url' => $livestreamRow['youtube_url'] ?? 'https://www.youtube.com/live/mKr5aNganlc',
                 'is_active'   => !empty($livestreamRow['is_active']),
             ];
         }
