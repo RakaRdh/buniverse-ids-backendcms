@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <style>
         * {
             box-sizing: border-box;
@@ -365,6 +366,15 @@
                         </button>
                     </div>
                 </div>
+
+                <?php 
+                    $siteKey = env('RECAPTCHA_SITE_KEY') ?: getenv('RECAPTCHA_SITE_KEY');
+                    if (!empty($siteKey)): 
+                ?>
+                    <div style="margin: 18px 0 10px 0; display: flex; justify-content: center;">
+                        <div class="g-recaptcha" data-sitekey="<?= esc($siteKey) ?>"></div>
+                    </div>
+                <?php endif; ?>
 
                 <button type="submit" class="btn-submit">
                     <span>Sign In</span>

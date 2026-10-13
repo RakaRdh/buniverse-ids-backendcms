@@ -50,15 +50,23 @@ class QnaApiController extends BaseController
         }
 
         if (empty($askerName)) {
-            return $this->failValidationErrors('Nama penanya wajib diisi.');
+            return $this->failValidationErrors('Nama lengkap wajib diisi.');
+        }
+
+        if (mb_strlen($askerName) < 5) {
+            return $this->failValidationErrors('Nama lengkap minimal 5 karakter.');
+        }
+
+        if (mb_strlen($askerName) > 150) {
+            return $this->failValidationErrors('Nama lengkap maksimal 150 karakter.');
         }
 
         if (empty($question)) {
             return $this->failValidationErrors('Pertanyaan wajib diisi.');
         }
 
-        if (mb_strlen($askerName) > 150) {
-            return $this->failValidationErrors('Nama penanya maksimal 150 karakter.');
+        if (mb_strlen($question) < 5) {
+            return $this->failValidationErrors('Pertanyaan minimal 5 karakter.');
         }
 
         if (mb_strlen($question) > 3000) {
@@ -194,9 +202,11 @@ class QnaApiController extends BaseController
         $result = [];
 
         foreach ($days as $d) {
-            $sessions = $sessionModel->where('schedule_day_id', $d['id'])
-                ->orderBy('start_time', 'ASC')
-                ->orderBy('sort_order', 'ASC')
+            $sessions = $sessionModel->select('schedule_sessions.*, schedule_rooms.name as room_name')
+                ->join('schedule_rooms', 'schedule_rooms.id = schedule_sessions.room_id', 'left')
+                ->where('schedule_sessions.schedule_day_id', $d['id'])
+                ->orderBy('schedule_sessions.start_time', 'ASC')
+                ->orderBy('schedule_sessions.sort_order', 'ASC')
                 ->findAll();
 
             $formattedSessions = [];
@@ -223,7 +233,7 @@ class QnaApiController extends BaseController
                                         'item_id'      => (int)$it['id'],
                                         'title'        => $s['title'] . ' - ' . $it['title'],
                                         'subtitle'     => $it['subtitle'] ?? '',
-                                        'room_name'    => $sr['room_name'] ?? '',
+                                        'room_name'    => $sr['room_name'] ?? ($s['room_name'] ?? ''),
                                         'start_time'   => substr($s['start_time'], 0, 5),
                                         'end_time'     => substr($s['end_time'], 0, 5),
                                         'session_type' => 'special_session',
@@ -239,6 +249,7 @@ class QnaApiController extends BaseController
                             'item_id'      => null,
                             'title'        => $s['title'],
                             'subtitle'     => $s['subtitle'] ?? '',
+                            'room_name'    => $s['room_name'] ?? '',
                             'start_time'   => substr($s['start_time'], 0, 5),
                             'end_time'     => substr($s['end_time'], 0, 5),
                             'session_type' => $s['session_type'],
@@ -251,6 +262,7 @@ class QnaApiController extends BaseController
                         'item_id'      => null,
                         'title'        => $s['title'],
                         'subtitle'     => $s['subtitle'] ?? '',
+                        'room_name'    => $s['room_name'] ?? '',
                         'start_time'   => substr($s['start_time'], 0, 5),
                         'end_time'     => substr($s['end_time'], 0, 5),
                         'session_type' => $s['session_type'],

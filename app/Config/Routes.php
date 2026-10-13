@@ -127,6 +127,11 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     $routes->post('highlights/toggle/(:num)', 'Admin\HighlightController::toggle/$1');
     $routes->post('highlights/delete/(:num)', 'Admin\HighlightController::delete/$1');
     $routes->post('highlights/inactive-all', 'Admin\HighlightController::inactiveAll');
+    $routes->post('highlights/disable-all', 'Admin\HighlightController::inactiveAll');
+    $routes->post('highlights/enable-all', 'Admin\HighlightController::enableAll');
+    $routes->post('highlights/toggle-platform/(:segment)/(:num)', 'Admin\HighlightController::togglePlatform/$1/$2');
+    $routes->post('highlights/reorder', 'Admin\HighlightController::reorder');
+    $routes->post('highlights/fetch-metadata', 'Admin\HighlightController::fetchMetadata');
 
     // Sponsors & Partnerships (Single Image Upload)
     $routes->get('sponsors', 'Admin\SponsorController::index');

@@ -10,8 +10,8 @@ class UserController extends BaseAdminController
     public function index()
     {
         $userModel = new AdminUserModel();
-        $this->data['users']      = $userModel->orderBy('id', 'ASC')->findAll();
-        $this->data['pageTitle']  = 'Admin User Management';
+        $this->data['users'] = $userModel->orderBy('id', 'ASC')->findAll();
+        $this->data['pageTitle'] = 'Admin User Management';
         $this->data['activeMenu'] = 'users';
 
         return $this->render('admin/users/index', $this->data);
@@ -29,12 +29,12 @@ class UserController extends BaseAdminController
         }
 
         $userModel->insert([
-            'name'       => $this->request->getPost('name'),
-            'username'   => $username,
-            'email'      => $email,
-            'password'   => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
-            'role'       => $this->request->getPost('role') ?: 'editor',
-            'is_active'  => 1,
+            'name' => $this->request->getPost('name'),
+            'username' => $username,
+            'email' => $email,
+            'password_hash' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
+            'role' => $this->request->getPost('role') ?: 'editor',
+            'is_active' => 1,
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s'),
         ]);
@@ -45,7 +45,7 @@ class UserController extends BaseAdminController
     public function delete($id)
     {
         $userModel = new AdminUserModel();
-        if ((int)$id === (int)$this->currentAdmin['id']) {
+        if ((int) $id === (int) $this->currentAdmin['id']) {
             return redirect()->back()->with('error', 'You cannot delete your own account.');
         }
 

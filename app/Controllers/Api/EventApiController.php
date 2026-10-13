@@ -339,15 +339,33 @@ class EventApiController extends ResourceController
         ];
         $economicModel = $overview;
 
-        // 3b. Livestream Settings
+        // 3b. Livestream Settings (Multi-stream support)
         $livestreamModel = new \App\Models\EventLivestreamModel();
-        $livestreamRow = $livestreamModel->where('event_id', $event['id'])->orderBy('id', 'DESC')->first();
+        $livestreamRows = $livestreamModel->where('event_id', $event['id'])->orderBy('id', 'ASC')->findAll();
         $livestream = null;
-        if (!empty($livestreamRow)) {
+        $livestreams = [];
+
+        foreach ($livestreamRows as $row) {
+            $streamItem = [
+                'id'          => (int)$row['id'],
+                'title'       => $row['title'] ?? 'Investor Daily Summit Live Broadcast',
+                'youtube_url' => $row['youtube_url'] ?? '',
+                'is_active'   => !empty($row['is_active']),
+            ];
+            if (!empty($row['is_active']) && !empty(trim($row['youtube_url'] ?? ''))) {
+                $livestreams[] = $streamItem;
+            }
+        }
+
+        if (!empty($livestreams)) {
+            $livestream = $livestreams[0];
+        } elseif (!empty($livestreamRows)) {
+            // If exists but inactive
             $livestream = [
-                'title'       => $livestreamRow['title'] ?? 'Investor Daily Summit Live Broadcast',
-                'youtube_url' => $livestreamRow['youtube_url'] ?? 'https://www.youtube.com/live/mKr5aNganlc',
-                'is_active'   => !empty($livestreamRow['is_active']),
+                'id'          => (int)$livestreamRows[0]['id'],
+                'title'       => $livestreamRows[0]['title'] ?? 'Investor Daily Summit Live Broadcast',
+                'youtube_url' => $livestreamRows[0]['youtube_url'] ?? '',
+                'is_active'   => !empty($livestreamRows[0]['is_active']),
             ];
         }
 
@@ -363,20 +381,47 @@ class EventApiController extends ResourceController
             ];
         }
 
-        // 3d. Event Highlights (Zero Quota Database Pattern)
+        // 3d. Event Highlights (Multi-platform: YouTube, TikTok, Instagram)
         $highlightModel = new \App\Models\EventHighlightModel();
         $highlightRows = $highlightModel->getByEventId($event['id'], true);
         $highlightItems = [];
         foreach ($highlightRows as $hr) {
-            $vid = $hr['video_id'];
+            $rawUrl = $hr['youtube_url'] ?? '';
+            $vid    = $hr['video_id'] ?? '';
+
+            // Platform detection
+            $platform = 'youtube';
+            if (preg_match('%tiktok\.com%i', $rawUrl)) {
+                $platform = 'tiktok';
+            } elseif (preg_match('%(?:instagram\.com|instagr\.am)%i', $rawUrl)) {
+                $platform = 'instagram';
+            }
+
+            // Thumbnail resolution
+            $localFile = FCPATH . 'uploads/highlights/' . $hr['id'] . '.jpg';
+            if (file_exists($localFile)) {
+                $thumbUrl = base_url('uploads/highlights/' . $hr['id'] . '.jpg');
+            } elseif ($platform === 'youtube' && $vid) {
+                $thumbUrl = "https://i.ytimg.com/vi/{$vid}/hqdefault.jpg";
+            } else {
+                $thumbUrl = base_url('assets/img/image1.png');
+            }
+
+            $watchUrl = $rawUrl;
+            if ($platform === 'youtube' && $vid && !str_starts_with($rawUrl, 'http')) {
+                $watchUrl = "https://www.youtube.com/watch?v={$vid}";
+            }
+
             $highlightItems[] = [
                 'id'            => (int)$hr['id'],
                 'title'         => $hr['title'],
-                'youtube_url'   => $hr['youtube_url'],
+                'platform'      => $platform,
+                'url'           => $watchUrl,
+                'youtube_url'   => $watchUrl,
                 'video_id'      => $vid,
-                'thumbnail_url' => "https://i.ytimg.com/vi/{$vid}/hqdefault.jpg",
-                'watch_url'     => "https://www.youtube.com/watch?v={$vid}",
-                'embed_url'     => "https://www.youtube.com/embed/{$vid}",
+                'thumbnail_url' => $thumbUrl,
+                'watch_url'     => $watchUrl,
+                'embed_url'     => ($platform === 'youtube' && $vid) ? "https://www.youtube.com/embed/{$vid}" : null,
                 'sort_order'    => (int)$hr['sort_order'],
             ];
         }
@@ -722,6 +767,7 @@ class EventApiController extends ResourceController
                 'overview'            => $overview,
                 'economicModel'       => $economicModel,
                 'livestream'          => $livestream,
+                'livestreams'         => $livestreams,
                 'news_portals'        => $newsPortals,
                 'highlights'          => $highlights,
                 'speakers'            => $speakers,

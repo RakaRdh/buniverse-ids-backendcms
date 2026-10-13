@@ -51,7 +51,7 @@
                         <span style="font-size: 12px; color: var(--text-muted);">Saat ini menggunakan default placeholder.</span>
                     </div>
                 <?php endif; ?>
-                <input type="file" name="photo_file" class="form-control" accept="image/*">
+                <input type="file" name="photo_file" class="form-control">
                 <div class="help-text">Square ratio portrait photo recommended (PNG/JPG).</div>
             </div>
 

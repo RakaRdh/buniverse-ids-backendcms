@@ -18,6 +18,7 @@ class NewsPortalController extends BaseAdminController
         $portals = $portalModel->getByEvent($eventId);
 
         $defaults = [
+            'overview'       => ['name' => 'Overview', 'url' => 'https://datasatu.com/tag/investor-daily-summit', 'sort' => 0],
             'investor-daily' => ['name' => 'Investor Daily', 'url' => 'https://investor.id/tag/investor-daily-summit', 'sort' => 1],
             'beritasatu'     => ['name' => 'BeritaSatu', 'url' => 'https://www.beritasatu.com/tag/investor-daily-summit', 'sort' => 2],
             'jakartaglobe'   => ['name' => 'JakartaGlobe', 'url' => 'https://jakartaglobe.id/search/investor-daily-summit', 'sort' => 3],

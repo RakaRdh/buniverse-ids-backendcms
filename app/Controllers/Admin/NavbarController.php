@@ -84,8 +84,8 @@ class NavbarController extends BaseAdminController
         $settingData = [
             'ticket_url'           => $this->request->getPost('ticket_url'),
             'cta_label'            => $this->request->getPost('cta_label') ?: 'Get Tickets',
-            'cta_ticket_active'     => $this->request->getPost('cta_ticket_active') !== null ? (int)$this->request->getPost('cta_ticket_active') : 1,
-            'floating_bar_enabled' => $this->request->getPost('floating_bar_enabled') !== null ? (int)$this->request->getPost('floating_bar_enabled') : 1,
+            'cta_ticket_active'     => $this->request->getPost('cta_ticket_active') ? 1 : 0,
+            'floating_bar_enabled' => $this->request->getPost('floating_bar_enabled') ? 1 : 0,
             'floating_bar_text'    => $this->request->getPost('floating_bar_text') ?: 'Get Your Seat Now!',
             'floating_bar_btn_label' => $this->request->getPost('floating_bar_btn_label') ?: 'Get Tickets',
             'floating_bar_btn_url' => $this->request->getPost('floating_bar_btn_url') ?: null,
