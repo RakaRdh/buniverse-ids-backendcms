@@ -191,6 +191,7 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
 $routes->group('api/v1', function ($routes) {
     $routes->get('event/active', 'Api\EventApiController::active');
     $routes->get('event/(:num)', 'Api\EventApiController::show/$1');
+    $routes->get('event/(:segment)', 'Api\EventApiController::showBySlug/$1');
     $routes->post('tickets/click', 'Api\EventApiController::logTicketClick');
 
     // Q&A API

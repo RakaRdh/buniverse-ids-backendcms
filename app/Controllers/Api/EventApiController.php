@@ -38,6 +38,18 @@ class EventApiController extends ResourceController
         return $this->show($event['id']);
     }
 
+    public function showBySlug($slug = null)
+    {
+        $eventModel = new EventModel();
+        $event = $eventModel->where('slug', $slug)->first();
+
+        if (!$event) {
+            return $this->failNotFound("Event slug '{$slug}' not found.");
+        }
+
+        return $this->show($event['id']);
+    }
+
     public function show($id = null)
     {
         $eventModel = new EventModel();
