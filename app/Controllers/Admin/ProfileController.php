@@ -21,6 +21,12 @@ class ProfileController extends BaseAdminController
         $this->data['pageTitle']  = 'My Profile & Security';
         $this->data['activeMenu'] = 'profile';
 
+        // Deteksi konteks portal dari session (tanpa query param)
+        if (session()->get('cms_context') === 'portal') {
+            $this->data['isPortalMode'] = true;
+            $this->data['fromPortal'] = true;
+        }
+
         return $this->render('admin/profile/index', $this->data);
     }
 

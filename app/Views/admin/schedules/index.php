@@ -22,14 +22,33 @@
     </div>
     <div class="cms-card-body" style="padding: 14px 18px;">
         <?php if (!empty($days)): ?>
-            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
                 <?php foreach ($days as $d): 
                     $rawDate = $d['event_date'] ?? $d['date'] ?? null;
                     $formattedDate = $rawDate ? date('d M Y', strtotime($rawDate)) : 'TBD';
+                    $rawDateInput = $rawDate ? date('Y-m-d', strtotime($rawDate)) : '';
                 ?>
-                    <a href="<?= base_url('admin/schedules?day_id=' . $d['id']) ?>" class="btn <?= $selectedDayId == $d['id'] ? 'btn-primary' : 'btn-outline' ?>" style="padding: 8px 16px;">
-                        <strong>Day <?= esc($d['day_number']) ?></strong>: <?= esc($d['label']) ?> (<?= $formattedDate ?>)
-                    </a>
+                    <div style="display: inline-flex; align-items: center; background: <?= $selectedDayId == $d['id'] ? 'var(--primary-1-1)' : 'var(--bg-subtle)' ?>; border: 1px solid <?= $selectedDayId == $d['id'] ? 'var(--primary-1-6)' : 'var(--line)' ?>; border-radius: var(--radius-control); overflow: hidden;">
+                        <a href="<?= base_url('admin/schedules?day_id=' . $d['id']) ?>" class="btn <?= $selectedDayId == $d['id'] ? 'btn-primary' : 'btn-ghost' ?>" style="padding: 8px 14px; border-radius: 0; border: none; font-size: 13px;">
+                            <strong>Day <?= esc($d['day_number']) ?></strong>: <?= esc($d['label']) ?> (<?= $formattedDate ?>)
+                        </a>
+                        <button type="button" 
+                                onclick="openEditDayModal(<?= (int)$d['id'] ?>, <?= (int)$d['day_number'] ?>, '<?= esc($rawDateInput, 'js') ?>', '<?= esc($d['label'], 'js') ?>')" 
+                                class="btn btn-ghost" 
+                                title="Edit Day" 
+                                style="padding: 8px 8px; border-radius: 0; border-left: 1px solid var(--line); color: var(--text-muted);">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        </button>
+                        <form action="<?= base_url('admin/schedules/day/delete/' . $d['id']) ?>" method="POST" onsubmit="return confirm('Delete this event day and all its sessions?');" style="display:inline; margin:0;">
+                            <?= csrf_field() ?>
+                            <button type="submit" 
+                                    class="btn btn-ghost" 
+                                    title="Delete Day" 
+                                    style="padding: 8px 8px; border-radius: 0; border-left: 1px solid var(--line); color: var(--danger-text, #ef4444);">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            </button>
+                        </form>
+                    </div>
                 <?php endforeach; ?>
             </div>
         <?php else: ?>
@@ -240,3 +259,40 @@
         </form>
     </div>
 </div>
+
+<!-- Modal: Edit Day -->
+<div id="editDayModal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.6); z-index:200; align-items:center; justify-content:center;">
+    <div style="background:var(--bg-surface); width:400px; border-radius:var(--radius-lg); padding:20px; border:1px solid var(--line);">
+        <h3 style="font-size:15px; margin-bottom:14px; color:var(--text-strong);">Edit Event Day</h3>
+        <form id="editDayForm" action="" method="POST">
+            <?= csrf_field() ?>
+            <div class="form-group">
+                <label class="form-label">Day Number</label>
+                <input type="number" id="editDayNumber" name="day_number" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Date</label>
+                <input type="date" id="editDayDate" name="event_date" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Label (e.g. DAY 1)</label>
+                <input type="text" id="editDayLabel" name="label" class="form-control" required>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px; border-top:1px solid var(--line); padding-top:12px;">
+                <button type="button" onclick="document.getElementById('editDayModal').style.display='none'" class="btn btn-outline">Cancel</button>
+                <button type="submit" class="btn btn-primary">Update Day</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openEditDayModal(id, dayNumber, eventDate, label) {
+    var form = document.getElementById('editDayForm');
+    form.action = '<?= base_url('admin/schedules/day/update') ?>/' + id;
+    document.getElementById('editDayNumber').value = dayNumber;
+    document.getElementById('editDayDate').value = eventDate;
+    document.getElementById('editDayLabel').value = label;
+    document.getElementById('editDayModal').style.display = 'flex';
+}
+</script>

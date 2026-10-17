@@ -10,10 +10,48 @@ class EventController extends BaseAdminController
     public function index()
     {
         $eventModel = new EventModel();
-        $this->data['eventsList']   = $eventModel->orderBy('year', 'DESC')->findAll();
+        $events = $eventModel->orderBy('year', 'DESC')->findAll();
+
+        $seoModel = new \App\Models\EventSeoModel();
+        $heroImageModel = new \App\Models\EventHeroImageModel();
+
+        foreach ($events as &$evt) {
+            $coverUrl = null;
+
+            // 1. Cek dari OG Image (SEO) terlebih dahulu
+            $seo = $seoModel->where('event_id', $evt['id'])->first();
+            if (!empty($seo['og_image_url'])) {
+                $coverUrl = $seo['og_image_url'];
+            }
+
+            // 2. Jika tidak ada, ambil gambar pertama dari Event Hero Images
+            if (empty($coverUrl)) {
+                $hero = $heroImageModel->where('event_id', $evt['id'])->orderBy('sort_order', 'ASC')->first();
+                if (!empty($hero['image_url'])) {
+                    $coverUrl = $hero['image_url'];
+                }
+            }
+
+            // Normalisasi URL
+            if (!empty($coverUrl)) {
+                if (!str_starts_with($coverUrl, 'http')) {
+                    $coverUrl = base_url(ltrim($coverUrl, '/'));
+                }
+            } else {
+                $coverUrl = base_url('assets/img/image1.png');
+            }
+
+            $evt['cover_image_url'] = $coverUrl;
+        }
+        unset($evt);
+
+        $this->data['eventsList']   = $events;
         $this->data['pageTitle']    = 'Event Editions';
         $this->data['activeMenu']   = 'events';
         $this->data['isPortalMode'] = true;
+
+        // Simpan konteks navigasi portal ke session (bersih tanpa query param URL)
+        session()->set('cms_context', 'portal');
 
         return $this->render('admin/events/index', $this->data);
     }
@@ -27,6 +65,7 @@ class EventController extends BaseAdminController
         }
 
         session()->set('active_event_id', (int)$event['id']);
+        session()->set('cms_context', 'workspace');
         return redirect()->to(base_url('admin/dashboard'))->with('success', 'Workspace loaded: ' . ($event['title'] ?? 'IDS ' . $event['year']));
     }
 

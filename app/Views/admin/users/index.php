@@ -1,9 +1,17 @@
 <div class="page-header">
     <div>
         <h1 class="page-title">Admin User Management</h1>
-        <p class="page-subtitle">Manage superadmin and editor access permissions for the IDS CMS</p>
+        <p class="page-subtitle">Manage superadmin and editor access permissions for the Global Event CMS</p>
     </div>
-    <button type="button" onclick="document.getElementById('addUserModal').style.display='block'" class="btn btn-gold">+ Add Admin User</button>
+    <div style="display:flex; align-items:center; gap:10px;">
+        <?php if (!empty($fromPortal)): ?>
+            <a href="<?= base_url('admin/events') ?>" class="btn btn-secondary">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                <span>Back to Events</span>
+            </a>
+        <?php endif; ?>
+        <button type="button" onclick="document.getElementById('addUserModal').style.display='block'" class="btn btn-gold">+ Add Admin User</button>
+    </div>
 </div>
 
 <div class="cms-card">

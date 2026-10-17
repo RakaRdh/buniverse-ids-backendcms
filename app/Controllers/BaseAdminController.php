@@ -66,6 +66,8 @@ abstract class BaseAdminController extends Controller
     protected function purgeFrontendCache(): void
     {
         $frontendUrls = [
+            'http://localhost:8000/api/clear-cache',
+            'http://127.0.0.1:8000/api/clear-cache',
             'http://localhost:8080/api/clear-cache',
             'http://127.0.0.1:8080/api/clear-cache',
             'http://[::1]:8080/api/clear-cache',

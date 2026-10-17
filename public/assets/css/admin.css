@@ -221,6 +221,8 @@ a {
   gap: 12px;
   text-decoration: none;
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .sidebar-logo-icon, .brand-mark {
@@ -233,18 +235,21 @@ a {
   justify-content: center;
   color: #ffffff;
   font-weight: 700;
-  font-size: 12px;
+  font-size: 11px;
   letter-spacing: 0.5px;
   flex-shrink: 0;
 }
 
 .sidebar-logo-text, .brand-text {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--text-strong);
   letter-spacing: -0.2px;
   line-height: 20px;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .sidebar-nav {
@@ -1242,9 +1247,7 @@ textarea.form-control {
 }
 
 .event-card-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(0, 18, 25, 0.1) 0%, rgba(0, 18, 25, 0.65) 100%);
+  display: none;
 }
 
 .event-card-year-badge {

@@ -14,6 +14,12 @@ class UserController extends BaseAdminController
         $this->data['pageTitle'] = 'Admin User Management';
         $this->data['activeMenu'] = 'users';
 
+        // Deteksi apakah sedang berada di mode portal / landing events dari session (bersih tanpa query param di URL)
+        if (session()->get('cms_context') === 'portal') {
+            $this->data['isPortalMode'] = true;
+            $this->data['fromPortal'] = true;
+        }
+
         return $this->render('admin/users/index', $this->data);
     }
 

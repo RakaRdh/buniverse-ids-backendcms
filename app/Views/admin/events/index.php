@@ -12,8 +12,7 @@
             <div class="event-edition-card <?= (($activeEvent['id'] ?? null) == $evt['id']) ? 'is-active-card' : '' ?>">
                 <!-- Event Cover Image Thumbnail -->
                 <div class="event-card-cover">
-                    <img src="<?= base_url('assets/img/image1.png') ?>" alt="<?= esc($evt['title'] ?? '') ?>" class="event-card-img">
-                    <div class="event-card-overlay"></div>
+                    <img src="<?= esc($evt['cover_image_url'] ?? base_url('assets/img/image1.png')) ?>" alt="<?= esc($evt['title'] ?? '') ?>" class="event-card-img">
                     <div class="event-card-year-badge"><?= esc($evt['year']) ?></div>
                 </div>
 

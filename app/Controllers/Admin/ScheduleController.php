@@ -63,6 +63,47 @@ class ScheduleController extends BaseAdminController
         return redirect()->back()->with('success', 'Schedule day added.');
     }
 
+    public function updateDay($id)
+    {
+        $eventId = $this->activeEvent['id'] ?? null;
+        if (!$eventId) {
+            return redirect()->back()->with('error', 'No active event.');
+        }
+
+        $dayModel = new ScheduleDayModel();
+        $day = $dayModel->find((int)$id);
+        if (!$day || (int)$day['event_id'] !== (int)$eventId) {
+            return redirect()->back()->with('error', 'Schedule day not found.');
+        }
+
+        $userId = $this->currentAdmin['id'] ?? session()->get('admin_id') ?? session()->get('admin_user')['id'] ?? 1;
+        $dayModel->update($id, [
+            'day_number' => (int)$this->request->getPost('day_number'),
+            'event_date' => $this->request->getPost('event_date') ?: $this->request->getPost('date'),
+            'label'      => $this->request->getPost('label'),
+            'updated_by' => $userId,
+        ]);
+
+        return redirect()->back()->with('success', 'Schedule day updated.');
+    }
+
+    public function deleteDay($id)
+    {
+        $eventId = $this->activeEvent['id'] ?? null;
+        if (!$eventId) {
+            return redirect()->back()->with('error', 'No active event.');
+        }
+
+        $dayModel = new ScheduleDayModel();
+        $day = $dayModel->find((int)$id);
+        if (!$day || (int)$day['event_id'] !== (int)$eventId) {
+            return redirect()->back()->with('error', 'Schedule day not found.');
+        }
+
+        $dayModel->delete($id);
+        return redirect()->to(base_url('admin/schedules'))->with('success', 'Schedule day removed.');
+    }
+
     public function createSession()
     {
         $eventId = $this->activeEvent['id'] ?? null;

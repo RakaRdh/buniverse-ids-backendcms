@@ -107,6 +107,8 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     // Schedules
     $routes->get('schedules', 'Admin\ScheduleController::index');
     $routes->post('schedules/day/save', 'Admin\ScheduleController::saveDay');
+    $routes->post('schedules/day/update/(:num)', 'Admin\ScheduleController::updateDay/$1');
+    $routes->post('schedules/day/delete/(:num)', 'Admin\ScheduleController::deleteDay/$1');
     $routes->post('schedules/room/save', 'Admin\ScheduleController::saveRoom');
     $routes->get('schedules/session/new', 'Admin\ScheduleController::createSession');
     $routes->post('schedules/session/save', 'Admin\ScheduleController::saveSession');

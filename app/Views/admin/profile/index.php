@@ -3,6 +3,14 @@
         <h1 class="page-title">My Profile & Security</h1>
         <p class="page-subtitle">Manage your account credentials and change your password</p>
     </div>
+    <?php if (!empty($fromPortal)): ?>
+        <div>
+            <a href="<?= base_url('admin/events') ?>" class="btn btn-secondary">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                <span>Back to Events</span>
+            </a>
+        </div>
+    <?php endif; ?>
 </div>
 
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px; max-width: 900px;">

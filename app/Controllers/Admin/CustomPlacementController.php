@@ -35,7 +35,7 @@ class CustomPlacementController extends BaseAdminController
         $this->data['sections']      = $this->sections;
         $this->data['palette']       = $themeModel->getPaletteForPicker($eventId);
         $this->data['defaultImage']  = 'assets/img/decoration_white.png';
-        $this->data['frontendUrl']   = 'http://localhost:8080';
+        $this->data['frontendUrl']   = env('FRONTEND_URL', 'http://localhost:8000');
         $this->data['pageTitle']     = 'Custom Placement (Freeform Coordinates)';
         $this->data['activeMenu']    = 'custom-placements';
 

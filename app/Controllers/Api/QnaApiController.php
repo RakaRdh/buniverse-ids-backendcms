@@ -16,6 +16,27 @@ class QnaApiController extends BaseController
     protected function getActiveEvent()
     {
         $eventModel = new EventModel();
+        
+        // 1. Cek parameter event_slug dari query string / POST / JSON
+        $slug = $this->request->getGet('event_slug') 
+            ?? $this->request->getPost('event_slug');
+        if (empty($slug)) {
+            $rawBody = $this->request->getBody();
+            if (!empty($rawBody)) {
+                $json = json_decode($rawBody, true);
+                if (!empty($json['event_slug'])) {
+                    $slug = $json['event_slug'];
+                }
+            }
+        }
+
+        if (!empty($slug)) {
+            $event = $eventModel->where('slug', $slug)->first();
+            if ($event) {
+                return $event;
+            }
+        }
+
         return $eventModel->getActiveEvent();
     }
 
