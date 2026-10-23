@@ -22,6 +22,8 @@ class EventModel extends Model
         'status',
         'news_tag_slug',
         'template_version',
+        'quota',
+        'gate_passcode',
         'created_by',
         'updated_by',
         'created_at',

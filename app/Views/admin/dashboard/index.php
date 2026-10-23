@@ -3,9 +3,19 @@
         <h1 class="page-title">Executive Dashboard</h1>
         <p class="page-subtitle">Live telemetry and operational metrics for <?= esc($activeEvent['title'] ?? $activeEvent['name'] ?? 'Annual Summit') ?> (<?= esc($activeEvent['year'] ?? date('Y')) ?>)</p>
     </div>
-    <div style="display:flex; gap:12px;">
-        <a href="<?= base_url('admin/event-settings') ?>" class="btn btn-outline">Settings</a>
-        <a href="<?= base_url('admin/schedules') ?>" class="btn btn-primary">Manage Schedule</a>
+    <div style="display:flex; gap:12px; align-items:center;">
+        <a href="<?= base_url('admin/participants') ?>" class="btn btn-gold" style="display:inline-flex; align-items:center; gap:6px;">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            <span>Participants & Tickets</span>
+        </a>
+        <a href="<?= base_url('gate/portal_desk_ops_access_verify') ?>" target="_blank" class="btn btn-primary" style="display:inline-flex; align-items:center; gap:6px;">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"></path><rect x="7" y="7" width="10" height="10" rx="1"></rect></svg>
+            <span>Scan Ticket</span>
+        </a>
+        <?php if (($currentAdmin['role'] ?? '') !== 'receptionist'): ?>
+            <a href="<?= base_url('admin/event-settings') ?>" class="btn btn-outline">Settings</a>
+            <a href="<?= base_url('admin/schedules') ?>" class="btn btn-outline">Manage Schedule</a>
+        <?php endif; ?>
     </div>
 </div>
 

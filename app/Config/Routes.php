@@ -173,6 +173,12 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     $routes->post('events/save', 'Admin\EventController::save');
     $routes->post('events/update/(:num)', 'Admin\EventController::update/$1');
 
+    // Participants & Tickets Management
+    $routes->get('participants', 'Admin\ParticipantController::index');
+    $routes->get('participants/export', 'Admin\ParticipantController::export');
+    $routes->post('participants/checkin/(:num)', 'Admin\ParticipantController::checkin/$1');
+    $routes->post('participants/delete/(:num)', 'Admin\ParticipantController::delete/$1');
+
     // Admin Users (Superadmin only)
     $routes->group('users', ['filter' => 'auth:superadmin'], function ($routes) {
         $routes->get('', 'Admin\UserController::index');
@@ -200,4 +206,11 @@ $routes->group('api/v1', function ($routes) {
     $routes->post('qna', 'Api\QnaApiController::create');
     $routes->get('qna', 'Api\QnaApiController::list');
     $routes->get('qna/sessions', 'Api\QnaApiController::sessions');
+
+    // Participant & Ticketing API
+    $routes->post('participants/register', 'Api\ParticipantApiController::register');
+    $routes->post('gate/verify-passcode', 'Api\ParticipantApiController::verifyPasscode');
+    $routes->post('gate/checkin', 'Api\ParticipantApiController::checkin');
+    $routes->get('gate/search', 'Api\ParticipantApiController::search');
+    $routes->get('gate/stats', 'Api\ParticipantApiController::stats');
 });

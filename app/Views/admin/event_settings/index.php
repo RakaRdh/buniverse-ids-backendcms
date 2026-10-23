@@ -79,6 +79,19 @@
                     </div>
                 </div>
 
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Visitor Registration Quota</label>
+                        <input type="number" name="quota" class="form-control" min="0" value="<?= esc($event['quota'] ?? '') ?>" placeholder="Kosongkan atau 0 jika tidak terbatas">
+                        <div class="help-text">Batas maksimal kuota pengunjung terdaftar. Jika pendaftar mencapai batas, form menolak pendaftaran baru secara otomatis.</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Gate Passcode (6 Digit PIN)</label>
+                        <input type="text" name="gate_passcode" class="form-control" maxlength="10" value="<?= esc($event['gate_passcode'] ?? '123456') ?>" placeholder="123456">
+                        <div class="help-text">PIN 6 digit untuk membuka dan memvalidasi sesi scanner panitia resepsionis di venue.</div>
+                    </div>
+                </div>
+
                 <div style="margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--line);">
                     <button type="submit" class="btn btn-primary">Save General Settings</button>
                 </div>

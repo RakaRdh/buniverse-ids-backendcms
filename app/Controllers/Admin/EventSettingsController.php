@@ -55,6 +55,8 @@ class EventSettingsController extends BaseAdminController
                 'event_date_end'   => $this->request->getPost('event_date_end'),
                 'news_tag_slug'    => $this->request->getPost('news_tag_slug'),
                 'template_version' => $this->request->getPost('template_version'),
+                'quota'            => $this->request->getPost('quota') !== '' ? (int)$this->request->getPost('quota') : null,
+                'gate_passcode'    => $this->request->getPost('gate_passcode') ?: '123456',
                 'status'           => $this->request->getPost('status'),
                 'updated_by'       => $userId,
             ]);
