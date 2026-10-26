@@ -799,7 +799,22 @@ class EventApiController extends ResourceController
     public function logTicketClick()
     {
         $eventModel = new EventModel();
-        $event = $eventModel->getActiveEvent();
+        $slug = $this->request->getGet('event_slug') ?? $this->request->getPost('event_slug');
+        if (empty($slug)) {
+            $rawBody = $this->request->getBody();
+            if (!empty($rawBody)) {
+                $json = json_decode($rawBody, true);
+                if (!empty($json['event_slug'])) {
+                    $slug = $json['event_slug'];
+                }
+            }
+        }
+
+        $event = !empty($slug) ? $eventModel->where('slug', $slug)->first() : null;
+        if (!$event) {
+            $event = $eventModel->getActiveEvent();
+        }
+
         if (!$event) {
             return $this->failNotFound('No active event');
         }
