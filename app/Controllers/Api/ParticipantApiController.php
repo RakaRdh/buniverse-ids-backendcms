@@ -76,9 +76,19 @@ class ParticipantApiController extends BaseController
             return $this->failValidationErrors('Semua kolom wajib (Nama, Email, No Telp, Alamat, Jabatan, Instansi) harus diisi.');
         }
 
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            return $this->failValidationErrors('Format email tidak valid.');
+        if (mb_strlen($fullName) < 3) {
+            return $this->failValidationErrors('Nama lengkap minimal harus terdiri dari 3 karakter.');
         }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return $this->failValidationErrors('Format email tidak valid (contoh: nama@domain.com).');
+        }
+
+        $phoneCheck = \App\Helpers\PhoneHelper::validate($phone);
+        if (!$phoneCheck['valid']) {
+            return $this->failValidationErrors($phoneCheck['message']);
+        }
+        $phone = $phoneCheck['normalized'];
 
         $validVisitDays = ['day_1', 'day_2', 'all_days'];
         if (!in_array($visitDay, $validVisitDays)) {
@@ -110,8 +120,13 @@ class ParticipantApiController extends BaseController
             }
         }
 
+        $autoCheckin = (int)($json['auto_checkin'] ?? $this->request->getPost('auto_checkin') ?? 0);
+        $checkinNote = trim((string)($json['checkin_note'] ?? $this->request->getPost('checkin_note') ?? 'Registrasi On-The-Spot (OTS) Gate - Langsung Hadir'));
+
         $orderId = 'EMF-' . date('ymd') . '-' . strtoupper(substr(bin2hex(random_bytes(4)), 0, 6));
         $createdParticipants = [];
+        $nowDateTime = date('Y-m-d H:i:s');
+        $todayDate = date('Y-m-d');
 
         for ($i = 1; $i <= $ticketQuantity; $i++) {
             // Generate 16 digit ticket code unik per tiket
@@ -138,12 +153,26 @@ class ParticipantApiController extends BaseController
                 'pic_phone'        => $picPhone ?: null,
                 'source_info'      => $sourceInfo ?: null,
                 'status'           => 'confirmed',
-                'is_checked_in'    => 0,
-                'created_at'       => date('Y-m-d H:i:s'),
-                'updated_at'       => date('Y-m-d H:i:s'),
+                'is_checked_in'    => ($autoCheckin === 1) ? 1 : 0,
+                'checked_in_at'    => ($autoCheckin === 1) ? $nowDateTime : null,
+                'created_at'       => $nowDateTime,
+                'updated_at'       => $nowDateTime,
             ];
 
             $participantId = $participantModel->insert($participantData);
+
+            // Jika OTS (auto_checkin = 1), insert juga ke tabel participant_checkins
+            if ($autoCheckin === 1 && $participantId) {
+                $db->table('participant_checkins')->insert([
+                    'participant_id'  => (int)$participantId,
+                    'event_id'        => (int)$event['id'],
+                    'checkin_date'    => $todayDate,
+                    'checkin_time'    => $nowDateTime,
+                    'gate_officer_id' => null,
+                    'note'            => $checkinNote,
+                    'created_at'      => $nowDateTime,
+                ]);
+            }
 
             $createdParticipants[] = [
                 'id'           => $participantId,
