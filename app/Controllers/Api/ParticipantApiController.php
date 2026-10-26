@@ -63,7 +63,7 @@ class ParticipantApiController extends BaseController
         $visitDay       = trim(strip_tags((string)($json['visit_day'] ?? $this->request->getPost('visit_day') ?? 'all_days')));
         $ticketQuantity = (int)($json['ticket_quantity'] ?? $this->request->getPost('ticket_quantity') ?? 1);
         if ($ticketQuantity < 1) $ticketQuantity = 1;
-        if ($ticketQuantity > 10) $ticketQuantity = 10;
+        if ($ticketQuantity > 5) $ticketQuantity = 5;
         
         // Opsional
         $picName      = trim(strip_tags((string)($json['pic_name'] ?? $this->request->getPost('pic_name') ?? '')));
@@ -97,6 +97,28 @@ class ParticipantApiController extends BaseController
 
         $db = \Config\Database::connect();
         $participantModel = new ParticipantModel();
+
+        // Cek duplikasi email pada event ini jika belum dikonfirmasi oleh user (force_duplicate)
+        $forceDuplicate = (int)($json['force_duplicate'] ?? $this->request->getPost('force_duplicate') ?? 0);
+        if ($forceDuplicate !== 1) {
+            $existing = $participantModel->where('event_id', (int)$event['id'])
+                ->where('email', $email)
+                ->where('status', 'confirmed')
+                ->first();
+
+            if (!empty($existing)) {
+                return $this->response->setStatusCode(409)->setJSON([
+                    'success'               => false,
+                    'requires_confirmation' => true,
+                    'message'               => "Alamat email {$email} sudah terdaftar sebelumnya atas nama {$existing['full_name']}. Apakah Anda yakin ingin melakukan pendaftaran tiket tambahan dengan email ini?",
+                    'existing_participant'  => [
+                        'full_name'   => $existing['full_name'],
+                        'email'       => $existing['email'],
+                        'ticket_code' => $existing['ticket_code'],
+                    ],
+                ]);
+            }
+        }
 
         // 3. Database Transaction & Quota Check (Anti Race-Condition dengan Pessimistic Row Lock)
         $db->transStart();
