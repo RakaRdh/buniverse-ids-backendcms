@@ -179,6 +179,26 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     $routes->post('participants/checkin/(:num)', 'Admin\ParticipantController::checkin/$1');
     $routes->post('participants/delete/(:num)', 'Admin\ParticipantController::delete/$1');
 
+    // E-Invitation: Guest Lists
+    $routes->get('invitations', 'Admin\InvitationListController::index');
+    $routes->post('invitations/store', 'Admin\InvitationListController::store');
+    $routes->post('invitations/update/(:num)', 'Admin\InvitationListController::update/$1');
+    $routes->post('invitations/delete/(:num)', 'Admin\InvitationListController::delete/$1');
+    $routes->post('invitations/send-email/(:num)', 'Admin\InvitationListController::sendSingleEmail/$1');
+    $routes->post('invitations/blast-batch', 'Admin\InvitationListController::blastBatch');
+    $routes->get('invitations/export', 'Admin\InvitationListController::exportCsv');
+
+    // E-Invitation: Templates
+    $routes->get('invitation-templates', 'Admin\InvitationTemplateController::index');
+    $routes->post('invitation-templates/store', 'Admin\InvitationTemplateController::store');
+    $routes->post('invitation-templates/toggle/(:num)', 'Admin\InvitationTemplateController::toggleActive/$1');
+    $routes->post('invitation-templates/set-default/(:num)', 'Admin\InvitationTemplateController::setDefault/$1');
+    $routes->post('invitation-templates/delete/(:num)', 'Admin\InvitationTemplateController::delete/$1');
+
+    // E-Invitation: Blast Message
+    $routes->get('invitation-messages', 'Admin\InvitationMessageController::index');
+    $routes->post('invitation-messages/update', 'Admin\InvitationMessageController::update');
+
     // Admin Users (Superadmin only)
     $routes->group('users', ['filter' => 'auth:superadmin'], function ($routes) {
         $routes->get('', 'Admin\UserController::index');

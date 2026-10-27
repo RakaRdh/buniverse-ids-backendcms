@@ -32,15 +32,25 @@ abstract class BaseAdminController extends Controller
         $eventModel = new EventModel();
         $this->allEvents = $eventModel->orderBy('year', 'DESC')->findAll();
 
-        $selectedEventId = $session->get('active_event_id');
-        if ($selectedEventId) {
-            $this->activeEvent = $eventModel->find($selectedEventId);
-        }
+        // Role MAP Admin is strictly isolated to Malam Apresiasi (id: 4 or slug: malam-apresiasi-2026)
+        if (($this->currentAdmin['role'] ?? '') === 'map_admin') {
+            $mapEvent = $eventModel->where('slug', 'malam-apresiasi-2026')->first() ?: $eventModel->find(4);
+            if ($mapEvent) {
+                $this->activeEvent = $mapEvent;
+                $session->set('active_event_id', $mapEvent['id']);
+            }
+            $this->allEvents = $mapEvent ? [$mapEvent] : [];
+        } else {
+            $selectedEventId = $session->get('active_event_id');
+            if ($selectedEventId) {
+                $this->activeEvent = $eventModel->find($selectedEventId);
+            }
 
-        if (!$this->activeEvent && !empty($this->allEvents)) {
-            $this->activeEvent = $eventModel->getActiveEvent();
-            if ($this->activeEvent) {
-                $session->set('active_event_id', $this->activeEvent['id']);
+            if (!$this->activeEvent && !empty($this->allEvents)) {
+                $this->activeEvent = $eventModel->getActiveEvent();
+                if ($this->activeEvent) {
+                    $session->set('active_event_id', $this->activeEvent['id']);
+                }
             }
         }
 

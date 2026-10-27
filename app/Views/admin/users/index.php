@@ -94,6 +94,7 @@
                 <select name="role" class="form-control">
                     <option value="editor">Editor (Content Management Only)</option>
                     <option value="receptionist">Receptionist (Participant & Ticket Scanner Only)</option>
+                    <option value="map_admin">MAP Admin (Malam Apresiasi & Invitation Only)</option>
                     <option value="superadmin">Superadmin (Full Access + User Management)</option>
                 </select>
             </div>
