@@ -20,8 +20,8 @@
         <?php foreach ($templates as $tpl): ?>
             <div style="background: var(--bg-card); border-radius: var(--radius-md); border: 1px solid <?= $tpl['is_default'] ? 'var(--primary-color)' : 'var(--border-color)' ?>; overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--shadow-sm); position: relative;">
                 <?php if ($tpl['is_default']): ?>
-                    <div style="position: absolute; top: 12px; left: 12px; background: var(--primary-color); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 50px; text-transform: uppercase; letter-spacing: 0.5px; z-index: 2;">
-                        ★ Default Event
+                    <div style="position: absolute; top: 12px; left: 12px; background: var(--action); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 50px; text-transform: uppercase; letter-spacing: 0.5px; z-index: 2;">
+                        Default Event
                     </div>
                 <?php endif; ?>
 
@@ -44,7 +44,7 @@
                         </span>
                     </div>
 
-                    <div style="font-family: monospace; font-size: 12px; color: var(--primary-color); margin-bottom: 10px; background: rgba(0,0,0,0.05); padding: 2px 6px; border-radius: 4px; display: inline-block;">
+                    <div style="font-family: monospace; font-size: 12px; color: var(--action); margin-bottom: 10px; background: rgba(0,0,0,0.05); padding: 2px 6px; border-radius: 4px; display: inline-block;">
                         key: <?= esc($tpl['template_key']) ?>
                     </div>
 
@@ -52,9 +52,10 @@
                         <?= esc($tpl['description'] ?: 'Tidak ada deskripsi.') ?>
                     </p>
 
-                    <div style="display: flex; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--border-color); padding-top: 14px;">
-                        <button type="button" class="btn btn-outline" style="font-size: 12px; padding: 6px 12px;" onclick="openPreviewModal('<?= esc($tpl['template_key']) ?>', '<?= esc($tpl['name']) ?>')">
-                            👁️ Live Preview
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 14px;">
+                        <button type="button" class="btn btn-outline" style="font-size: 12px; padding: 6px 12px; display:inline-flex; align-items:center; gap:6px;" onclick="openPreviewModal('<?= esc($tpl['template_key']) ?>', '<?= esc($tpl['name']) ?>')">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            <span>Live Preview</span>
                         </button>
 
                         <?php if (!$tpl['is_default']): ?>
@@ -77,7 +78,7 @@
                             <form action="<?= base_url('admin/invitation-templates/delete/' . $tpl['id']) ?>" method="POST" style="display:inline;" onsubmit="return confirm('Hapus template ini?')">
                                 <?= csrf_field() ?>
                                 <button type="submit" class="btn btn-danger" style="font-size: 12px; padding: 6px 10px;" title="Hapus Template">
-                                    🗑️
+                                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                                 </button>
                             </form>
                         <?php endif; ?>
@@ -89,8 +90,8 @@
 </div>
 
 <!-- Modal Tambah Template Baru -->
-<div id="addTemplateModal" class="modal-backdrop" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center;">
-    <div style="background:var(--bg-card); width:100%; max-width:500px; border-radius:var(--radius-md); padding:24px; box-shadow:var(--shadow-lg); border:1px solid var(--border-color);">
+<div id="addTemplateModal" class="modal-backdrop" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.65); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(3px);">
+    <div style="background:#ffffff; width:100%; max-width:500px; border-radius:12px; padding:24px 28px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.2); border:1px solid #e2e8f0;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
             <h2 style="font-size:18px; font-weight:700; margin:0; color:var(--text-strong);">Tambah Template E-Undangan</h2>
             <button type="button" onclick="document.getElementById('addTemplateModal').style.display='none'" style="background:none; border:none; font-size:20px; cursor:pointer; color:var(--text-muted);">&times;</button>

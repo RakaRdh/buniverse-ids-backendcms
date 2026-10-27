@@ -62,32 +62,32 @@
             <span style="font-size:12px; color:var(--text-muted); background:var(--bg-subtle); padding:3px 8px; border-radius:4px;">Desktop Mail Client</span>
         </div>
 
-        <div style="background:#0d131f; border-radius:12px; border:1px solid rgba(212,175,55,0.3); overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.4); font-family:sans-serif; color:#cbd5e1;">
-            <div style="background:linear-gradient(135deg, #09101d, #15243b); padding:24px 20px; text-align:center; border-bottom:2px solid #d4af37;">
-                <div style="font-size:11px; letter-spacing:2px; color:#d4af37; font-weight:700;">B-UNIVERSE OFFICIAL INVITATION</div>
+        <div style="background:#090607; border-radius:12px; border:1px solid rgba(172,10,10,0.3); overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.4); font-family:sans-serif; color:#d9d9d9;">
+            <div style="background:linear-gradient(135deg, #141414, #1f1f1f); padding:24px 20px; text-align:center; border-bottom:2px solid #ac0a0a;">
+                <div style="font-size:11px; letter-spacing:2px; color:#cb6565; font-weight:700; text-transform:uppercase;">B-Universe Official Invitation</div>
                 <h2 style="color:#ffffff; font-size:18px; margin:4px 0 2px; font-weight:700;"><?= esc($activeEvent['title'] ?? 'BERITASATU MALAM APRESIASI 2026') ?></h2>
-                <div style="font-size:12px; color:#94a3b8;"><?= esc($activeEvent['theme'] ?? 'Menggerakkan Perubahan, Menginspirasi Negeri') ?></div>
+                <div style="font-size:12px; color:#8c8c8c;"><?= esc($activeEvent['theme'] ?? 'Menggerakkan Perubahan, Menginspirasi Negeri') ?></div>
             </div>
 
             <div style="padding:24px 20px; font-size:13px; line-height:1.7;">
                 <div id="pvGreeting" style="font-weight:700; color:#fff; font-size:15px; margin-bottom:12px;">Kepada Yth. Bapak/Ibu Tamu Undangan</div>
-                <div id="pvBody" style="white-space:pre-line; color:#cbd5e1; margin-bottom:24px;">
+                <div id="pvBody" style="white-space:pre-line; color:#d9d9d9; margin-bottom:24px;">
                     <?= nl2br(esc($message['body_content'] ?? '')) ?>
                 </div>
 
                 <div style="text-align:center; margin:24px 0;">
-                    <span id="pvBtn" style="display:inline-block; background:linear-gradient(135deg, #d4af37, #b89127); color:#0b121e; font-weight:700; padding:10px 24px; border-radius:50px; font-size:13px; box-shadow:0 4px 14px rgba(212,175,55,0.4);">
+                    <span id="pvBtn" style="display:inline-block; background:linear-gradient(135deg, #ac0a0a, #7a0707); color:#ffffff; font-weight:700; padding:10px 24px; border-radius:50px; font-size:13px; box-shadow:0 4px 14px rgba(172,10,10,0.4);">
                         <?= esc($message['button_text'] ?? 'Buka Undangan Digital') ?>
                     </span>
                 </div>
 
-                <div id="pvClosing" style="font-size:12px; color:#94a3b8; margin-top:16px;">
+                <div id="pvClosing" style="font-size:12px; color:#8c8c8c; margin-top:16px;">
                     <?= esc($message['closing_text'] ?? '') ?>
                 </div>
             </div>
 
-            <div style="background:#090e18; padding:16px 20px; text-align:center; font-size:11px; color:#64748b; border-top:1px solid rgba(255,255,255,0.06);">
-                <div id="pvFooter" style="font-weight:600; color:#94a3b8; margin-bottom:2px;"><?= esc($message['footer_note'] ?? 'Panitia Pelaksana BeritaSatu Malam Apresiasi 2026') ?></div>
+            <div style="background:#141414; padding:16px 20px; text-align:center; font-size:11px; color:#8c8c8c; border-top:1px solid rgba(255,255,255,0.06);">
+                <div id="pvFooter" style="font-weight:600; color:#d9d9d9; margin-bottom:2px;"><?= esc($message['footer_note'] ?? 'Panitia Pelaksana BeritaSatu Malam Apresiasi 2026') ?></div>
                 <div>Email ini dikirimkan secara otomatis dan resmi kepada Anda.</div>
             </div>
         </div>
