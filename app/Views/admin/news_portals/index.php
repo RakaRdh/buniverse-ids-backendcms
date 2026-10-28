@@ -23,8 +23,14 @@
                 <?php foreach ($portals as $portal): ?>
                     <input type="hidden" name="portal_id[]" value="<?= (int)$portal['id'] ?>">
                     <div style="padding: 18px; border-radius: 8px; border: 1px solid var(--line); background: rgba(0,0,0,0.2);">
-                        <div style="font-weight: 700; font-size: 15px; margin-bottom: 12px; color: var(--text-strong);">
-                            Portal: <?= esc($portal['portal_key']) ?>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <div style="font-weight: 700; font-size: 15px; color: var(--text-strong);">
+                                Portal: <?= esc($portal['portal_key']) ?>
+                            </div>
+                            <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-muted);">
+                                <input type="checkbox" name="portal_is_active[<?= (int)$portal['id'] ?>]" value="1" <?= !empty($portal['is_active']) ? 'checked' : '' ?> style="width: 16px; height: 16px; accent-color: var(--color-green, #22c55e);">
+                                <span>Aktifkan Section / Portal</span>
+                            </label>
                         </div>
                         <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 16px;">
                             <div class="form-group" style="margin-bottom: 0;">
@@ -34,6 +40,18 @@
                             <div class="form-group" style="margin-bottom: 0;">
                                 <label class="form-label" style="font-size: 12px; font-weight: 600;">Target Portal URL ("Selengkapnya &rarr;")</label>
                                 <input type="url" name="portal_url[]" value="<?= esc($portal['portal_url']) ?>" class="form-control" placeholder="https://..." required>
+                            </div>
+                        </div>
+
+                        <!-- Fetch News Article API URL (Dinamis dengan placeholder {limit}) -->
+                        <div class="form-group" style="margin-top: 14px; margin-bottom: 0;">
+                            <label class="form-label" style="font-size: 12px; font-weight: 600; display: flex; justify-content: space-between;">
+                                <span>Fetch News API Endpoint (REST API Internal B-Universe)</span>
+                                <span style="font-weight: 400; color: var(--color-green, #22c55e);">Gunakan {limit} untuk jumlah data</span>
+                            </label>
+                            <input type="text" name="api_url[<?= esc($portal['portal_key']) ?>]" value="<?= esc($newsApis[$portal['portal_key']] ?? '') ?>" class="form-control" placeholder="https://api.../article/.../limit:{limit}" style="font-family: monospace; font-size: 12px;">
+                            <div class="help-text" style="font-size: 11px; margin-top: 4px; color: var(--text-muted);">
+                                Kosongkan jika ingin menggunakan default endpoint bawaan frontend. Contoh: <code>https://api.investor.id/article/type=latest&num={limit}&tag=energi-mineral-festival-2026&page=1</code>
                             </div>
                         </div>
                     </div>

@@ -18,6 +18,7 @@ class EventSettingModel extends Model
         'cta_label',
         'copyright_text',
         'nav_items_json',
+        'news_apis_json',
         'logo_a_url',
         'logo_a_white_url',
         'logo_a_target_url',

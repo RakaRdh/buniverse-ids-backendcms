@@ -43,8 +43,16 @@ class NewsPortalController extends BaseAdminController
             $portals = $portalModel->getByEvent($eventId);
         }
 
+        $settingModel = new \App\Models\EventSettingModel();
+        $setting = $settingModel->getByEventId($eventId);
+        $newsApis = [];
+        if (!empty($setting['news_apis_json'])) {
+            $newsApis = json_decode($setting['news_apis_json'], true) ?: [];
+        }
+
         $this->data['portals']    = $portals;
-        $this->data['pageTitle']  = 'News Portals Configuration';
+        $this->data['newsApis']   = $newsApis;
+        $this->data['pageTitle']  = 'News Portals & Fetch APIs Configuration';
         $this->data['activeMenu'] = 'news_portals';
 
         return $this->render('admin/news_portals/index', $this->data);
@@ -61,18 +69,42 @@ class NewsPortalController extends BaseAdminController
         $portalIds = $this->request->getPost('portal_id') ?? [];
         $portalUrls = $this->request->getPost('portal_url') ?? [];
         $portalNames = $this->request->getPost('portal_name') ?? [];
+        $portalActive = $this->request->getPost('portal_is_active') ?? [];
 
         foreach ($portalIds as $idx => $id) {
             $url = $portalUrls[$idx] ?? '';
             $name = $portalNames[$idx] ?? '';
+            $isActive = !empty($portalActive[$id]) ? 1 : 0;
             if (!empty($id)) {
                 $portalModel->update((int)$id, [
                     'portal_name' => $name,
                     'portal_url'  => $url,
+                    'is_active'   => $isActive,
                 ]);
             }
         }
 
-        return redirect()->to(base_url('admin/news-portals'))->with('success', 'News portal links updated successfully.');
+        // Simpan konfigurasi Fetch News API (Opsi A - JSON di event_settings)
+        $apiUrlsPost = $this->request->getPost('api_url') ?? [];
+        $newsApisJson = json_encode($apiUrlsPost);
+
+        $settingModel = new \App\Models\EventSettingModel();
+        $existingSetting = $settingModel->getByEventId($eventId);
+        $userId = $this->currentAdmin['id'] ?? session()->get('admin_id') ?? 1;
+
+        if ($existingSetting) {
+            $settingModel->where('event_id', $eventId)->update($existingSetting['id'], [
+                'news_apis_json' => $newsApisJson,
+                'updated_by'     => $userId,
+            ]);
+        } else {
+            $settingModel->insert([
+                'event_id'       => $eventId,
+                'news_apis_json' => $newsApisJson,
+                'created_by'     => $userId,
+            ]);
+        }
+
+        return redirect()->to(base_url('admin/news-portals'))->with('success', 'News portal links and API endpoints updated successfully.');
     }
 }

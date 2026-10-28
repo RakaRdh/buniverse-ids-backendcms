@@ -381,15 +381,21 @@ class EventApiController extends ResourceController
             ];
         }
 
-        // 3c. News Portals
+        // 3c. News Portals & Custom Fetch APIs
         $portalModel = new \App\Models\NewsPortalModel();
-        $portalRows = $portalModel->getActiveByEvent($event['id']);
+        $portalRows = $portalModel->getByEvent($event['id']);
+        $configuredApis = [];
+        if (!empty($settings['news_apis_json'])) {
+            $configuredApis = json_decode($settings['news_apis_json'], true) ?: [];
+        }
         $newsPortals = [];
         foreach ($portalRows as $pr) {
-            $newsPortals[$pr['portal_key']] = [
+            $pkey = $pr['portal_key'];
+            $newsPortals[$pkey] = [
                 'name'      => $pr['portal_name'],
                 'url'       => $pr['portal_url'],
                 'is_active' => (bool)$pr['is_active'],
+                'api_url'   => $configuredApis[$pkey] ?? null,
             ];
         }
 
