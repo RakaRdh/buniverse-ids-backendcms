@@ -658,14 +658,18 @@ class EventApiController extends ResourceController
         // 8. Sponsors & Partnerships (Single Image Banner)
         $sponsorPartnershipModel = new SponsorPartnershipModel();
         $spRow = $sponsorPartnershipModel->getByEvent($event['id']);
+        $sponsorDisplayMode = $settings['sponsor_display_mode'] ?? 'dedicated';
+
         $sponsorPartnership = null;
         if ($spRow) {
+            $isPackageActive = ($sponsorDisplayMode === 'package') && (isset($spRow['is_active']) ? (bool)$spRow['is_active'] : true);
             $sponsorPartnership = [
-                'id'         => (int)$spRow['id'],
-                'name'       => $spRow['name'] ?? '',
-                'logo_url'   => $makeUrl($spRow['logo_url']),
-                'is_active'  => isset($spRow['is_active']) ? (bool)$spRow['is_active'] : true,
-                'updated_at' => $spRow['updated_at'] ?? '',
+                'id'                   => (int)$spRow['id'],
+                'name'                 => $spRow['name'] ?? '',
+                'logo_url'             => $makeUrl($spRow['logo_url']),
+                'is_active'            => $isPackageActive,
+                'sponsor_display_mode' => $sponsorDisplayMode,
+                'updated_at'           => $spRow['updated_at'] ?? '',
             ];
         }
 
@@ -701,37 +705,47 @@ class EventApiController extends ResourceController
             ];
         }
 
-        /* === LEGACY TIER-BASED SPONSORS (COMMENTED OUT) ===
+        // Tier-Based Dedicated Sponsors (Platinum, Gold, Silver, Bronze, Collaborations, Partnerships)
         $sponsors = [
-            'sponsored_by' => [],
-            'partnerships' => [],
+            'display_mode'   => $sponsorDisplayMode,
+            'sponsored_by'   => [],
+            'collaborations' => [],
+            'partnerships'   => [],
         ];
-        $tiers = $tierModel->getByEvent($event['id']);
-        foreach ($tiers as $tier) {
-            $tierSponsors = $sponsorModel->getByTier((int)$tier['id']);
-            $sponsorItems = [];
-            foreach ($tierSponsors as $ts) {
-                $sponsorItems[] = [
-                    'id'          => (int)$ts['id'],
-                    'name'        => $ts['name'],
-                    'logo'        => $makeUrl($ts['logo_url']),
-                    'website_url' => $ts['website_url'] ?? '',
+
+        if ($sponsorDisplayMode === 'dedicated') {
+            $tiers = $tierModel->getByEvent($event['id']);
+            foreach ($tiers as $tier) {
+                $tierSponsors = $sponsorModel->getByTier((int)$tier['id']);
+                $sponsorItems = [];
+                foreach ($tierSponsors as $ts) {
+                    $sponsorItems[] = [
+                        'id'          => (int)$ts['id'],
+                        'name'        => $ts['name'],
+                        'logo'        => $makeUrl($ts['logo_url']),
+                        'website_url' => $ts['link_url'] ?? $ts['website_url'] ?? '',
+                    ];
+                }
+                $gKey = $tier['group_key'] ?? 'sponsor';
+                if ($gKey === 'partnerships' || $gKey === 'partner') {
+                    $targetGroup = 'partnerships';
+                } elseif ($gKey === 'collaboration' || $gKey === 'collaborations') {
+                    $targetGroup = 'collaborations';
+                } else {
+                    $targetGroup = 'sponsored_by';
+                }
+
+                $sponsors[$targetGroup][] = [
+                    'tier_id'     => (int)$tier['id'],
+                    'tier_name'   => $tier['name'],
+                    'name'        => $tier['name'],
+                    'group_key'   => $gKey,
+                    'group_label' => $tier['group_label'],
+                    'logo_size'   => $tier['logo_size'],
+                    'items'       => $sponsorItems,
                 ];
             }
-            $targetGroup = ($tier['group_key'] === 'partnerships') ? 'partnerships' : 'sponsored_by';
-            $sponsors[$targetGroup][] = [
-                'tier_id'     => (int)$tier['id'],
-                'tier_name'   => $tier['name'],
-                'group_label' => $tier['group_label'],
-                'logo_size'   => $tier['logo_size'],
-                'items'       => $sponsorItems,
-            ];
         }
-        === END LEGACY TIER-BASED SPONSORS === */
-        $sponsors = [
-            'sponsored_by' => [],
-            'partnerships' => [],
-        ];
 
         // 10. Custom Placements (Freeform Coordinates)
         $placementModel = new \App\Models\CustomPlacementModel();

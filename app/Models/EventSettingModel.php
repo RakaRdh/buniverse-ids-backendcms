@@ -30,6 +30,7 @@ class EventSettingModel extends Model
         'contact_label',
         'contact_url',
         'cta_ticket_active',
+        'sponsor_display_mode',
         'floating_bar_enabled',
         'floating_bar_text',
         'floating_bar_btn_label',

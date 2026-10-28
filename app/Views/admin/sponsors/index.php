@@ -5,6 +5,50 @@
     </div>
 </div>
 
+<?php if (session()->getFlashdata('success')): ?>
+    <div class="alert alert-success" style="background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.4); color: #4ade80; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px;">
+        <?= session()->getFlashdata('success') ?>
+    </div>
+<?php endif; ?>
+
+<?php if (session()->getFlashdata('error')): ?>
+    <div class="alert alert-danger" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #f87171; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px;">
+        <?= esc(session()->getFlashdata('error')) ?>
+    </div>
+<?php endif; ?>
+
+<!-- Sponsor Display Mode Switch Banner -->
+<div class="cms-card" style="margin-bottom: 24px; border: 1px solid <?= ($sponsorDisplayMode ?? 'dedicated') === 'package' ? '#004b84' : 'var(--line)' ?>; background: <?= ($sponsorDisplayMode ?? 'dedicated') === 'package' ? 'rgba(0, 75, 132, 0.04)' : '#ffffff' ?>;">
+    <div class="cms-card-body" style="padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <div style="font-weight: 700; font-size: 14px; color: var(--text-strong); display: flex; align-items: center; gap: 8px;">
+                <span>Active Frontend Sponsor Mode:</span>
+                <span class="status-pill" style="font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 4px; <?= ($sponsorDisplayMode ?? 'dedicated') === 'package' ? 'background: #004b84; color: #ffffff;' : 'background: #2e7d64; color: #ffffff;' ?>">
+                    <?= ($sponsorDisplayMode ?? 'dedicated') === 'package' ? 'SINGLE PACKAGE BANNER (Active)' : 'DEDICATED SPONSORS (Active)' ?>
+                </span>
+            </div>
+            <p style="font-size: 12px; color: var(--text-muted); margin: 4px 0 0 0;">
+                <?= ($sponsorDisplayMode ?? 'dedicated') === 'package' 
+                    ? 'Frontend saat ini menampilkan single package banner satu kesatuan gambar.' 
+                    : 'Frontend saat ini menampilkan dedicated sponsors (tier grids & marquees). Mengaktifkan single banner di bawah ini akan otomatis mengalihkan mode ke Single Package.' ?>
+            </p>
+        </div>
+        <form action="<?= base_url('admin/sponsors/set-mode') ?>" method="POST" style="margin: 0; display: flex; align-items: center; gap: 8px;">
+            <?= csrf_field() ?>
+            <div style="display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--bg-page);">
+                <label style="padding: 6px 14px; font-size: 12px; font-weight: 600; cursor: pointer; margin: 0; display: flex; align-items: center; gap: 6px; <?= ($sponsorDisplayMode ?? 'dedicated') === 'package' ? 'background: #004b84; color: #ffffff;' : 'color: var(--text-strong);' ?>">
+                    <input type="radio" name="sponsor_display_mode" value="package" onchange="this.form.submit()" <?= ($sponsorDisplayMode ?? 'dedicated') === 'package' ? 'checked' : '' ?> style="margin: 0; display: none;">
+                    Single Package Banner
+                </label>
+                <label style="padding: 6px 14px; font-size: 12px; font-weight: 600; cursor: pointer; margin: 0; display: flex; align-items: center; gap: 6px; <?= ($sponsorDisplayMode ?? 'dedicated') === 'dedicated' ? 'background: #3e8127; color: #ffffff;' : 'color: var(--text-strong);' ?>">
+                    <input type="radio" name="sponsor_display_mode" value="dedicated" onchange="this.form.submit()" <?= ($sponsorDisplayMode ?? 'dedicated') === 'dedicated' ? 'checked' : '' ?> style="margin: 0; display: none;">
+                    Dedicated Sponsors
+                </label>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div class="row">
     <div class="col-md-8">
         <div class="cms-card">

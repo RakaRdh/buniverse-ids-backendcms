@@ -21,7 +21,12 @@ class SponsorController extends BaseAdminController
         $model = new SponsorPartnershipModel();
         $sponsorPartnership = $model->getByEvent($eventId);
 
+        $settingModel = new \App\Models\EventSettingModel();
+        $settings = $settingModel->getByEventId($eventId);
+        $sponsorDisplayMode = $settings['sponsor_display_mode'] ?? 'dedicated';
+
         $this->data['sponsorPartnership'] = $sponsorPartnership;
+        $this->data['sponsorDisplayMode'] = $sponsorDisplayMode;
         $this->data['pageTitle']          = 'Sponsors & Partnerships';
         $this->data['activeMenu']         = 'sponsors';
 
@@ -87,6 +92,14 @@ class SponsorController extends BaseAdminController
         } else {
             $model->insert($data);
             $message = 'Sponsors & Partnerships image saved.';
+        }
+
+        // Sync event_settings sponsor_display_mode
+        $settingModel = new \App\Models\EventSettingModel();
+        $settings = $settingModel->getByEventId($eventId);
+        $newMode = $isActive ? 'package' : 'dedicated';
+        if ($settings) {
+            $settingModel->update($settings['id'], ['sponsor_display_mode' => $newMode, 'updated_by' => $userId]);
         }
 
         return redirect()->back()->with('success', $message);

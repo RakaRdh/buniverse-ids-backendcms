@@ -140,6 +140,16 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     $routes->post('sponsors/save', 'Admin\SponsorController::save');
     $routes->post('sponsors/delete/(:num)', 'Admin\SponsorController::delete/$1');
     $routes->get('sponsors/delete/(:num)', 'Admin\SponsorController::delete/$1');
+    $routes->post('sponsors/set-mode', 'Admin\DedicatedSponsorController::switchMode');
+
+    // Dedicated Sponsors (Tier-based with Marquee / Grids)
+    $routes->get('dedicated-sponsors', 'Admin\DedicatedSponsorController::index');
+    $routes->post('dedicated-sponsors/set-mode', 'Admin\DedicatedSponsorController::switchMode');
+    $routes->post('dedicated-sponsors/tier/save', 'Admin\DedicatedSponsorController::saveTier');
+    $routes->post('dedicated-sponsors/tier/delete/(:num)', 'Admin\DedicatedSponsorController::deleteTier/$1');
+    $routes->post('dedicated-sponsors/save', 'Admin\DedicatedSponsorController::saveSponsor');
+    $routes->post('dedicated-sponsors/delete/(:num)', 'Admin\DedicatedSponsorController::deleteSponsor/$1');
+    $routes->get('dedicated-sponsors/delete/(:num)', 'Admin\DedicatedSponsorController::deleteSponsor/$1');
     /* === LEGACY TIER-BASED SPONSORS ROUTES (COMMENTED OUT) ===
     $routes->post('sponsors/tier/save', 'Admin\SponsorController::saveTier');
     $routes->post('sponsors/tier/delete/(:num)', 'Admin\SponsorController::deleteTier/$1');
