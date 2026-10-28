@@ -21,7 +21,7 @@ class InvitationTemplateController extends BaseAdminController
         if (empty($templates)) {
             $defaultTpl = [
                 'event_id'      => $eventId,
-                'template_key'  => 'malam_apresiasi_luxury',
+                'template_key'  => 'malam_apresiasi',
                 'name'          => 'Royal Gold Luxury (Default)',
                 'description'   => 'Tema portrait elegan gelap dengan aksen emas mewah, countdown, dan animasi cover.',
                 'thumbnail_url' => base_url('assets/img/template_luxury_thumb.webp'),

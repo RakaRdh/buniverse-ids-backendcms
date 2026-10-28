@@ -4,9 +4,7 @@ namespace App\Controllers\Admin;
 
 use App\Controllers\BaseAdminController;
 use App\Models\InvitationListModel;
-use App\Models\InvitationMessageModel;
 use App\Models\InvitationTemplateModel;
-use App\Services\EmailService;
 
 class InvitationListController extends BaseAdminController
 {
@@ -22,11 +20,10 @@ class InvitationListController extends BaseAdminController
 
         // Filters
         $filterRsvp  = $this->request->getGet('rsvp_status');
-        $filterBlast = $this->request->getGet('blast_status');
         $search      = trim((string)$this->request->getGet('search'));
 
-        // Sorting per column (ASC / DESC) matching EMF pattern
-        $allowedSort = ['name', 'institution', 'rsvp_status', 'blast_status', 'view_count', 'created_at'];
+        // Sorting per column (ASC / DESC)
+        $allowedSort = ['name', 'institution', 'rsvp_status', 'view_count', 'created_at'];
         $sortCol     = $this->request->getGet('sort');
         $sortDir     = strtoupper((string)$this->request->getGet('dir')) === 'ASC' ? 'ASC' : 'DESC';
         if (!in_array($sortCol, $allowedSort, true)) {
@@ -38,10 +35,6 @@ class InvitationListController extends BaseAdminController
 
         if (!empty($filterRsvp) && in_array($filterRsvp, ['pending', 'attending', 'declined'], true)) {
             $builder->where('rsvp_status', $filterRsvp);
-        }
-
-        if (!empty($filterBlast) && in_array($filterBlast, ['unsend', 'sent', 'failed'], true)) {
-            $builder->where('blast_status', $filterBlast);
         }
 
         if (!empty($search)) {
@@ -61,21 +54,17 @@ class InvitationListController extends BaseAdminController
         $totalAttending = $invitationModel->where('event_id', $eventId)->where('rsvp_status', 'attending')->countAllResults();
         $totalDeclined  = $invitationModel->where('event_id', $eventId)->where('rsvp_status', 'declined')->countAllResults();
         $totalPending   = $invitationModel->where('event_id', $eventId)->where('rsvp_status', 'pending')->countAllResults();
-        $totalSent      = $invitationModel->where('event_id', $eventId)->where('blast_status', 'sent')->countAllResults();
-        $totalUnsend    = $invitationModel->where('event_id', $eventId)->where('blast_status', 'unsend')->countAllResults();
 
-        $activeTemplates = $templateModel->getActiveForEvent($eventId);
+        // Active templates for selection
+        $activeTemplates = $templateModel->where('is_active', 1)->findAll();
 
         $this->data['guests']          = $guests;
-        $this->data['activeTemplates'] = $activeTemplates;
         $this->data['totalGuests']     = $totalGuests;
         $this->data['totalAttending']  = $totalAttending;
         $this->data['totalDeclined']   = $totalDeclined;
         $this->data['totalPending']    = $totalPending;
-        $this->data['totalSent']       = $totalSent;
-        $this->data['totalUnsend']     = $totalUnsend;
+        $this->data['activeTemplates'] = $activeTemplates;
         $this->data['filterRsvp']      = $filterRsvp;
-        $this->data['filterBlast']     = $filterBlast;
         $this->data['search']          = $search;
         $this->data['sortCol']         = $sortCol;
         $this->data['sortDir']         = $sortDir;
@@ -104,6 +93,13 @@ class InvitationListController extends BaseAdminController
         }
 
         $invitationModel = new InvitationListModel();
+        
+        // Check if email already registered in this event
+        $existing = $invitationModel->where('event_id', $eventId)->where('email', $email)->first();
+        if ($existing) {
+            return redirect()->back()->withInput()->with('error', "Email {$email} sudah terdaftar sebelumnya.");
+        }
+
         $tokens = InvitationListModel::generateCodeAndSlug($name, $eventId);
 
         $invitationModel->insert([
@@ -118,7 +114,6 @@ class InvitationListController extends BaseAdminController
             'position'        => $position,
             'rsvp_status'     => 'pending',
             'rsvp_pax'        => 1,
-            'blast_status'    => 'unsend',
             'created_at'      => date('Y-m-d H:i:s'),
             'updated_at'      => date('Y-m-d H:i:s'),
         ]);
@@ -169,158 +164,189 @@ class InvitationListController extends BaseAdminController
     }
 
     /**
-     * Send email to a single guest via AJAX or POST
+     * Download CSV Template for Import
      */
-    public function sendSingleEmail($id)
+    public function downloadTemplateCsv()
     {
-        $eventId = $this->activeEvent['id'] ?? null;
-        $invitationModel = new InvitationListModel();
-        $guest = $invitationModel->where('event_id', $eventId)->find($id);
+        $filename = 'template_import_tamu.csv';
 
-        if (!$guest) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Tamu tidak ditemukan.']);
-        }
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename=' . $filename);
 
-        $messageModel = new InvitationMessageModel();
-        $msgConfig = $messageModel->getOrCreateForEvent($eventId, $this->activeEvent ?? []);
+        $output = fopen('php://output', 'w');
+        fputs($output, "\xEF\xBB\xBF"); // BOM UTF-8 for Excel
 
-        // Base URL for visitor invitation: points to FrontendMAP port 8080 / 8082 or domain
-        $frontendBaseUrl = env('app.frontendMapURL', 'http://localhost:8082');
-        $invitationUrl = rtrim($frontendBaseUrl, '/') . '/invitation/' . $guest['slug'];
+        // Headers
+        fputcsv($output, ['name', 'email', 'phone', 'institution', 'position']);
 
-        $venueName = 'Grand Ballroom, Hotel Mulia Senayan Jakarta';
-        $eventDate = date('d F Y', strtotime($this->activeEvent['event_date_start'] ?? '2026-11-20'));
+        // Sample Rows
+        fputcsv($output, ['Budi Santoso', 'budi.santoso@example.com', '081234567890', 'Kementerian ESDM', 'Direktur']);
+        fputcsv($output, ['Siti Aminah', 'siti.aminah@example.com', '085678901234', 'PT Astra International', 'Vice President']);
 
-        $searchPlaceholders = ['{name}', '{invitation_url}', '{event_title}', '{event_date}', '{venue}'];
-        $replaceValues      = [
-            esc($guest['name']),
-            $invitationUrl,
-            esc($this->activeEvent['title'] ?? 'BeritaSatu Malam Apresiasi 2026'),
-            $eventDate,
-            $venueName
-        ];
-
-        $subject     = str_replace($searchPlaceholders, $replaceValues, $msgConfig['subject']);
-        $greeting    = str_replace($searchPlaceholders, $replaceValues, $msgConfig['greeting']);
-        $bodyContent = str_replace($searchPlaceholders, $replaceValues, nl2br(esc($msgConfig['body_content'])));
-        $closing     = str_replace($searchPlaceholders, $replaceValues, nl2br(esc($msgConfig['closing_text'])));
-        $footerNote  = str_replace($searchPlaceholders, $replaceValues, esc($msgConfig['footer_note']));
-
-        // Render HTML Email Template
-        $htmlEmail = view('admin/invitations/email_template_preview', [
-            'subject'       => $subject,
-            'greeting'      => $greeting,
-            'bodyContent'   => $bodyContent,
-            'buttonText'    => $msgConfig['button_text'],
-            'invitationUrl' => $invitationUrl,
-            'closing'       => $closing,
-            'footerNote'    => $footerNote,
-            'event'         => $this->activeEvent,
-        ]);
-
-        $sendResult = EmailService::send($guest['email'], $subject, $htmlEmail);
-
-        if ($sendResult['success']) {
-            $invitationModel->update($id, [
-                'blast_status' => 'sent',
-                'blast_at'     => date('Y-m-d H:i:s'),
-                'blast_error'  => null,
-            ]);
-            return $this->response->setJSON(['status' => 'success', 'message' => 'Email undangan berhasil dikirimkan ke ' . $guest['email']]);
-        } else {
-            $invitationModel->update($id, [
-                'blast_status' => 'failed',
-                'blast_error'  => $sendResult['error'] ?? 'Gagal mengirim email.',
-            ]);
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Gagal mengirim email: ' . ($sendResult['error'] ?? 'Unknown error')]);
-        }
+        fclose($output);
+        exit;
     }
 
     /**
-     * AJAX Batch Blasting: Send email to chunk of guests
+     * Import Guests from CSV
+     * Rules:
+     * - If email already exists in event: UPDATE profile (name, phone, institution, position) only.
+     *   DO NOT alter invitation_code, slug, rsvp_status, rsvp_at, rsvp_notes, view_count!
+     * - If email is new: INSERT and generate code & slug.
      */
-    public function blastBatch()
+    public function importCsv()
     {
         $eventId = $this->activeEvent['id'] ?? null;
         if (!$eventId) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Event tidak valid.']);
+            return redirect()->back()->with('error', 'Event tidak valid.');
         }
 
-        $guestIds = $this->request->getJSON(true)['guest_ids'] ?? [];
-        if (empty($guestIds) || !is_array($guestIds)) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Tidak ada tamu yang dipilih.']);
+        $file = $this->request->getFile('csv_file');
+        if (!$file || !$file->isValid() || $file->hasMoved()) {
+            return redirect()->back()->with('error', 'File CSV tidak valid atau tidak ditemukan.');
+        }
+
+        $ext = strtolower($file->getClientExtension());
+        if (!in_array($ext, ['csv', 'txt'], true)) {
+            return redirect()->back()->with('error', 'Format file harus berupa CSV (.csv).');
+        }
+
+        $filePath = $file->getTempName();
+        $handle   = fopen($filePath, 'r');
+        if (!$handle) {
+            return redirect()->back()->with('error', 'Gagal membuka file CSV.');
+        }
+
+        // Detect delimiter: check first line for comma or semicolon
+        $firstLine = fgets($handle);
+        rewind($handle);
+        $delimiter = (substr_count($firstLine, ';') > substr_count($firstLine, ',')) ? ';' : ',';
+
+        // Read header
+        $header = fgetcsv($handle, 0, $delimiter);
+        if (!$header) {
+            fclose($handle);
+            return redirect()->back()->with('error', 'File CSV kosong.');
+        }
+
+        // Strip BOM and clean headers
+        $cleanHeader = array_map(function ($h) {
+            $h = preg_replace('/[\x00-\x1F\x80-\xFF]/', '', (string)$h);
+            return strtolower(trim($h));
+        }, $header);
+
+        // Map column indices with broad Indonesian & English alias support
+        $idxName = array_search('name', $cleanHeader, true);
+        if ($idxName === false) $idxName = array_search('nama', $cleanHeader, true);
+        if ($idxName === false) $idxName = array_search('nama lengkap', $cleanHeader, true);
+        if ($idxName === false) $idxName = array_search('full name', $cleanHeader, true);
+
+        $idxEmail = array_search('email', $cleanHeader, true);
+        if ($idxEmail === false) $idxEmail = array_search('surel', $cleanHeader, true);
+        if ($idxEmail === false) $idxEmail = array_search('e-mail', $cleanHeader, true);
+
+        $idxPhone = array_search('phone', $cleanHeader, true);
+        if ($idxPhone === false) $idxPhone = array_search('no telp', $cleanHeader, true);
+        if ($idxPhone === false) $idxPhone = array_search('notelp', $cleanHeader, true);
+        if ($idxPhone === false) $idxPhone = array_search('no telepon', $cleanHeader, true);
+        if ($idxPhone === false) $idxPhone = array_search('telepon', $cleanHeader, true);
+        if ($idxPhone === false) $idxPhone = array_search('telp', $cleanHeader, true);
+        if ($idxPhone === false) $idxPhone = array_search('hp', $cleanHeader, true);
+        if ($idxPhone === false) $idxPhone = array_search('no hp', $cleanHeader, true);
+        if ($idxPhone === false) $idxPhone = array_search('whatsapp', $cleanHeader, true);
+        if ($idxPhone === false) $idxPhone = array_search('wa', $cleanHeader, true);
+
+        $idxInstitution = array_search('institution', $cleanHeader, true);
+        if ($idxInstitution === false) $idxInstitution = array_search('institusi', $cleanHeader, true);
+        if ($idxInstitution === false) $idxInstitution = array_search('instansi', $cleanHeader, true);
+        if ($idxInstitution === false) $idxInstitution = array_search('perusahaan', $cleanHeader, true);
+        if ($idxInstitution === false) $idxInstitution = array_search('company', $cleanHeader, true);
+        if ($idxInstitution === false) $idxInstitution = array_search('organisasi', $cleanHeader, true);
+
+        $idxPosition = array_search('position', $cleanHeader, true);
+        if ($idxPosition === false) $idxPosition = array_search('jabatan', $cleanHeader, true);
+        if ($idxPosition === false) $idxPosition = array_search('posisi', $cleanHeader, true);
+        if ($idxPosition === false) $idxPosition = array_search('role', $cleanHeader, true);
+        if ($idxPosition === false) $idxPosition = array_search('status', $cleanHeader, true); // match custom user columns
+
+        if ($idxName === false || $idxEmail === false) {
+            fclose($handle);
+            return redirect()->back()->with('error', 'Header CSV wajib memiliki kolom "name" dan "email".');
         }
 
         $invitationModel = new InvitationListModel();
-        $messageModel    = new InvitationMessageModel();
-        $msgConfig       = $messageModel->getOrCreateForEvent($eventId, $this->activeEvent ?? []);
+        $insertedCount   = 0;
+        $updatedCount    = 0;
+        $skippedCount    = 0;
 
-        $frontendBaseUrl = env('app.frontendMapURL', 'http://localhost:8082');
-        $venueName = 'Grand Ballroom, Hotel Mulia Senayan Jakarta';
-        $eventDate = date('d F Y', strtotime($this->activeEvent['event_date_start'] ?? '2026-11-20'));
+        while (($row = fgetcsv($handle, 0, $delimiter)) !== false) {
+            if (empty(array_filter($row))) {
+                continue; // Skip empty line
+            }
 
-        $processed = 0;
-        $failed    = 0;
+            $name        = trim((string)($row[$idxName] ?? ''));
+            $email       = trim((string)($row[$idxEmail] ?? ''));
+            $phone       = ($idxPhone !== false) ? trim((string)($row[$idxPhone] ?? '')) : '';
+            $institution = ($idxInstitution !== false) ? trim((string)($row[$idxInstitution] ?? '')) : '';
+            $position    = ($idxPosition !== false) ? trim((string)($row[$idxPosition] ?? '')) : '';
 
-        foreach ($guestIds as $id) {
-            $guest = $invitationModel->where('event_id', $eventId)->find($id);
-            if (!$guest) continue;
+            // Clean phone string format (ensure string, preserve leading 0 or +)
+            $phone = preg_replace('/[^0-9+\-]/', '', $phone);
 
-            $invitationUrl = rtrim($frontendBaseUrl, '/') . '/invitation/' . $guest['slug'];
-            $searchPlaceholders = ['{name}', '{invitation_url}', '{event_title}', '{event_date}', '{venue}'];
-            $replaceValues      = [
-                esc($guest['name']),
-                $invitationUrl,
-                esc($this->activeEvent['title'] ?? 'BeritaSatu Malam Apresiasi 2026'),
-                $eventDate,
-                $venueName
-            ];
+            if (empty($name) || empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $skippedCount++;
+                continue;
+            }
 
-            $subject     = str_replace($searchPlaceholders, $replaceValues, $msgConfig['subject']);
-            $greeting    = str_replace($searchPlaceholders, $replaceValues, $msgConfig['greeting']);
-            $bodyContent = str_replace($searchPlaceholders, $replaceValues, nl2br(esc($msgConfig['body_content'])));
-            $closing     = str_replace($searchPlaceholders, $replaceValues, nl2br(esc($msgConfig['closing_text'])));
-            $footerNote  = str_replace($searchPlaceholders, $replaceValues, esc($msgConfig['footer_note']));
+            // Check if guest already exists by email in this event
+            $existing = $invitationModel->where('event_id', $eventId)->where('email', $email)->first();
 
-            $htmlEmail = view('admin/invitations/email_template_preview', [
-                'subject'       => $subject,
-                'greeting'      => $greeting,
-                'bodyContent'   => $bodyContent,
-                'buttonText'    => $msgConfig['button_text'],
-                'invitationUrl' => $invitationUrl,
-                'closing'       => $closing,
-                'footerNote'    => $footerNote,
-                'event'         => $this->activeEvent,
-            ]);
-
-            $sendResult = EmailService::send($guest['email'], $subject, $htmlEmail);
-
-            if ($sendResult['success']) {
-                $invitationModel->update($id, [
-                    'blast_status' => 'sent',
-                    'blast_at'     => date('Y-m-d H:i:s'),
-                    'blast_error'  => null,
+            if ($existing) {
+                // Update profile info ONLY. Protect slug, code, rsvp_status, rsvp_at, rsvp_notes, view_count
+                $invitationModel->update($existing['id'], [
+                    'name'        => $name,
+                    'phone'       => !empty($phone) ? $phone : $existing['phone'],
+                    'institution' => !empty($institution) ? $institution : $existing['institution'],
+                    'position'    => !empty($position) ? $position : $existing['position'],
+                    'updated_at'  => date('Y-m-d H:i:s'),
                 ]);
-                $processed++;
+                $updatedCount++;
             } else {
-                $invitationModel->update($id, [
-                    'blast_status' => 'failed',
-                    'blast_error'  => $sendResult['error'] ?? 'Gagal kirim email.',
+                // Insert new guest with generated unique code and slug
+                $tokens = InvitationListModel::generateCodeAndSlug($name, $eventId);
+                $invitationModel->insert([
+                    'event_id'        => $eventId,
+                    'template_id'     => null,
+                    'invitation_code' => $tokens['invitation_code'],
+                    'slug'            => $tokens['slug'],
+                    'name'            => $name,
+                    'email'           => $email,
+                    'phone'           => $phone,
+                    'institution'     => $institution,
+                    'position'        => $position,
+                    'rsvp_status'     => 'pending',
+                    'rsvp_pax'        => 1,
+                    'created_at'      => date('Y-m-d H:i:s'),
+                    'updated_at'      => date('Y-m-d H:i:s'),
                 ]);
-                $failed++;
+                $insertedCount++;
             }
         }
 
-        return $this->response->setJSON([
-            'status'    => 'success',
-            'processed' => $processed,
-            'failed'    => $failed,
-            'message'   => "Batch selesai: {$processed} terkirim, {$failed} gagal.",
-        ]);
+        fclose($handle);
+
+        $msg = "Import selesai: {$insertedCount} tamu baru ditambahkan, {$updatedCount} tamu diperbarui";
+        if ($skippedCount > 0) {
+            $msg .= ", {$skippedCount} baris diabaikan (format nama/email tidak valid).";
+        } else {
+            $msg .= '.';
+        }
+
+        return redirect()->to(base_url('admin/invitations'))->with('success', $msg);
     }
 
     /**
-     * Export RSVP list to CSV
+     * Export Guest list with Invitation URLs to CSV
      */
     public function exportCsv()
     {
@@ -337,26 +363,47 @@ class InvitationListController extends BaseAdminController
         // BOM for Excel utf-8 compatibility
         fputs($output, "\xEF\xBB\xBF");
 
-        fputcsv($output, ['No', 'Kode Undangan', 'Nama Tamu', 'Email', 'No Telepon', 'Instansi', 'Jabatan', 'Status RSVP', 'Pax', 'Catatan / Ucapan', 'Status Blast', 'Waktu RSVP', 'Slug URL']);
+        // Headers
+        fputcsv($output, [
+            'No',
+            'Kode Undangan',
+            'Link Undangan (URL)',
+            'Nama Tamu',
+            'Email',
+            'No Telepon',
+            'Instansi',
+            'Jabatan',
+            'Status RSVP',
+            'Pax',
+            'Catatan / Ucapan',
+            'Waktu RSVP',
+            'Total Views'
+        ]);
 
         $no = 1;
-        $frontendBaseUrl = env('app.frontendMapURL', 'http://localhost:8082');
+
+        // Base URL for invitation link: prioritizes INVITATION_BASE_URL from .env
+        // Default: https://beritasatu.com/malam-apresiasi-2026/invitation/
+        $invitationBaseUrl = env('INVITATION_BASE_URL', 'https://beritasatu.com/malam-apresiasi-2026/invitation/');
+        $invitationBaseUrl = rtrim($invitationBaseUrl, '/') . '/';
 
         foreach ($guests as $g) {
+            $fullInvitationUrl = $invitationBaseUrl . $g['slug'];
+
             fputcsv($output, [
                 $no++,
                 $g['invitation_code'],
+                $fullInvitationUrl,
                 $g['name'],
                 $g['email'],
-                $g['phone'],
+                $g['phone'] ? "=\"" . $g['phone'] . "\"" : '', // Preserve leading 0 in Excel
                 $g['institution'],
                 $g['position'],
                 strtoupper($g['rsvp_status']),
                 $g['rsvp_pax'],
                 $g['notes'],
-                strtoupper($g['blast_status']),
                 $g['rsvp_at'] ?: '—',
-                rtrim($frontendBaseUrl, '/') . '/invitation/' . $g['slug'],
+                $g['view_count'],
             ]);
         }
 
