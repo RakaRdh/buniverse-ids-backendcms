@@ -66,13 +66,22 @@ class ParticipantApiController extends BaseController
         if ($ticketQuantity < 1) $ticketQuantity = 1;
         if ($ticketQuantity > 5) $ticketQuantity = 5;
         
-        // Opsional
+        $registrationType = trim(strip_tags((string)($json['registration_type'] ?? $this->request->getPost('registration_type') ?? 'personal')));
+        if (!in_array($registrationType, ['personal', 'company'])) {
+            $registrationType = 'personal';
+        }
+
+        $additionalNames = $json['additional_names'] ?? $this->request->getPost('additional_names') ?? [];
+        if (!is_array($additionalNames)) {
+            $additionalNames = [];
+        }
+
+        // Opsional PIC
         $picName      = trim(strip_tags((string)($json['pic_name'] ?? $this->request->getPost('pic_name') ?? '')));
-        $picEmail     = trim(strip_tags((string)($json['pic_email'] ?? $this->request->getPost('pic_email') ?? '')));
         $picPhone     = trim(strip_tags((string)($json['pic_phone'] ?? $this->request->getPost('pic_phone') ?? '')));
         $sourceInfo   = trim(strip_tags((string)($json['source_info'] ?? $this->request->getPost('source_info') ?? '')));
 
-        // 2. Validasi required fields
+        // 2. Validasi required fields dasar
         if (empty($fullName) || empty($email) || empty($phone) || empty($address) || empty($jobTitle) || empty($companyName)) {
             return $this->failValidationErrors('Semua kolom wajib (Nama, Email, No Telp, Alamat, Jabatan, Instansi) harus diisi.');
         }
@@ -90,6 +99,36 @@ class ParticipantApiController extends BaseController
             return $this->failValidationErrors($phoneCheck['message']);
         }
         $phone = $phoneCheck['normalized'];
+
+        // Validasi Kategori: Company (PIC Mandatory) vs Pribadi
+        if ($registrationType === 'company') {
+            if (empty($picName) || empty($picPhone) || empty($companyEmail)) {
+                return $this->failValidationErrors('Untuk kategori Instansi / Perusahaan, data narahubung PIC (Nama, No. Telp, dan Email Perusahaan) wajib diisi.');
+            }
+            if (!filter_var($companyEmail, FILTER_VALIDATE_EMAIL)) {
+                return $this->failValidationErrors('Format email kantor/perusahaan tidak valid.');
+            }
+            $picPhoneCheck = \App\Helpers\PhoneHelper::validate($picPhone);
+            if (!$picPhoneCheck['valid']) {
+                return $this->failValidationErrors('Nomor telepon PIC tidak valid: ' . $picPhoneCheck['message']);
+            }
+            $picPhone = $picPhoneCheck['normalized'];
+        } else {
+            // Kategori Pribadi: kosongkan data PIC
+            $picName      = null;
+            $picPhone     = null;
+            $companyEmail = null;
+        }
+
+        // Validasi Nama Tambahan jika Tiket > 1
+        if ($ticketQuantity > 1) {
+            for ($k = 0; $k < ($ticketQuantity - 1); $k++) {
+                $aName = isset($additionalNames[$k]) ? trim(strip_tags((string)$additionalNames[$k])) : '';
+                if (mb_strlen($aName) < 3) {
+                    return $this->failValidationErrors('Nama lengkap pemegang tiket #' . ($k + 2) . ' wajib diisi minimal 3 karakter.');
+                }
+            }
+        }
 
         $validVisitDays = ['day_1', 'day_2', 'all_days'];
         if (!in_array($visitDay, $validVisitDays)) {
@@ -150,19 +189,26 @@ class ParticipantApiController extends BaseController
         $createdParticipants = [];
         $nowDateTime = date('Y-m-d H:i:s');
         $todayDate = date('Y-m-d');
+        $participantType = ($registrationType === 'company') ? 'Corporate Visitor' : 'Visitor';
 
         for ($i = 1; $i <= $ticketQuantity; $i++) {
             // Generate 16 digit ticket code unik per tiket
             $ticketCode = $participantModel->generateUniqueTicketCode((int)$event['id']);
 
-            $ticketFullName = ($ticketQuantity > 1) ? $fullName . ' (Tiket #' . $i . ')' : $fullName;
+            if ($i === 1) {
+                $ticketFullName = $fullName;
+            } else {
+                $addIdx = $i - 2;
+                $custName = !empty($additionalNames[$addIdx]) ? trim(strip_tags((string)$additionalNames[$addIdx])) : '';
+                $ticketFullName = !empty($custName) ? $custName : ($fullName . ' (Tiket #' . $i . ')');
+            }
 
             $participantData = [
                 'event_id'         => (int)$event['id'],
                 'ticket_code'      => $ticketCode,
                 'order_id'         => $orderId,
                 'ticket_index'     => $i,
-                'participant_type' => 'Visitor',
+                'participant_type' => $participantType,
                 'visit_day'        => $visitDay,
                 'full_name'        => $ticketFullName,
                 'email'            => $email,
@@ -172,9 +218,9 @@ class ParticipantApiController extends BaseController
                 'job_title'        => $jobTitle,
                 'company_name'     => $companyName,
                 'company_email'    => $companyEmail ?: null,
-                'pic_name'         => $picName ?: null,
-                'pic_email'        => $picEmail ?: null,
-                'pic_phone'        => $picPhone ?: null,
+                'pic_name'         => ($registrationType === 'company') ? ($picName ?: null) : null,
+                'pic_email'        => ($registrationType === 'company') ? ($companyEmail ?: null) : null,
+                'pic_phone'        => ($registrationType === 'company') ? ($picPhone ?: null) : null,
                 'source_info'      => $sourceInfo ?: null,
                 'status'           => 'confirmed',
                 'is_checked_in'    => ($autoCheckin === 1) ? 1 : 0,
