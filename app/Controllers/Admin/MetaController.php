@@ -69,36 +69,75 @@ class MetaController extends BaseAdminController
 
         // Handle OG image file upload
         $ogFile = $this->request->getFile('og_image_file');
-        if ($ogFile && $ogFile->isValid() && !$ogFile->hasMoved()) {
+        
+        // Cek apakah user memilih file untuk di-upload
+        if ($ogFile && $ogFile->getError() !== UPLOAD_ERR_NO_FILE) {
+            // 1. Cek error upload bawaan PHP (misal: upload_max_filesize di php.ini prod)
+            if (!$ogFile->isValid()) {
+                $errCode = $ogFile->getError();
+                $errString = $ogFile->getErrorString();
+                log_message('error', "[MetaController] Upload file invalid untuk event {$eventId}. Code: {$errCode}, Message: {$errString}");
+                
+                $customMsg = "Gagal mengunggah file: {$errString}";
+                if ($errCode === UPLOAD_ERR_INI_SIZE) {
+                    $iniLimit = ini_get('upload_max_filesize');
+                    $customMsg = "Ukuran file melebihi batas 'upload_max_filesize' di php.ini server ({$iniLimit}). Silakan kompres gambar atau naikkan limit php.ini di server.";
+                } elseif ($errCode === UPLOAD_ERR_FORM_SIZE) {
+                    $customMsg = "Ukuran file melebihi batas form MAX_FILE_SIZE.";
+                } elseif ($errCode === UPLOAD_ERR_PARTIAL) {
+                    $customMsg = "File hanya terunggah sebagian. Silakan coba lagi.";
+                } elseif ($errCode === UPLOAD_ERR_NO_TMP_DIR) {
+                    $customMsg = "Folder sementara (temp directory) PHP tidak ditemukan di server.";
+                } elseif ($errCode === UPLOAD_ERR_CANT_WRITE) {
+                    $customMsg = "Server gagal menulis file ke disk. Periksa permission folder server.";
+                }
+                return redirect()->back()->withInput()->with('error', $customMsg);
+            }
+
+            // 2. Validasi rules CodeIgniter
             if (!$this->validate([
                 'og_image_file' => [
-                    'rules'  => 'is_image[og_image_file]|mime_in[og_image_file,image/jpg,image/jpeg,image/png,image/webp]|max_size[og_image_file,4096]',
+                    'rules'  => 'is_image[og_image_file]|mime_in[og_image_file,image/jpg,image/jpeg,image/png,image/webp]|max_size[og_image_file,8192]',
                     'errors' => [
-                        'is_image' => 'OG preview image must be a valid image file.',
-                        'mime_in'  => 'Only JPG, JPEG, PNG, and WebP images are allowed.',
-                        'max_size' => 'OG image size cannot exceed 4MB.',
+                        'is_image' => 'File yang diunggah harus berupa gambar yang valid.',
+                        'mime_in'  => 'Hanya format JPG, JPEG, PNG, dan WebP yang diperbolehkan.',
+                        'max_size' => 'Ukuran gambar tidak boleh melebihi 8MB.',
                     ],
                 ],
             ])) {
-                return redirect()->back()->withInput()->with('error', $this->validator->getError('og_image_file'));
+                $valError = $this->validator->getError('og_image_file');
+                log_message('error', "[MetaController] Validasi gagal untuk event {$eventId}: {$valError}");
+                return redirect()->back()->withInput()->with('error', $valError);
             }
 
             $uploadDir = FCPATH . 'uploads/events/' . $eventId . '/seo';
             if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0755, true);
+                if (!mkdir($uploadDir, 0775, true) && !is_dir($uploadDir)) {
+                    log_message('error', "[MetaController] Gagal membuat direktori: {$uploadDir}");
+                    return redirect()->back()->withInput()->with('error', 'Gagal membuat folder penyimpanan di server: ' . $uploadDir);
+                }
             }
-            $newName = $ogFile->getRandomName();
-            $ogFile->move($uploadDir, $newName);
-            $seoData['og_image_url'] = 'uploads/events/' . $eventId . '/seo/' . $newName;
+
+            try {
+                $newName = $ogFile->getRandomName();
+                $ogFile->move($uploadDir, $newName);
+                $seoData['og_image_url'] = 'uploads/events/' . $eventId . '/seo/' . $newName;
+                log_message('info', "[MetaController] Sukses upload OG Image event {$eventId}: {$seoData['og_image_url']}");
+            } catch (\Throwable $e) {
+                log_message('error', "[MetaController] Exception saat move file event {$eventId}: " . $e->getMessage());
+                return redirect()->back()->withInput()->with('error', 'Gagal memindahkan file ke server: ' . $e->getMessage());
+            }
         }
 
         $existing = $seoModel->getByEventId($eventId);
         if ($existing) {
-            $seoModel->where('event_id', $eventId)->update($existing['id'], $seoData);
+            $seoModel->update($existing['id'], $seoData);
+            log_message('info', "[MetaController] SEO record updated for event {$eventId} (ID: {$existing['id']})");
         } else {
             $seoData['event_id']   = $eventId;
             $seoData['created_by'] = $userId;
             $seoModel->insert($seoData);
+            log_message('info', "[MetaController] New SEO record created for event {$eventId}");
         }
 
         return redirect()->back()->with('success', 'SEO & Meta tags updated successfully.');

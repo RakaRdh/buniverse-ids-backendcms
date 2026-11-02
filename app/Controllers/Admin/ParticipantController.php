@@ -36,6 +36,7 @@ class ParticipantController extends BaseAdminController
                 ->orLike('email', $search)
                 ->orLike('phone', $search)
                 ->orLike('company_name', $search)
+                ->orLike('company_email', $search)
                 ->orLike('ticket_code', $search)
             ->groupEnd();
         }
@@ -119,6 +120,7 @@ class ParticipantController extends BaseAdminController
             'Address',
             'Job Title',
             'Company / Instansi',
+            'Company Email',
             'PIC Name',
             'PIC Email',
             'PIC Phone',
@@ -139,6 +141,7 @@ class ParticipantController extends BaseAdminController
                 $p['address'],
                 $p['job_title'],
                 $p['company_name'],
+                $p['company_email'] ?? '',
                 $p['pic_name'],
                 $p['pic_email'],
                 $p['pic_phone'],

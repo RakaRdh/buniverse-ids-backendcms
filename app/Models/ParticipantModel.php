@@ -31,6 +31,7 @@ class ParticipantModel extends Model
         'phone',
         'mobile_phone',
         'company_name',
+        'company_email',
         'job_title',
         'job_level',
         'department',

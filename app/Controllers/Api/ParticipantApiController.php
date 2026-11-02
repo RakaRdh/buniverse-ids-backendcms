@@ -60,6 +60,7 @@ class ParticipantApiController extends BaseController
         $address        = trim(strip_tags((string)($json['address'] ?? $this->request->getPost('address') ?? '')));
         $jobTitle       = trim(strip_tags((string)($json['job_title'] ?? $this->request->getPost('job_title') ?? '')));
         $companyName    = trim(strip_tags((string)($json['company_name'] ?? $this->request->getPost('company_name') ?? '')));
+        $companyEmail   = trim(strip_tags((string)($json['company_email'] ?? $this->request->getPost('company_email') ?? '')));
         $visitDay       = trim(strip_tags((string)($json['visit_day'] ?? $this->request->getPost('visit_day') ?? 'all_days')));
         $ticketQuantity = (int)($json['ticket_quantity'] ?? $this->request->getPost('ticket_quantity') ?? 1);
         if ($ticketQuantity < 1) $ticketQuantity = 1;
@@ -170,6 +171,7 @@ class ParticipantApiController extends BaseController
                 'address'          => $address,
                 'job_title'        => $jobTitle,
                 'company_name'     => $companyName,
+                'company_email'    => $companyEmail ?: null,
                 'pic_name'         => $picName ?: null,
                 'pic_email'        => $picEmail ?: null,
                 'pic_phone'        => $picPhone ?: null,

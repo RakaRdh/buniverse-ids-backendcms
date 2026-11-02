@@ -97,6 +97,9 @@
                             <td>
                                 <div style="font-weight:600;"><?= esc($p['company_name'] ?: '—') ?></div>
                                 <div style="font-size:12px; color:var(--color-text-muted);"><?= esc($p['job_title'] ?: '—') ?></div>
+                                <?php if (!empty($p['company_email'])): ?>
+                                    <div style="font-size:11px; color:#15803d; font-weight:600;" title="Email Perusahaan">✉ <?= esc($p['company_email']) ?></div>
+                                <?php endif; ?>
                                 <div style="font-size:11px; color:var(--color-text-muted); max-width:220px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="<?= esc($p['address'] ?? '') ?>">
                                     <?= esc($p['address'] ?: '') ?>
                                 </div>
