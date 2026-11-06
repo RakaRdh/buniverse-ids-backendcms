@@ -81,7 +81,7 @@
     }
     $queryParams = $_GET;
     $tableBaseUrl = base_url('admin/invitations');
-    $feBaseUrl = env('app.frontendMapURL', 'http://localhost:8082');
+    $feBaseUrl = $frontendBaseUrl ?? env('app.frontendMapURL', 'http://localhost:8082');
 ?>
 
 <div style="background:var(--bg-surface); border-radius:var(--radius-card); border:1px solid var(--line); overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.05);">

@@ -105,7 +105,7 @@
             <div class="form-group" style="margin-bottom:14px;">
                 <label class="form-label" style="font-size:13px; font-weight:600;">Template Key (Sesuai File View di Frontend) *</label>
                 <input type="text" name="template_key" class="form-control" required placeholder="e.g. malam_apresiasi_luxury" pattern="[a-zA-Z0-9_-]+">
-                <small style="color:var(--text-muted); font-size:11px;">Hanya huruf, angka, strip (-), dan underscore (_). Harus sama dengan nama file view di FrontendMAP.</small>
+                <small style="color:var(--text-muted); font-size:11px;">Hanya huruf, angka, strip (-), dan underscore (_). Harus sama dengan nama file view di Frontend (<?= esc($activeEvent['title'] ?? 'Frontend') ?>).</small>
             </div>
             <div class="form-group" style="margin-bottom:14px;">
                 <label class="form-label" style="font-size:13px; font-weight:600;">Deskripsi</label>
@@ -147,8 +147,8 @@
 <script>
 function openPreviewModal(key, name) {
     document.getElementById('previewTitle').textContent = 'Live Preview: ' + name;
-    // Panggil preview di FrontendMAP (port 8082 aktif)
-    const frontendBaseUrl = '<?= env('app.frontendMapURL', 'http://localhost:8082') ?>';
+    // Dynamic frontend URL resolved based on active event (e.g. ESG: 8083, MAP: 8082)
+    const frontendBaseUrl = '<?= esc($frontendBaseUrl ?? env('app.frontendMapURL', 'http://localhost:8082')) ?>';
     document.getElementById('previewIframe').src = frontendBaseUrl.replace(/\/$/, '') + '/invitation/preview?template=' + encodeURIComponent(key);
     document.getElementById('phonePreviewModal').style.display = 'flex';
 }
