@@ -16,30 +16,30 @@ class UpdateYellowColors extends BaseCommand
         $db = \Config\Database::connect();
         
         $yellowMap = [
-            '--yellow-1'  => '#fefbed',
-            '--yellow-2'  => '#fcf6d3',
-            '--yellow-3'  => '#faeeb1',
-            '--yellow-4'  => '#f8e68c',
-            '--yellow-5'  => '#f6df6a',
-            '--yellow-6'  => '#f4d849',
-            '--yellow-7'  => '#cfb83e',
-            '--yellow-8'  => '#ad9934',
-            '--yellow-9'  => '#8b7b2a',
-            '--yellow-10' => '#6e6121',
+            '--yellow-1'  => '#fefdeb',
+            '--yellow-2'  => '#fdfbcf',
+            '--yellow-3'  => '#fcf8aa',
+            '--yellow-4'  => '#faf482',
+            '--yellow-5'  => '#f8f15d',
+            '--yellow-6'  => '#f7ee39',
+            '--yellow-7'  => '#d2ca30',
+            '--yellow-8'  => '#afa928',
+            '--yellow-9'  => '#8d8820',
+            '--yellow-10' => '#6f6b1a',
         ];
 
         // Also primary-1-x if present
         $primary1Map = [
-            '--primary-1-1'  => '#fefbed',
-            '--primary-1-2'  => '#fcf6d3',
-            '--primary-1-3'  => '#faeeb1',
-            '--primary-1-4'  => '#f8e68c',
-            '--primary-1-5'  => '#f6df6a',
-            '--primary-1-6'  => '#f4d849',
-            '--primary-1-7'  => '#cfb83e',
-            '--primary-1-8'  => '#ad9934',
-            '--primary-1-9'  => '#8b7b2a',
-            '--primary-1-10' => '#6e6121',
+            '--primary-1-1'  => '#fefdeb',
+            '--primary-1-2'  => '#fdfbcf',
+            '--primary-1-3'  => '#fcf8aa',
+            '--primary-1-4'  => '#faf482',
+            '--primary-1-5'  => '#f8f15d',
+            '--primary-1-6'  => '#f7ee39',
+            '--primary-1-7'  => '#d2ca30',
+            '--primary-1-8'  => '#afa928',
+            '--primary-1-9'  => '#8d8820',
+            '--primary-1-10' => '#6f6b1a',
         ];
 
         $allUpdates = array_merge($yellowMap, $primary1Map);

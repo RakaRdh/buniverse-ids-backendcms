@@ -21,14 +21,29 @@
             'desc'  => 'Key application surface tokens, card gradients, text colors, and CTA highlights mapped across the frontend.',
             'open'  => true,
         ],
+        'bsa-primary' => [
+            'title' => 'BSA Primary Palette (10 Levels)',
+            'desc'  => '10-step BSA Primary red scale from lightest tint (--bsa-primary-1) to deepest shade (--bsa-primary-10).',
+            'open'  => false,
+        ],
+        'bsa-secondary' => [
+            'title' => 'BSA Secondary Palette (10 Levels)',
+            'desc'  => '10-step BSA Secondary crimson/maroon scale (--bsa-secondary-1 to --bsa-secondary-10).',
+            'open'  => false,
+        ],
+        'bsa-secondary-2' => [
+            'title' => 'BSA Secondary 2 Palette (10 Levels)',
+            'desc'  => '10-step BSA Secondary 2 deep burgundy scale (--bsa-secondary-2-1 to --bsa-secondary-2-10).',
+            'open'  => false,
+        ],
         'primary-1' => [
-            'title' => 'Primary 1 Palette (Deep Teal / Brand Dark)',
+            'title' => 'Primary 1 Palette (Brand Scale)',
             'desc'  => '10-step primary brand scale from lightest tint (--primary-1-1) to deepest background tone (--primary-1-10).',
             'open'  => false,
         ],
         'primary-2' => [
-            'title' => 'Primary 2 Palette (Accent Blue)',
-            'desc'  => '10-step accent blue scale used for buttons, interactive highlights, glows, and badges.',
+            'title' => 'Primary 2 Palette (Secondary Brand Scale)',
+            'desc'  => '10-step secondary accent scale used for buttons, interactive highlights, glows, and badges.',
             'open'  => false,
         ],
         'neutral' => [

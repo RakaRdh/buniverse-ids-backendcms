@@ -15,16 +15,43 @@ class InvitationTemplateController extends BaseAdminController
         }
 
         $templateModel = new InvitationTemplateModel();
+
+        // Auto-sanitize legacy hyperbolic template names
+        $templateModel->where('event_id', $eventId)
+            ->groupStart()
+                ->like('name', 'Royal Gold')
+                ->orLike('name', 'Luxury')
+                ->orWhere('template_key', 'malam_apresiasi')
+            ->groupEnd()
+            ->set(['name' => 'Apresiasi Template 1'])
+            ->update();
+
+        $templateModel->where('event_id', $eventId)
+            ->groupStart()
+                ->like('name', 'ESG Luxury')
+                ->orWhere('template_key', 'esg_invitation')
+            ->groupEnd()
+            ->set(['name' => 'ESG Template 1'])
+            ->update();
+
         $templates = $templateModel->where('event_id', $eventId)->orderBy('is_default', 'DESC')->orderBy('id', 'ASC')->findAll();
 
         // Seed initial default template if none exists
         if (empty($templates)) {
+            $activeSlug = strtolower((string)($this->activeEvent['slug'] ?? $this->activeEvent['title'] ?? ''));
+            $isEsg = str_contains($activeSlug, 'esg');
+            $defaultKey  = $isEsg ? 'esg_invitation' : 'malam_apresiasi';
+            $defaultName = $isEsg ? 'ESG Template 1' : 'Apresiasi Template 1';
+            $defaultDesc = $isEsg
+                ? 'Tema portrait elegan gelap dengan nuansa ESG, countdown, particle network, dan animasi cover lock.'
+                : 'Tema portrait elegan gelap dengan aksen emas, countdown, dan animasi cover.';
+
             $defaultTpl = [
                 'event_id'      => $eventId,
-                'template_key'  => 'malam_apresiasi',
-                'name'          => 'Royal Gold Luxury (Default)',
-                'description'   => 'Tema portrait elegan gelap dengan aksen emas mewah, countdown, dan animasi cover.',
-                'thumbnail_url' => base_url('assets/img/template_luxury_thumb.webp'),
+                'template_key'  => $defaultKey,
+                'name'          => $defaultName,
+                'description'   => $defaultDesc,
+                'thumbnail_url' => null,
                 'is_active'     => 1,
                 'is_default'    => 1,
                 'created_at'    => date('Y-m-d H:i:s'),
@@ -34,9 +61,10 @@ class InvitationTemplateController extends BaseAdminController
             $templates = $templateModel->where('event_id', $eventId)->orderBy('is_default', 'DESC')->findAll();
         }
 
-        $this->data['templates']  = $templates;
-        $this->data['pageTitle']  = 'E-Invitation Templates';
-        $this->data['activeMenu'] = 'invitation_templates';
+        $this->data['templates']       = $templates;
+        $this->data['frontendBaseUrl'] = $this->getFrontendBaseUrl();
+        $this->data['pageTitle']       = 'E-Invitation Templates';
+        $this->data['activeMenu']      = 'invitation_templates';
 
         return $this->render('admin/invitations/templates_index', $this->data);
     }

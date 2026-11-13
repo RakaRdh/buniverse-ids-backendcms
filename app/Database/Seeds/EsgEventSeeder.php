@@ -402,9 +402,9 @@ class EsgEventSeeder extends Seeder
             $db->table('invitation_templates')->insert([
                 'event_id'      => $eventId,
                 'template_key'  => 'esg_invitation',
-                'name'          => 'ESG Luxury Green & Gold (Default)',
+                'name'          => 'ESG Template 1',
                 'description'   => 'Tema portrait elegan gelap dengan nuansa kehormatan ESG, countdown, particle network, dan animasi cover lock.',
-                'thumbnail_url' => base_url('assets/img/template_luxury_thumb.webp'),
+                'thumbnail_url' => null,
                 'is_active'     => 1,
                 'is_default'    => 1,
                 'created_at'    => date('Y-m-d H:i:s'),

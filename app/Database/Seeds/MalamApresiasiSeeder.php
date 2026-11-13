@@ -176,7 +176,7 @@ class MalamApresiasiSeeder extends Seeder
             echo "Initialized event_seo for event {$eventId}.\n";
         }
 
-        // 6. Theme Properties (Black & Red Palette)
+        // 6. Theme Properties (BSA Primary, Secondary, Secondary 2 & Black Palette)
         $blackPalette = [
             '--black-1'  => '#ffffff',
             '--black-2'  => '#fcfcfc',
@@ -193,17 +193,43 @@ class MalamApresiasiSeeder extends Seeder
             '--black-13' => '#000000',
         ];
 
-        $redPalette = [
-            '--red-1'  => '#f7e7e7',
-            '--red-2'  => '#ebc4c4',
-            '--red-3'  => '#db9696',
-            '--red-4'  => '#cb6565',
-            '--red-5'  => '#bb3636',
-            '--red-6'  => '#ac0a0a',
-            '--red-7'  => '#920909',
-            '--red-8'  => '#7a0707',
-            '--red-9'  => '#620606',
-            '--red-10' => '#4d0505',
+        $bsaPrimaryPalette = [
+            '--bsa-primary-1'  => '#fce6e6',
+            '--bsa-primary-2'  => '#f9c2c2',
+            '--bsa-primary-3'  => '#f49292',
+            '--bsa-primary-4'  => '#ef5f5f',
+            '--bsa-primary-5'  => '#ea2f2f',
+            '--bsa-primary-6'  => '#e50101',
+            '--bsa-primary-7'  => '#c30101',
+            '--bsa-primary-8'  => '#a30101',
+            '--bsa-primary-9'  => '#830101',
+            '--bsa-primary-10' => '#670000',
+        ];
+
+        $bsaSecondaryPalette = [
+            '--bsa-secondary-1'  => '#f5e6e6',
+            '--bsa-secondary-2'  => '#e7c2c2',
+            '--bsa-secondary-3'  => '#d39192',
+            '--bsa-secondary-4'  => '#bf5e5f',
+            '--bsa-secondary-5'  => '#ab2e2f',
+            '--bsa-secondary-6'  => '#990001',
+            '--bsa-secondary-7'  => '#820001',
+            '--bsa-secondary-8'  => '#6d0001',
+            '--bsa-secondary-9'  => '#570001',
+            '--bsa-secondary-10' => '#450000',
+        ];
+
+        $bsaSecondary2Palette = [
+            '--bsa-secondary-2-1'  => '#f1e6e6',
+            '--bsa-secondary-2-2'  => '#ddc2c2',
+            '--bsa-secondary-2-3'  => '#c39191',
+            '--bsa-secondary-2-4'  => '#a75e5e',
+            '--bsa-secondary-2-5'  => '#8c2e2e',
+            '--bsa-secondary-2-6'  => '#730000',
+            '--bsa-secondary-2-7'  => '#620000',
+            '--bsa-secondary-2-8'  => '#520000',
+            '--bsa-secondary-2-9'  => '#420000',
+            '--bsa-secondary-2-10' => '#340000',
         ];
 
         $semanticPalette = [
@@ -211,112 +237,60 @@ class MalamApresiasiSeeder extends Seeder
             '--bg-section-alt'            => '#141414',
             '--bg-card'                   => '#1f1f1f',
             '--bg-card-gradient'          => 'linear-gradient(135deg, #1f1f1f 0%, #141414 100%)',
-            '--bg-pill'                   => '#ebc4c4',
-            '--bg-pill-active'            => '#ac0a0a',
+            '--bg-pill'                   => '#e7c2c2',
+            '--bg-pill-active'            => '#ab2e2f',
             '--text-primary'              => '#ffffff',
             '--text-secondary'            => '#d9d9d9',
             '--text-muted'                => '#8c8c8c',
             '--text-dark'                 => '#000000',
-            '--accent-cyan'               => '#ac0a0a',
-            '--accent-light'              => '#cb6565',
-            '--accent-blue'               => '#ac0a0a',
-            '--accent-glow'               => 'rgba(172, 10, 10, 0.35)',
+            '--accent-cyan'               => '#ab2e2f',
+            '--accent-light'              => '#d39192',
+            '--accent-blue'               => '#ab2e2f',
+            '--accent-glow'               => 'rgba(171, 46, 47, 0.45)',
             '--border-divider'            => 'rgba(255, 255, 255, 0.12)',
-            '--border-subtle'             => 'rgba(172, 10, 10, 0.25)',
+            '--border-subtle'             => 'rgba(171, 46, 47, 0.35)',
             '--navbar-bg'                 => 'transparent',
-            '--navbar-cta-bg'             => '#ac0a0a',
+            '--navbar-cta-bg'             => '#e50101',
             '--navbar-cta-text'           => '#ffffff',
-            '--navbar-cta-hover-bg'       => '#920909',
+            '--navbar-cta-hover-bg'       => '#ab2e2f',
             '--navbar-cta-hover-text'     => '#ffffff',
-            '--navbar-cta-hover-outline'  => '#ac0a0a',
-            '--footer-bg'                 => '#000000',
+            '--navbar-cta-hover-outline'  => '#e50101',
+            '--footer-bg'                 => '#450000',
             '--footer-border-color'       => 'rgba(255, 255, 255, 0.12)',
             '--footer-social-bg'          => '#262626',
             '--footer-social-color'       => '#ffffff',
             '--footer-text-color'         => '#d9d9d9',
         ];
 
-        $themeCount = $db->table('event_theme_properties')->where('event_id', $eventId)->countAllResults();
-        if ($themeCount === 0) {
-            $sort = 1;
-            foreach ($blackPalette as $prop => $val) {
-                $num = str_replace('--black-', '', $prop);
-                $db->table('event_theme_properties')->insert([
-                    'event_id'     => $eventId,
-                    'css_property' => $prop,
-                    'css_value'    => $val,
-                    'value_type'   => 'solid',
-                    'category'     => 'black',
-                    'label'        => "Black {$num}",
-                    'sort_order'   => $sort++,
-                    'created_by'   => $adminId,
-                    'updated_by'   => $adminId,
-                    'created_at'   => date('Y-m-d H:i:s'),
-                    'updated_at'   => date('Y-m-d H:i:s'),
-                ]);
-                $db->table('event_theme_properties')->insert([
-                    'event_id'     => $eventId,
-                    'css_property' => "--neutral-{$num}",
-                    'css_value'    => $val,
-                    'value_type'   => 'solid',
-                    'category'     => 'neutral',
-                    'label'        => "Neutral {$num}",
-                    'sort_order'   => $sort++,
-                    'created_by'   => $adminId,
-                    'updated_by'   => $adminId,
-                    'created_at'   => date('Y-m-d H:i:s'),
-                    'updated_at'   => date('Y-m-d H:i:s'),
-                ]);
-            }
-            foreach ($redPalette as $prop => $val) {
-                $num = str_replace('--red-', '', $prop);
-                $db->table('event_theme_properties')->insert([
-                    'event_id'     => $eventId,
-                    'css_property' => $prop,
-                    'css_value'    => $val,
-                    'value_type'   => 'solid',
-                    'category'     => 'red',
-                    'label'        => "Red {$num}",
-                    'sort_order'   => $sort++,
-                    'created_by'   => $adminId,
-                    'updated_by'   => $adminId,
-                    'created_at'   => date('Y-m-d H:i:s'),
-                    'updated_at'   => date('Y-m-d H:i:s'),
-                ]);
-                $db->table('event_theme_properties')->insert([
-                    'event_id'     => $eventId,
-                    'css_property' => "--primary-1-{$num}",
-                    'css_value'    => $val,
-                    'value_type'   => 'solid',
-                    'category'     => 'primary-1',
-                    'label'        => "Primary Red {$num}",
-                    'sort_order'   => $sort++,
-                    'created_by'   => $adminId,
-                    'updated_by'   => $adminId,
-                    'created_at'   => date('Y-m-d H:i:s'),
-                    'updated_at'   => date('Y-m-d H:i:s'),
-                ]);
-            }
-            foreach ($semanticPalette as $prop => $val) {
-                $valType = str_contains($val, 'gradient') ? 'gradient' : 'solid';
-                $category = str_starts_with($prop, '--navbar') ? 'navbar' : (str_starts_with($prop, '--footer') ? 'footer' : 'semantic');
-                $label = ucwords(str_replace(['--', '-'], [' ', ' '], $prop));
-                $db->table('event_theme_properties')->insert([
-                    'event_id'     => $eventId,
-                    'css_property' => $prop,
-                    'css_value'    => $val,
-                    'value_type'   => $valType,
-                    'category'     => $category,
-                    'label'        => $label,
-                    'sort_order'   => $sort++,
-                    'created_by'   => $adminId,
-                    'updated_by'   => $adminId,
-                    'created_at'   => date('Y-m-d H:i:s'),
-                    'updated_at'   => date('Y-m-d H:i:s'),
-                ]);
-            }
-            echo "Initialized Black & Red theme properties for event {$eventId}.\n";
+        $themeModel = new \App\Models\EventThemePropertyModel();
+        $sort = 1;
+        foreach ($blackPalette as $prop => $val) {
+            $num = str_replace('--black-', '', $prop);
+            $themeModel->upsertProperty($eventId, $prop, $val, 'black', "Black {$num}", $adminId);
+            $themeModel->upsertProperty($eventId, "--neutral-{$num}", $val, 'neutral', "Neutral {$num}", $adminId);
         }
+        foreach ($bsaPrimaryPalette as $prop => $val) {
+            $num = str_replace('--bsa-primary-', '', $prop);
+            $themeModel->upsertProperty($eventId, $prop, $val, 'bsa-primary', "BSA Primary {$num}", $adminId);
+            $themeModel->upsertProperty($eventId, "--red-{$num}", $val, 'red', "Red {$num}", $adminId);
+            $themeModel->upsertProperty($eventId, "--primary-1-{$num}", $val, 'primary-1', "BSA Primary {$num}", $adminId);
+        }
+        foreach ($bsaSecondaryPalette as $prop => $val) {
+            $num = str_replace('--bsa-secondary-', '', $prop);
+            $themeModel->upsertProperty($eventId, $prop, $val, 'bsa-secondary', "BSA Secondary {$num}", $adminId);
+            $themeModel->upsertProperty($eventId, "--blue-{$num}", $val, 'blue', "Blue {$num}", $adminId);
+            $themeModel->upsertProperty($eventId, "--primary-2-{$num}", $val, 'primary-2', "BSA Secondary {$num}", $adminId);
+        }
+        foreach ($bsaSecondary2Palette as $prop => $val) {
+            $num = str_replace('--bsa-secondary-2-', '', $prop);
+            $themeModel->upsertProperty($eventId, $prop, $val, 'bsa-secondary-2', "BSA Secondary 2-{$num}", $adminId);
+        }
+        foreach ($semanticPalette as $prop => $val) {
+            $category = str_starts_with($prop, '--navbar') ? 'navbar' : (str_starts_with($prop, '--footer') ? 'footer' : 'semantic');
+            $label = ucwords(str_replace(['--', '-'], [' ', ' '], $prop));
+            $themeModel->upsertProperty($eventId, $prop, $val, $category, $label, $adminId);
+        }
+        echo "Synchronized BSA Primary, Secondary & Secondary 2 theme properties for event {$eventId}.\n";
 
         // 7. Schedule Rooms
         $roomCount = $db->table('schedule_rooms')->where('event_id', $eventId)->countAllResults();

@@ -11,82 +11,96 @@
     </div>
 </div>
 
-<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; margin-top: 24px;">
-    <?php if (empty($templates)): ?>
-        <div style="grid-column: 1 / -1; padding: 48px; text-align: center; background: var(--bg-card); border-radius: var(--radius-md); border: 1px dashed var(--border-color); color: var(--text-muted);">
-            Belum ada template yang terdaftar. Silakan tambahkan template baru.
-        </div>
-    <?php else: ?>
-        <?php foreach ($templates as $tpl): ?>
-            <div style="background: var(--bg-card); border-radius: var(--radius-md); border: 1px solid <?= $tpl['is_default'] ? 'var(--primary-color)' : 'var(--border-color)' ?>; overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--shadow-sm); position: relative;">
-                <?php if ($tpl['is_default']): ?>
-                    <div style="position: absolute; top: 12px; left: 12px; background: var(--action); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 50px; text-transform: uppercase; letter-spacing: 0.5px; z-index: 2;">
-                        Default Event
-                    </div>
+<div style="background:var(--bg-surface); border-radius:var(--radius-card); border:1px solid var(--line); overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.05); margin-top:20px;">
+    <div style="overflow-x:auto;">
+        <table class="table" style="width:100%; border-collapse:collapse; text-align:left; font-size:13px;">
+            <thead>
+                <tr style="background:var(--bg-subtle); border-bottom:1px solid var(--line); color:var(--text-muted); font-size:12px; text-transform:uppercase; letter-spacing:0.5px;">
+                    <th style="padding:14px 16px; width:50px; text-align:center;">#</th>
+                    <th style="padding:14px 16px; min-width:220px;">Nama Template</th>
+                    <th style="padding:14px 16px; width:180px;">Template Key</th>
+                    <th style="padding:14px 16px; min-width:260px;">Deskripsi</th>
+                    <th style="padding:14px 16px; width:110px; text-align:center;">Status</th>
+                    <th style="padding:14px 16px; width:260px; text-align:right;">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (empty($templates)): ?>
+                    <tr>
+                        <td colspan="6" style="padding:48px 16px; text-align:center; color:var(--text-muted);">
+                            Belum ada template yang terdaftar. Silakan klik <strong>Tambah Template Baru</strong>.
+                        </td>
+                    </tr>
+                <?php else: ?>
+                    <?php $no = 1; foreach ($templates as $tpl): ?>
+                        <tr style="border-bottom:1px solid var(--line-soft); transition:background 0.15s;" onmouseover="this.style.background='var(--bg-subtle)'" onmouseout="this.style.background='transparent'">
+                            <td style="padding:14px 16px; text-align:center; color:var(--text-muted); font-weight:600;">
+                                <?= $no++ ?>
+                            </td>
+                            <td style="padding:14px 16px;">
+                                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                                    <span style="font-weight:700; color:var(--text-strong); font-size:14px;">
+                                        <?= esc($tpl['name']) ?>
+                                    </span>
+                                    <?php if ($tpl['is_default']): ?>
+                                        <span style="background:var(--action); color:#fff; font-size:10px; font-weight:700; padding:2px 8px; border-radius:50px; text-transform:uppercase; letter-spacing:0.5px;">
+                                            Default Event
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+                            </td>
+                            <td style="padding:14px 16px;">
+                                <code style="font-family:monospace; font-size:12px; color:var(--action); background:rgba(0,0,0,0.05); padding:3px 8px; border-radius:4px; display:inline-block;">
+                                    <?= esc($tpl['template_key']) ?>
+                                </code>
+                            </td>
+                            <td style="padding:14px 16px; color:var(--text-muted); line-height:1.4;">
+                                <?= esc($tpl['description'] ?: '—') ?>
+                            </td>
+                            <td style="padding:14px 16px; text-align:center;">
+                                <span class="status-pill status-<?= $tpl['is_active'] ? 'published' : 'draft' ?>">
+                                    <?= $tpl['is_active'] ? 'Aktif' : 'Nonaktif' ?>
+                                </span>
+                            </td>
+                            <td style="padding:14px 16px; text-align:right;">
+                                <div style="display:inline-flex; align-items:center; justify-content:flex-end; gap:6px; flex-wrap:wrap;">
+                                    <button type="button" class="btn btn-outline" style="font-size:12px; padding:6px 11px; display:inline-flex; align-items:center; gap:5px;" onclick="openPreviewModal('<?= esc($tpl['template_key']) ?>', '<?= esc($tpl['name']) ?>')">
+                                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                        <span>Preview</span>
+                                    </button>
+
+                                    <?php if (!$tpl['is_default']): ?>
+                                        <form action="<?= base_url('admin/invitation-templates/set-default/' . $tpl['id']) ?>" method="POST" style="display:inline;">
+                                            <?= csrf_field() ?>
+                                            <button type="submit" class="btn btn-outline" style="font-size:12px; padding:6px 10px;" title="Jadikan template default">
+                                                Set Default
+                                            </button>
+                                        </form>
+                                    <?php endif; ?>
+
+                                    <form action="<?= base_url('admin/invitation-templates/toggle/' . $tpl['id']) ?>" method="POST" style="display:inline;">
+                                        <?= csrf_field() ?>
+                                        <button type="submit" class="btn btn-outline" style="font-size:12px; padding:6px 10px;">
+                                            <?= $tpl['is_active'] ? 'Nonaktifkan' : 'Aktifkan' ?>
+                                        </button>
+                                    </form>
+
+                                    <?php if (!$tpl['is_default']): ?>
+                                        <form action="<?= base_url('admin/invitation-templates/delete/' . $tpl['id']) ?>" method="POST" style="display:inline;" onsubmit="return confirm('Hapus template ini?')">
+                                            <?= csrf_field() ?>
+                                            <button type="submit" class="btn btn-danger" style="font-size:12px; padding:6px 9px;" title="Hapus Template">
+                                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                            </button>
+                                        </form>
+                                    <?php endif; ?>
+                                </div>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
                 <?php endif; ?>
-
-                <div style="height: 180px; background: #0c1424; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                    <?php if (!empty($tpl['thumbnail_url'])): ?>
-                        <img src="<?= esc($tpl['thumbnail_url']) ?>" alt="<?= esc($tpl['name']) ?>" style="width: 100%; height: 100%; object-fit: cover;">
-                    <?php else: ?>
-                        <div style="text-align: center; color: var(--text-muted);">
-                            <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                            <div style="font-size: 12px; margin-top: 6px;">No Preview Thumbnail</div>
-                        </div>
-                    <?php endif; ?>
-                </div>
-
-                <div style="padding: 20px; flex: 1; display: flex; flex-direction: column;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-                        <h3 style="font-size: 16px; font-weight: 700; color: var(--text-strong); margin: 0;"><?= esc($tpl['name']) ?></h3>
-                        <span class="status-pill status-<?= $tpl['is_active'] ? 'published' : 'draft' ?>">
-                            <?= $tpl['is_active'] ? 'Aktif' : 'Nonaktif' ?>
-                        </span>
-                    </div>
-
-                    <div style="font-family: monospace; font-size: 12px; color: var(--action); margin-bottom: 10px; background: rgba(0,0,0,0.05); padding: 2px 6px; border-radius: 4px; display: inline-block;">
-                        key: <?= esc($tpl['template_key']) ?>
-                    </div>
-
-                    <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 0 0 16px; flex: 1;">
-                        <?= esc($tpl['description'] ?: 'Tidak ada deskripsi.') ?>
-                    </p>
-
-                    <div style="display: flex; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 14px;">
-                        <button type="button" class="btn btn-outline" style="font-size: 12px; padding: 6px 12px; display:inline-flex; align-items:center; gap:6px;" onclick="openPreviewModal('<?= esc($tpl['template_key']) ?>', '<?= esc($tpl['name']) ?>')">
-                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                            <span>Live Preview</span>
-                        </button>
-
-                        <?php if (!$tpl['is_default']): ?>
-                            <form action="<?= base_url('admin/invitation-templates/set-default/' . $tpl['id']) ?>" method="POST" style="display:inline;">
-                                <?= csrf_field() ?>
-                                <button type="submit" class="btn btn-outline" style="font-size: 12px; padding: 6px 12px;" title="Set as default template for MAP guests">
-                                    Set Default
-                                </button>
-                            </form>
-                        <?php endif; ?>
-
-                        <form action="<?= base_url('admin/invitation-templates/toggle/' . $tpl['id']) ?>" method="POST" style="display:inline;">
-                            <?= csrf_field() ?>
-                            <button type="submit" class="btn btn-outline" style="font-size: 12px; padding: 6px 12px;">
-                                <?= $tpl['is_active'] ? 'Nonaktifkan' : 'Aktifkan' ?>
-                            </button>
-                        </form>
-
-                        <?php if (!$tpl['is_default']): ?>
-                            <form action="<?= base_url('admin/invitation-templates/delete/' . $tpl['id']) ?>" method="POST" style="display:inline;" onsubmit="return confirm('Hapus template ini?')">
-                                <?= csrf_field() ?>
-                                <button type="submit" class="btn btn-danger" style="font-size: 12px; padding: 6px 10px;" title="Hapus Template">
-                                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                                </button>
-                            </form>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-        <?php endforeach; ?>
-    <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <!-- Modal Tambah Template Baru -->
@@ -96,24 +110,20 @@
             <h2 style="font-size:18px; font-weight:700; margin:0; color:var(--text-strong);">Tambah Template E-Undangan</h2>
             <button type="button" onclick="document.getElementById('addTemplateModal').style.display='none'" style="background:none; border:none; font-size:20px; cursor:pointer; color:var(--text-muted);">&times;</button>
         </div>
-        <form action="<?= base_url('admin/invitation-templates/store') ?>" method="POST" enctype="multipart/form-data">
+        <form action="<?= base_url('admin/invitation-templates/store') ?>" method="POST">
             <?= csrf_field() ?>
             <div class="form-group" style="margin-bottom:14px;">
                 <label class="form-label" style="font-size:13px; font-weight:600;">Nama Template *</label>
-                <input type="text" name="name" class="form-control" required placeholder="e.g. Royal Gold Luxury (VIP)">
+                <input type="text" name="name" class="form-control" required placeholder="e.g. Apresiasi Template 2 / ESG Template 2">
             </div>
             <div class="form-group" style="margin-bottom:14px;">
                 <label class="form-label" style="font-size:13px; font-weight:600;">Template Key (Sesuai File View di Frontend) *</label>
-                <input type="text" name="template_key" class="form-control" required placeholder="e.g. malam_apresiasi_luxury" pattern="[a-zA-Z0-9_-]+">
-                <small style="color:var(--text-muted); font-size:11px;">Hanya huruf, angka, strip (-), dan underscore (_). Harus sama dengan nama file view di Frontend (<?= esc($activeEvent['title'] ?? 'Frontend') ?>).</small>
+                <input type="text" name="template_key" class="form-control" required placeholder="e.g. malam_apresiasi_2 / esg_template_2" pattern="[a-zA-Z0-9_-]+">
+                <small style="color:var(--text-muted); font-size:11px;">Hanya huruf, angka, strip (-), dan underscore (_). Harus sama dengan nama view template di frontend.</small>
             </div>
             <div class="form-group" style="margin-bottom:14px;">
                 <label class="form-label" style="font-size:13px; font-weight:600;">Deskripsi</label>
                 <textarea name="description" class="form-control" rows="2" placeholder="Catatan tema / nuansa tampilan..."></textarea>
-            </div>
-            <div class="form-group" style="margin-bottom:14px;">
-                <label class="form-label" style="font-size:13px; font-weight:600;">Screenshot Thumbnail (Opsional)</label>
-                <input type="file" name="thumbnail_file" class="form-control" accept="image/*">
             </div>
             <div class="form-group" style="margin-bottom:18px;">
                 <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
