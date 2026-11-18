@@ -76,6 +76,11 @@ class ParticipantApiController extends BaseController
             $additionalNames = [];
         }
 
+        $additionalJobTitles = $json['additional_job_titles'] ?? $this->request->getPost('additional_job_titles') ?? [];
+        if (!is_array($additionalJobTitles)) {
+            $additionalJobTitles = [];
+        }
+
         // Opsional PIC
         $picName      = trim(strip_tags((string)($json['pic_name'] ?? $this->request->getPost('pic_name') ?? '')));
         $picPhone     = trim(strip_tags((string)($json['pic_phone'] ?? $this->request->getPost('pic_phone') ?? '')));
@@ -197,10 +202,13 @@ class ParticipantApiController extends BaseController
 
             if ($i === 1) {
                 $ticketFullName = $fullName;
+                $ticketJobTitle = $jobTitle;
             } else {
                 $addIdx = $i - 2;
                 $custName = !empty($additionalNames[$addIdx]) ? trim(strip_tags((string)$additionalNames[$addIdx])) : '';
                 $ticketFullName = !empty($custName) ? $custName : ($fullName . ' (Tiket #' . $i . ')');
+                $custJob = isset($additionalJobTitles[$addIdx]) ? trim(strip_tags((string)$additionalJobTitles[$addIdx])) : '';
+                $ticketJobTitle = ($custJob !== '') ? $custJob : $jobTitle;
             }
 
             $participantData = [
@@ -215,7 +223,7 @@ class ParticipantApiController extends BaseController
                 'phone'            => $phone,
                 'mobile_phone'     => $phone,
                 'address'          => $address,
-                'job_title'        => $jobTitle,
+                'job_title'        => $ticketJobTitle,
                 'company_name'     => $companyName,
                 'company_email'    => $companyEmail ?: null,
                 'pic_name'         => ($registrationType === 'company') ? ($picName ?: null) : null,
@@ -249,7 +257,7 @@ class ParticipantApiController extends BaseController
                 'full_name'    => $ticketFullName,
                 'email'        => $email,
                 'company_name' => $companyName,
-                'job_title'    => $jobTitle,
+                'job_title'    => $ticketJobTitle,
                 'ticket_code'  => $ticketCode,
                 'ticket_index' => $i,
                 'visit_day'    => $visitDay,
